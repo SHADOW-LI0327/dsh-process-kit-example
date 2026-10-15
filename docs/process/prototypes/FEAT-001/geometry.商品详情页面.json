@@ -1,0 +1,277 @@
+{
+  "source": "photocraft-cli info → docs/process/prototypes/FEAT-001/商品详情页面-FEAT-001.psd",
+  "adapter": "photocraft-cli",
+  "artifact": "docs/process/prototypes/FEAT-001/商品详情页面-FEAT-001.psd",
+  "canvas": {
+    "width": 1280,
+    "height": 800
+  },
+  "elements": [
+    {
+      "name": "次按钮-返回列表-文字",
+      "kind": "text",
+      "bounds": [
+        754,
+        430,
+        95,
+        16
+      ],
+      "sizePt": 15
+    },
+    {
+      "name": "次按钮-返回列表",
+      "kind": "container",
+      "bounds": [
+        712,
+        416,
+        178,
+        44
+      ]
+    },
+    {
+      "name": "主按钮-加入购物车-文字",
+      "kind": "text",
+      "bounds": [
+        558,
+        430,
+        79,
+        16
+      ],
+      "sizePt": 15
+    },
+    {
+      "name": "主按钮-加入购物车",
+      "kind": "container",
+      "bounds": [
+        496,
+        416,
+        202,
+        44
+      ]
+    },
+    {
+      "name": "详情描述",
+      "kind": "text",
+      "bounds": [
+        495,
+        371,
+        361,
+        16
+      ],
+      "sizePt": 15
+    },
+    {
+      "name": "详情描述标签",
+      "kind": "text",
+      "bounds": [
+        495,
+        341,
+        56,
+        13
+      ],
+      "sizePt": 13
+    },
+    {
+      "name": "详情分隔线",
+      "kind": "decoration",
+      "bounds": [
+        496,
+        312,
+        744,
+        1
+      ]
+    },
+    {
+      "name": "详情库存",
+      "kind": "text",
+      "bounds": [
+        495,
+        267,
+        70,
+        16
+      ],
+      "sizePt": 15
+    },
+    {
+      "name": "详情价格",
+      "kind": "text",
+      "bounds": [
+        495,
+        216,
+        138,
+        26
+      ],
+      "sizePt": 30
+    },
+    {
+      "name": "详情商品名",
+      "kind": "text",
+      "bounds": [
+        496,
+        163,
+        122,
+        24
+      ],
+      "sizePt": 24
+    },
+    {
+      "name": "详情信息卡",
+      "kind": "container",
+      "bounds": [
+        472,
+        144,
+        769,
+        344
+      ]
+    },
+    {
+      "name": "详情占位色块-首字",
+      "kind": "text",
+      "bounds": [
+        354,
+        218,
+        29,
+        28
+      ],
+      "sizePt": 30
+    },
+    {
+      "name": "详情占位色块",
+      "kind": "container",
+      "bounds": [
+        280,
+        144,
+        177,
+        176
+      ]
+    },
+    {
+      "name": "主按钮-页头-文字",
+      "kind": "text",
+      "bounds": [
+        1122,
+        70,
+        63,
+        16
+      ],
+      "sizePt": 15
+    },
+    {
+      "name": "主按钮-页头",
+      "kind": "container",
+      "bounds": [
+        1064,
+        56,
+        178,
+        44
+      ]
+    },
+    {
+      "name": "页头件数徽标",
+      "kind": "text",
+      "bounds": [
+        933,
+        93,
+        107,
+        16
+      ],
+      "sizePt": 15
+    },
+    {
+      "name": "副标题",
+      "kind": "text",
+      "bounds": [
+        279,
+        95,
+        214,
+        14
+      ],
+      "sizePt": 13
+    },
+    {
+      "name": "标题",
+      "kind": "text",
+      "bounds": [
+        280,
+        54,
+        106,
+        25
+      ],
+      "sizePt": 26
+    },
+    {
+      "name": "侧栏-导航-订单列表",
+      "kind": "text",
+      "bounds": [
+        39,
+        213,
+        64,
+        16
+      ],
+      "sizePt": 15
+    },
+    {
+      "name": "侧栏-导航-购物车",
+      "kind": "text",
+      "bounds": [
+        39,
+        157,
+        48,
+        16
+      ],
+      "sizePt": 15
+    },
+    {
+      "name": "侧栏-导航-商品列表",
+      "kind": "text",
+      "bounds": [
+        39,
+        101,
+        64,
+        16
+      ],
+      "sizePt": 15
+    },
+    {
+      "name": "侧栏-选中背板-商品列表",
+      "kind": "container",
+      "bounds": [
+        16,
+        88,
+        209,
+        40
+      ]
+    },
+    {
+      "name": "侧栏-分隔线",
+      "kind": "decoration",
+      "bounds": [
+        16,
+        72,
+        208,
+        1
+      ]
+    },
+    {
+      "name": "侧栏-logo",
+      "kind": "text",
+      "bounds": [
+        33,
+        31,
+        69,
+        18
+      ],
+      "sizePt": 17
+    },
+    {
+      "name": "Background",
+      "kind": "decoration",
+      "bounds": [
+        0,
+        0,
+        1280,
+        800
+      ]
+    }
+  ]
+}

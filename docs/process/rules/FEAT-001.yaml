@@ -1,0 +1,401 @@
+# FEAT-001 台账（机器可读镜像；与 PRD frontmatter / 测试文件头 prdVersion 三方一致）
+# 合计 49 条：自动化 node 49 条（写红波次预期 red 44 条 / green 5 条锁定项）。
+# 实读（返工后）：green 49 条 —— node --test 'test/**/*.test.mjs' → tests 53 / pass 53 / fail 0 / exit 0。
+# 上一轮「缺 Content-Type + 合法 JSON body 被判 201」的红已由 dev 修到绿（写红证据见 reports/test/evidence/FEAT-001-e11-red.raw.txt）。
+# expect = 写红波次当时登记的预期（历史值，不回溯改写）；actual = 最近一次实读。二者不一致时以实跑为准。
+# 前 44 条 = PRD 的 30 条 AC + 14 条 E，一条不少；末 5 条为装置自检锁定项，不依赖被测源码。
+prdVersion: 2
+invariants: []
+cases:
+  - id: TC-FEAT-001-01
+    title: 列表展示八件商品
+    ac: AC-01
+    ac_name: 列表展示八件商品
+    automation: node
+    expect: red
+    actual: green
+    blocker: none
+  - id: TC-FEAT-001-02
+    title: 列表字段齐全
+    ac: AC-02
+    ac_name: 列表字段齐全
+    automation: node
+    expect: red
+    actual: green
+    blocker: none
+  - id: TC-FEAT-001-03
+    title: 列表名称有序
+    ac: AC-03
+    ac_name: 列表名称有序
+    automation: node
+    expect: red
+    actual: green
+    blocker: none
+  - id: TC-FEAT-001-04
+    title: 列表只读不可改
+    ac: AC-04
+    ac_name: 列表只读不可改
+    automation: node
+    expect: red
+    actual: green
+    blocker: none
+  - id: TC-FEAT-001-05
+    title: 库存字段可见
+    ac: AC-05
+    ac_name: 库存字段可见
+    automation: node
+    expect: red
+    actual: green
+    blocker: none
+  - id: TC-FEAT-001-06
+    title: 详情与列表一致
+    ac: AC-06
+    ac_name: 详情与列表一致
+    automation: node
+    expect: red
+    actual: green
+    blocker: none
+  - id: TC-FEAT-001-07
+    title: 详情价与总额相符
+    ac: AC-07
+    ac_name: 详情价与总额相符
+    automation: node
+    expect: red
+    actual: green
+    blocker: none
+  - id: TC-FEAT-001-08
+    title: 首访下发购物车
+    ac: AC-08
+    ac_name: 首访下发购物车
+    automation: node
+    expect: red
+    actual: green
+    blocker: none
+  - id: TC-FEAT-001-09
+    title: 购物车结构完整
+    ac: AC-09
+    ac_name: 购物车结构完整
+    automation: node
+    expect: red
+    actual: green
+    blocker: none
+  - id: TC-FEAT-001-10
+    title: 加购单件成功
+    ac: AC-10
+    ac_name: 加购单件成功
+    automation: node
+    expect: red
+    actual: green
+    blocker: none
+  - id: TC-FEAT-001-11
+    title: 重复加购累加
+    ac: AC-11
+    ac_name: 重复加购累加
+    automation: node
+    expect: red
+    actual: green
+    blocker: none
+  - id: TC-FEAT-001-12
+    title: 非整数件数拒绝
+    ac: AC-12
+    ac_name: 非整数件数拒绝
+    automation: node
+    expect: red
+    actual: green
+    blocker: none
+  - id: TC-FEAT-001-13
+    title: 件数上下限拒绝
+    ac: AC-13
+    ac_name: 件数上下限拒绝
+    automation: node
+    expect: red
+    actual: green
+    blocker: none
+  - id: TC-FEAT-001-14
+    title: 单品上限拒绝
+    ac: AC-14
+    ac_name: 单品上限拒绝
+    automation: node
+    expect: red
+    actual: green
+    blocker: none
+  - id: TC-FEAT-001-15
+    title: 加购无货拒绝
+    ac: AC-15
+    ac_name: 加购无货拒绝
+    automation: node
+    expect: red
+    actual: green
+    blocker: none
+  - id: TC-FEAT-001-16
+    title: 购物车行数上限
+    ac: AC-16
+    ac_name: 购物车行数上限
+    automation: node
+    expect: red
+    actual: green
+    blocker: none
+  - id: TC-FEAT-001-17
+    title: 购物车改与删
+    ac: AC-17
+    ac_name: 购物车改与删
+    automation: node
+    expect: red
+    actual: green
+    blocker: none
+  - id: TC-FEAT-001-18
+    title: 下单即支付成功
+    ac: AC-18
+    ac_name: 下单即支付成功
+    automation: node
+    expect: red
+    actual: green
+    blocker: none
+  - id: TC-FEAT-001-19
+    title: 下单扣减库存
+    ac: AC-19
+    ac_name: 下单扣减库存
+    automation: node
+    expect: red
+    actual: green
+    blocker: none
+  - id: TC-FEAT-001-20
+    title: 缺货下单拒绝
+    ac: AC-20
+    ac_name: 缺货下单拒绝
+    automation: node
+    expect: red
+    actual: green
+    blocker: none
+  - id: TC-FEAT-001-21
+    title: 总额分为单位
+    ac: AC-21
+    ac_name: 总额分为单位
+    automation: node
+    expect: red
+    actual: green
+    blocker: none
+  - id: TC-FEAT-001-22
+    title: 空车下单拒绝
+    ac: AC-22
+    ac_name: 空车下单拒绝
+    automation: node
+    expect: red
+    actual: green
+    blocker: none
+  - id: TC-FEAT-001-23
+    title: 下单后清空车
+    ac: AC-23
+    ac_name: 下单后清空车
+    automation: node
+    expect: red
+    actual: green
+    blocker: none
+  - id: TC-FEAT-001-24
+    title: 订单列表可读
+    ac: AC-24
+    ac_name: 订单列表可读
+    automation: node
+    expect: red
+    actual: green
+    blocker: none
+  - id: TC-FEAT-001-25
+    title: 订单号唯一
+    ac: AC-25
+    ac_name: 订单号唯一
+    automation: node
+    expect: red
+    actual: green
+    blocker: none
+  - id: TC-FEAT-001-26
+    title: 订单列表同端口
+    ac: AC-26
+    ac_name: 订单列表同端口
+    automation: node
+    expect: red
+    actual: green
+    blocker: none
+  - id: TC-FEAT-001-27
+    title: 前端同端口可达
+    ac: AC-27
+    ac_name: 前端同端口可达
+    automation: node
+    expect: red
+    actual: green
+    blocker: none
+  - id: TC-FEAT-001-28
+    title: 种子商品可读
+    ac: AC-28
+    ac_name: 种子商品可读
+    automation: node
+    expect: red
+    actual: green
+    blocker: none
+  - id: TC-FEAT-001-29
+    title: 统一错误响应
+    ac: AC-29
+    ac_name: 统一错误响应
+    automation: node
+    expect: red
+    actual: green
+    blocker: none
+  - id: TC-FEAT-001-30
+    title: 刷新即重置
+    ac: AC-30
+    ac_name: 刷新即重置
+    automation: node
+    expect: red
+    actual: green
+    blocker: none
+  - id: TC-FEAT-001-E01
+    title: 默认种子八条
+    ac: E-01
+    ac_name: 默认种子八条
+    automation: node
+    expect: red
+    actual: green
+    blocker: none
+  - id: TC-FEAT-001-E02
+    title: 行数上限退化
+    ac: E-02
+    ac_name: 行数上限退化
+    automation: node
+    expect: red
+    actual: green
+    blocker: none
+  - id: TC-FEAT-001-E03
+    title: 不存在商品详情
+    ac: E-03
+    ac_name: 不存在商品详情
+    automation: node
+    expect: red
+    actual: green
+    blocker: none
+  - id: TC-FEAT-001-E04
+    title: 不存在商品加购
+    ac: E-04
+    ac_name: 不存在商品加购
+    automation: node
+    expect: red
+    actual: green
+    blocker: none
+  - id: TC-FEAT-001-E05
+    title: 改删不存在行
+    ac: E-05
+    ac_name: 改删不存在行
+    automation: node
+    expect: red
+    actual: green
+    blocker: none
+  - id: TC-FEAT-001-E06
+    title: 畸形 cartId
+    ac: E-06
+    ac_name: 畸形 cartId
+    automation: node
+    expect: red
+    actual: green
+    blocker: none
+  - id: TC-FEAT-001-E07
+    title: 库存临界清零
+    ac: E-07
+    ac_name: 库存临界清零
+    automation: node
+    expect: red
+    actual: green
+    blocker: none
+  - id: TC-FEAT-001-E08
+    title: 并发抢最后一件
+    ac: E-08
+    ac_name: 并发抢最后一件
+    automation: node
+    expect: red
+    actual: green
+    blocker: none
+  - id: TC-FEAT-001-E09
+    title: 跨客户端隔离
+    ac: E-09
+    ac_name: 跨客户端隔离
+    automation: node
+    expect: red
+    actual: green
+    blocker: none
+  - id: TC-FEAT-001-E10
+    title: 重复提交下单
+    ac: E-10
+    ac_name: 重复提交下单
+    automation: node
+    expect: red
+    actual: green
+    blocker: none
+  - id: TC-FEAT-001-E11
+    title: 载荷与类型非法
+    ac: E-11
+    ac_name: 载荷与类型非法
+    automation: node
+    expect: red
+    actual: green
+    blocker: none
+  - id: TC-FEAT-001-E12
+    title: 无界面直连可用
+    ac: E-12
+    ac_name: 无界面直连可用
+    automation: node
+    expect: red
+    actual: green
+    blocker: none
+  - id: TC-FEAT-001-E13
+    title: 未知统计字段不泄露
+    ac: E-13
+    ac_name: 未知统计字段不泄露
+    automation: node
+    expect: red
+    actual: green
+    blocker: none
+  - id: TC-FEAT-001-E14
+    title: 种子字段非法
+    ac: E-14
+    ac_name: 种子字段非法
+    automation: node
+    expect: red
+    actual: green
+    blocker: none
+  - id: TC-FEAT-001-I01
+    title: 装置自检：node:test 与断言可用
+    ac: INV-INFRA
+    ac_name: 装置自检（锁定项）
+    automation: node
+    expect: green
+    actual: green
+    blocker: none
+  - id: TC-FEAT-001-I02
+    title: 装置自检：jsdom 可解析 HTML
+    ac: INV-INFRA
+    ac_name: 装置自检（锁定项）
+    automation: node
+    expect: green
+    actual: green
+    blocker: none
+  - id: TC-FEAT-001-I03
+    title: 装置自检：node:http 在随机端口可应答
+    ac: INV-INFRA
+    ac_name: 装置自检（锁定项）
+    automation: node
+    expect: green
+    actual: green
+    blocker: none
+  - id: TC-FEAT-001-I04
+    title: 装置自检：断言装置可失败（元负控）
+    ac: INV-INFRA
+    ac_name: 装置自检（锁定项）
+    automation: node
+    expect: green
+    actual: green
+    blocker: none
+  - id: TC-FEAT-001-I05
+    title: 装置自检：HTTP 取样装置可用（裸服务）
+    ac: INV-INFRA
+    ac_name: 装置自检（锁定项）
+    automation: node
+    expect: green
+    actual: green
+    blocker: none

@@ -1,0 +1,272 @@
+{
+  "screen": "购物车空态页",
+  "id": "FEAT-001",
+  "canvas": "1280×800 @ 72 ppi",
+  "generatedBy": "docs/process/prototypes/FEAT-001/build-prototypes.mjs",
+  "tokens": "docs/process/ui/tokens.md（通用默认层；项目未配 UI 项目令牌）",
+  "note": "分层源（脚本侧图层清单）。PSD 本身即原生分层源；此处 bounds 为引擎 info 导出值，仅供人工比读，几何判据用 geometry.<屏幕名>.json。",
+  "layers": [
+    {
+      "name": "侧栏-logo",
+      "kind": "text",
+      "text": "电商小铺",
+      "sizePt": 17,
+      "bounds": [
+        33,
+        31,
+        69,
+        18
+      ]
+    },
+    {
+      "name": "侧栏-分隔线",
+      "kind": "shape",
+      "bounds": [
+        16,
+        72,
+        208,
+        1
+      ]
+    },
+    {
+      "name": "侧栏-导航-商品列表",
+      "kind": "text",
+      "text": "商品列表",
+      "sizePt": 15,
+      "bounds": [
+        39,
+        101,
+        64,
+        16
+      ]
+    },
+    {
+      "name": "侧栏-选中背板-购物车",
+      "kind": "shape",
+      "bounds": [
+        16,
+        144,
+        209,
+        40
+      ]
+    },
+    {
+      "name": "侧栏-导航-购物车",
+      "kind": "text",
+      "text": "购物车",
+      "sizePt": 15,
+      "bounds": [
+        39,
+        157,
+        48,
+        16
+      ]
+    },
+    {
+      "name": "侧栏-导航-订单列表",
+      "kind": "text",
+      "text": "订单列表",
+      "sizePt": 15,
+      "bounds": [
+        39,
+        213,
+        64,
+        16
+      ]
+    },
+    {
+      "name": "标题",
+      "kind": "text",
+      "text": "购物车",
+      "sizePt": 26,
+      "bounds": [
+        279,
+        54,
+        80,
+        26
+      ]
+    },
+    {
+      "name": "副标题",
+      "kind": "text",
+      "text": "共 0 件商品，价格以元显示",
+      "sizePt": 13,
+      "bounds": [
+        279,
+        95,
+        172,
+        14
+      ]
+    },
+    {
+      "name": "页头件数徽标",
+      "kind": "text",
+      "text": "购物车 · 0 件",
+      "sizePt": 15,
+      "bounds": [
+        933,
+        93,
+        107,
+        16
+      ]
+    },
+    {
+      "name": "主按钮-页头",
+      "kind": "shape",
+      "bounds": [
+        1064,
+        56,
+        178,
+        44
+      ]
+    },
+    {
+      "name": "主按钮-页头-文字",
+      "kind": "text",
+      "text": "继续购物",
+      "sizePt": 15,
+      "bounds": [
+        1122,
+        70,
+        63,
+        16
+      ]
+    },
+    {
+      "name": "购物车表格卡",
+      "kind": "shape",
+      "bounds": [
+        280,
+        144,
+        961,
+        264
+      ]
+    },
+    {
+      "name": "空态图标",
+      "kind": "shape",
+      "bounds": [
+        728,
+        200,
+        65,
+        64
+      ]
+    },
+    {
+      "name": "空态图标字",
+      "kind": "text",
+      "text": "空",
+      "sizePt": 24,
+      "bounds": [
+        749,
+        221,
+        24,
+        23
+      ]
+    },
+    {
+      "name": "空态说明",
+      "kind": "text",
+      "text": "购物车是空的",
+      "sizePt": 15,
+      "bounds": [
+        714,
+        268,
+        94,
+        16
+      ]
+    },
+    {
+      "name": "空态次级说明",
+      "kind": "text",
+      "text": "去商品列表挑一件，加入购物车后可在这里提交订单",
+      "sizePt": 13,
+      "bounds": [
+        601,
+        321,
+        318,
+        14
+      ]
+    },
+    {
+      "name": "结算卡",
+      "kind": "shape",
+      "bounds": [
+        280,
+        432,
+        961,
+        144
+      ]
+    },
+    {
+      "name": "结算件数",
+      "kind": "text",
+      "text": "共 0 件商品",
+      "sizePt": 13,
+      "bounds": [
+        303,
+        461,
+        75,
+        13
+      ]
+    },
+    {
+      "name": "结算合计标签",
+      "kind": "text",
+      "text": "合计",
+      "sizePt": 15,
+      "bounds": [
+        303,
+        495,
+        32,
+        16
+      ]
+    },
+    {
+      "name": "结算合计金额",
+      "kind": "text",
+      "text": "¥ 0.00",
+      "sizePt": 30,
+      "bounds": [
+        303,
+        528,
+        98,
+        26
+      ]
+    },
+    {
+      "name": "主按钮-去结算",
+      "kind": "shape",
+      "bounds": [
+        1024,
+        480,
+        194,
+        44
+      ]
+    },
+    {
+      "name": "主按钮-去结算-文字",
+      "kind": "text",
+      "text": "去结算",
+      "sizePt": 15,
+      "bounds": [
+        1097,
+        494,
+        48,
+        16
+      ]
+    },
+    {
+      "name": "结算提示",
+      "kind": "text",
+      "text": "下单即支付成功（假支付）",
+      "sizePt": 13,
+      "bounds": [
+        1023,
+        544,
+        158,
+        15
+      ]
+    }
+  ]
+}

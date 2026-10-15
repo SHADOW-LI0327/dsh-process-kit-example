@@ -1,0 +1,739 @@
+{
+  "source": "photocraft-cli info → docs/process/prototypes/FEAT-001/首页商品列表-FEAT-001.psd",
+  "adapter": "photocraft-cli",
+  "artifact": "docs/process/prototypes/FEAT-001/首页商品列表-FEAT-001.psd",
+  "canvas": {
+    "width": 1280,
+    "height": 800
+  },
+  "elements": [
+    {
+      "name": "描述-8",
+      "kind": "text",
+      "bounds": [
+        631,
+        679,
+        110,
+        16
+      ],
+      "sizePt": 15
+    },
+    {
+      "name": "库存-8",
+      "kind": "text",
+      "bounds": [
+        703,
+        640,
+        71,
+        15
+      ],
+      "sizePt": 13
+    },
+    {
+      "name": "价格-8",
+      "kind": "text",
+      "bounds": [
+        703,
+        608,
+        82,
+        18
+      ],
+      "sizePt": 20
+    },
+    {
+      "name": "商品名-8",
+      "kind": "text",
+      "bounds": [
+        703,
+        578,
+        84,
+        17
+      ],
+      "sizePt": 16
+    },
+    {
+      "name": "占位色块-8-首字",
+      "kind": "text",
+      "bounds": [
+        649,
+        585,
+        24,
+        22
+      ],
+      "sizePt": 24
+    },
+    {
+      "name": "占位色块-8",
+      "kind": "container",
+      "bounds": [
+        632,
+        568,
+        57,
+        56
+      ]
+    },
+    {
+      "name": "商品卡-8",
+      "kind": "container",
+      "bounds": [
+        608,
+        544,
+        305,
+        176
+      ]
+    },
+    {
+      "name": "描述-7",
+      "kind": "text",
+      "bounds": [
+        303,
+        679,
+        135,
+        16
+      ],
+      "sizePt": 15
+    },
+    {
+      "name": "库存-7",
+      "kind": "text",
+      "bounds": [
+        375,
+        640,
+        62,
+        14
+      ],
+      "sizePt": 13
+    },
+    {
+      "name": "价格-7",
+      "kind": "text",
+      "bounds": [
+        375,
+        608,
+        96,
+        18
+      ],
+      "sizePt": 20
+    },
+    {
+      "name": "商品名-7",
+      "kind": "text",
+      "bounds": [
+        375,
+        578,
+        51,
+        17
+      ],
+      "sizePt": 16
+    },
+    {
+      "name": "占位色块-7-首字",
+      "kind": "text",
+      "bounds": [
+        320,
+        584,
+        26,
+        24
+      ],
+      "sizePt": 24
+    },
+    {
+      "name": "占位色块-7",
+      "kind": "container",
+      "bounds": [
+        304,
+        568,
+        57,
+        56
+      ]
+    },
+    {
+      "name": "商品卡-7",
+      "kind": "container",
+      "bounds": [
+        280,
+        544,
+        305,
+        176
+      ]
+    },
+    {
+      "name": "描述-6",
+      "kind": "text",
+      "bounds": [
+        959,
+        479,
+        106,
+        16
+      ],
+      "sizePt": 15
+    },
+    {
+      "name": "库存-6",
+      "kind": "text",
+      "bounds": [
+        1031,
+        440,
+        71,
+        15
+      ],
+      "sizePt": 13
+    },
+    {
+      "name": "价格-6",
+      "kind": "text",
+      "bounds": [
+        1031,
+        408,
+        82,
+        18
+      ],
+      "sizePt": 20
+    },
+    {
+      "name": "商品名-6",
+      "kind": "text",
+      "bounds": [
+        1031,
+        378,
+        97,
+        17
+      ],
+      "sizePt": 16
+    },
+    {
+      "name": "占位色块-6-首字",
+      "kind": "text",
+      "bounds": [
+        976,
+        385,
+        26,
+        23
+      ],
+      "sizePt": 24
+    },
+    {
+      "name": "占位色块-6",
+      "kind": "container",
+      "bounds": [
+        960,
+        368,
+        57,
+        56
+      ]
+    },
+    {
+      "name": "商品卡-6",
+      "kind": "container",
+      "bounds": [
+        936,
+        344,
+        305,
+        176
+      ]
+    },
+    {
+      "name": "描述-5",
+      "kind": "text",
+      "bounds": [
+        631,
+        479,
+        136,
+        18
+      ],
+      "sizePt": 15
+    },
+    {
+      "name": "库存-5",
+      "kind": "text",
+      "bounds": [
+        703,
+        440,
+        62,
+        15
+      ],
+      "sizePt": 13
+    },
+    {
+      "name": "价格-5",
+      "kind": "text",
+      "bounds": [
+        703,
+        408,
+        96,
+        18
+      ],
+      "sizePt": 20
+    },
+    {
+      "name": "商品名-5",
+      "kind": "text",
+      "bounds": [
+        705,
+        378,
+        49,
+        17
+      ],
+      "sizePt": 16
+    },
+    {
+      "name": "占位色块-5-首字",
+      "kind": "text",
+      "bounds": [
+        650,
+        385,
+        22,
+        23
+      ],
+      "sizePt": 24
+    },
+    {
+      "name": "占位色块-5",
+      "kind": "container",
+      "bounds": [
+        632,
+        368,
+        57,
+        56
+      ]
+    },
+    {
+      "name": "商品卡-5",
+      "kind": "container",
+      "bounds": [
+        608,
+        344,
+        305,
+        176
+      ]
+    },
+    {
+      "name": "描述-4",
+      "kind": "text",
+      "bounds": [
+        303,
+        479,
+        141,
+        16
+      ],
+      "sizePt": 15
+    },
+    {
+      "name": "库存-4",
+      "kind": "text",
+      "bounds": [
+        375,
+        440,
+        62,
+        15
+      ],
+      "sizePt": 13
+    },
+    {
+      "name": "价格-4",
+      "kind": "text",
+      "bounds": [
+        375,
+        408,
+        96,
+        18
+      ],
+      "sizePt": 20
+    },
+    {
+      "name": "商品名-4",
+      "kind": "text",
+      "bounds": [
+        375,
+        378,
+        85,
+        17
+      ],
+      "sizePt": 16
+    },
+    {
+      "name": "占位色块-4-首字",
+      "kind": "text",
+      "bounds": [
+        321,
+        385,
+        24,
+        23
+      ],
+      "sizePt": 24
+    },
+    {
+      "name": "占位色块-4",
+      "kind": "container",
+      "bounds": [
+        304,
+        368,
+        57,
+        56
+      ]
+    },
+    {
+      "name": "商品卡-4",
+      "kind": "container",
+      "bounds": [
+        280,
+        344,
+        305,
+        176
+      ]
+    },
+    {
+      "name": "描述-3",
+      "kind": "text",
+      "bounds": [
+        961,
+        279,
+        124,
+        16
+      ],
+      "sizePt": 15
+    },
+    {
+      "name": "库存-3",
+      "kind": "text",
+      "bounds": [
+        1031,
+        240,
+        71,
+        15
+      ],
+      "sizePt": 13
+    },
+    {
+      "name": "价格-3",
+      "kind": "text",
+      "bounds": [
+        1031,
+        208,
+        82,
+        18
+      ],
+      "sizePt": 20
+    },
+    {
+      "name": "商品名-3",
+      "kind": "text",
+      "bounds": [
+        1031,
+        178,
+        101,
+        19
+      ],
+      "sizePt": 16
+    },
+    {
+      "name": "占位色块-3-首字",
+      "kind": "text",
+      "bounds": [
+        977,
+        185,
+        24,
+        22
+      ],
+      "sizePt": 24
+    },
+    {
+      "name": "占位色块-3",
+      "kind": "container",
+      "bounds": [
+        960,
+        168,
+        57,
+        56
+      ]
+    },
+    {
+      "name": "商品卡-3",
+      "kind": "container",
+      "bounds": [
+        936,
+        144,
+        305,
+        176
+      ]
+    },
+    {
+      "name": "描述-2",
+      "kind": "text",
+      "bounds": [
+        631,
+        279,
+        133,
+        16
+      ],
+      "sizePt": 15
+    },
+    {
+      "name": "库存-2",
+      "kind": "text",
+      "bounds": [
+        703,
+        240,
+        62,
+        15
+      ],
+      "sizePt": 13
+    },
+    {
+      "name": "价格-2",
+      "kind": "text",
+      "bounds": [
+        703,
+        208,
+        82,
+        18
+      ],
+      "sizePt": 20
+    },
+    {
+      "name": "商品名-2",
+      "kind": "text",
+      "bounds": [
+        704,
+        178,
+        67,
+        17
+      ],
+      "sizePt": 16
+    },
+    {
+      "name": "占位色块-2-首字",
+      "kind": "text",
+      "bounds": [
+        649,
+        184,
+        23,
+        24
+      ],
+      "sizePt": 24
+    },
+    {
+      "name": "占位色块-2",
+      "kind": "container",
+      "bounds": [
+        632,
+        168,
+        57,
+        56
+      ]
+    },
+    {
+      "name": "商品卡-2",
+      "kind": "container",
+      "bounds": [
+        608,
+        144,
+        305,
+        176
+      ]
+    },
+    {
+      "name": "描述-1",
+      "kind": "text",
+      "bounds": [
+        303,
+        279,
+        129,
+        16
+      ],
+      "sizePt": 15
+    },
+    {
+      "name": "库存-1",
+      "kind": "text",
+      "bounds": [
+        375,
+        240,
+        62,
+        15
+      ],
+      "sizePt": 13
+    },
+    {
+      "name": "价格-1",
+      "kind": "text",
+      "bounds": [
+        375,
+        208,
+        96,
+        18
+      ],
+      "sizePt": 20
+    },
+    {
+      "name": "商品名-1",
+      "kind": "text",
+      "bounds": [
+        375,
+        178,
+        84,
+        17
+      ],
+      "sizePt": 16
+    },
+    {
+      "name": "占位色块-1-首字",
+      "kind": "text",
+      "bounds": [
+        321,
+        185,
+        24,
+        23
+      ],
+      "sizePt": 24
+    },
+    {
+      "name": "占位色块-1",
+      "kind": "container",
+      "bounds": [
+        304,
+        168,
+        57,
+        56
+      ]
+    },
+    {
+      "name": "商品卡-1",
+      "kind": "container",
+      "bounds": [
+        280,
+        144,
+        305,
+        176
+      ]
+    },
+    {
+      "name": "主按钮-页头-文字",
+      "kind": "text",
+      "bounds": [
+        1122,
+        70,
+        63,
+        16
+      ],
+      "sizePt": 15
+    },
+    {
+      "name": "主按钮-页头",
+      "kind": "container",
+      "bounds": [
+        1064,
+        56,
+        178,
+        44
+      ]
+    },
+    {
+      "name": "页头件数徽标",
+      "kind": "text",
+      "bounds": [
+        933,
+        93,
+        107,
+        16
+      ],
+      "sizePt": 15
+    },
+    {
+      "name": "副标题",
+      "kind": "text",
+      "bounds": [
+        279,
+        95,
+        172,
+        14
+      ],
+      "sizePt": 13
+    },
+    {
+      "name": "标题",
+      "kind": "text",
+      "bounds": [
+        280,
+        54,
+        106,
+        25
+      ],
+      "sizePt": 26
+    },
+    {
+      "name": "侧栏-导航-订单列表",
+      "kind": "text",
+      "bounds": [
+        39,
+        213,
+        64,
+        16
+      ],
+      "sizePt": 15
+    },
+    {
+      "name": "侧栏-导航-购物车",
+      "kind": "text",
+      "bounds": [
+        39,
+        157,
+        48,
+        16
+      ],
+      "sizePt": 15
+    },
+    {
+      "name": "侧栏-导航-商品列表",
+      "kind": "text",
+      "bounds": [
+        39,
+        101,
+        64,
+        16
+      ],
+      "sizePt": 15
+    },
+    {
+      "name": "侧栏-选中背板-商品列表",
+      "kind": "container",
+      "bounds": [
+        16,
+        88,
+        209,
+        40
+      ]
+    },
+    {
+      "name": "侧栏-分隔线",
+      "kind": "decoration",
+      "bounds": [
+        16,
+        72,
+        208,
+        1
+      ]
+    },
+    {
+      "name": "侧栏-logo",
+      "kind": "text",
+      "bounds": [
+        33,
+        31,
+        69,
+        18
+      ],
+      "sizePt": 17
+    },
+    {
+      "name": "Background",
+      "kind": "decoration",
+      "bounds": [
+        0,
+        0,
+        1280,
+        800
+      ]
+    }
+  ]
+}

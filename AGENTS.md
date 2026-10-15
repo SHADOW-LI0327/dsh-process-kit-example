@@ -21,21 +21,42 @@
 
 ## 项目概览
 
-<一句话说明这个项目是什么、由哪几个模块/端组成。>
+一个最小可用的电商 app：**后端 API + Web 前端两端**，由 `server/` 在同一端口（默认 3000）同时提供 JSON 接口与静态前端。五个功能面 —— 商品列表 / 商品详情 / 购物车 / 下单（假支付，下单即已支付）/ 订单列表。数据全部在内存中，重启即重置。
 
 ## 快速命令
 
 ```bash
-<安装依赖>
-<启动 / 构建>
-<快速验证>        # 与 PROJECT.md §2 命令槽保持一致
+npm install       # 只装开发依赖（jsdom，供前端结构断言使用；运行时零依赖）
+npm start         # 起服务（node server/src/index.mjs），默认 http://127.0.0.1:3000
+npm test          # 快速验证：node --test 'test/**/*.test.mjs'（勿写 node --test test/，Node 24 下不跑用例）
+```
+
+流程门禁（CI 可直接跑，判据即退出码）：
+
+```bash
+node scripts/process/check-artifact-paths.mjs   # 产物落点
+node scripts/process/check-rules.mjs            # 台账 ↔ 测试 ↔ PRD 三层自洽
 ```
 
 ## 目录结构
 
 ```
-<顶层目录一览，每个目录一句话>
+server/            后端 API 与静态托管（index.mjs 起服务；app.mjs 导出可注入的 createApp 工厂）
+web/               前端：原生 HTML + CSS + ES Module，无构建步骤
+test/              测试（test/packages/<需求包 ID>/ 放需求专属用例，其余为常驻测试）
+e2e/               端到端 / 黑盒脚本
+docs/process/      流程骨架：总纲 README.md · 项目适配 PROJECT.md · 调度手册 orchestrator.md
+scripts/process/   流程门禁脚本（零依赖 Node ESM，判据即退出码）
+reports/           过程产物与归档（按项目忽略规则不入库）
 ```
+
+## 规范要点
+
+- **运行时零依赖**：后端只用 `node:http` 等内置模块；前端不引入框架、不加构建步骤。新增依赖须先回流 PRD 裁定。
+- **金额一律用整数分**存储与传输，展示层才换算成元；禁止浮点累加。
+- **接口前缀 `/api/v1`**；错误响应体固定为 `{ code, message }`（`code` 取自封闭词表），不返回堆栈与内部结构。
+- **本包无鉴权**：购物车以服务端下发的匿名 `cartId` cookie 归属，**不存在 `403` 面**。
+- **测试不得依赖夹具主键**：需要定位商品时按名称查（种子商品只读且顺序固定）。
 
 ---
 

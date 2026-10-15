@@ -31,7 +31,7 @@ processVersion: 1
 
 | 用途 | 命令 | 说明 |
 | --- | --- | --- |
-| 快速验证 | `npm test` | 等价 `node --test test/`，跑全量测试（含 `test/packages/FEAT-001/**`）。口径 = **本次验证无红**；任何一段报红即如实上报，禁止白名单 / 排除 / 取错退出码；报告必须声明跑在哪个基线 |
+| 快速验证 | `npm test` | 等价 `node --test 'test/**/*.test.mjs'`，跑全量测试（含 `test/packages/FEAT-001/**`）。⚠ **禁止写成 `node --test test/`** —— 在 Node v24.14.1 上它把 `test/` 当模块路径，报 `Cannot find module '…/test'` 且**一条用例都不跑**（只产出 1 个假失败、exit 1）；2026-10-15 实测，`package.json` 已按 glob 写法修正。口径 = **本次验证无红**；任何一段报红即如实上报，禁止白名单 / 排除 / 取错退出码；报告必须声明跑在哪个基线 |
 | 产物落点门禁 | `node scripts/process/check-artifact-paths.mjs` | exit 0 = 无越界落点。判定对象 = **未被忽略的未跟踪文件**；放行来源 = §3「可写路径」列 或 登记区登记行 |
 | 台账门禁 | `node scripts/process/check-rules.mjs` | exit 0 = 无 ❌。校验 `TC` ↔ 测试 `@case` 双向配对、`@prd` 归属、`prdVersion` 三方一致、import 白名单 |
 | journal 追加 | `node scripts/process/journal-append.mjs docs/process/prd/FEAT-001.journal.jsonl --stdin` | 追加式写入（锁 + 指纹校验 + 原子替换 + 自校验）；`at` 取机器时间；**禁止读-改-写**。`action:"run"` 必须带 `command` 与真实 `exitCode`；`action:"approve"` 带 `gate` 与 `via` |
@@ -42,10 +42,16 @@ processVersion: 1
 
 > 每角色**唯一合法写入根**；越界即停，不得自行发明路径。路径以仓库根为基准。
 > 「禁止」列仅供人阅读；门禁只取「可写路径」列。
+>
+> **状态位例外（本项目裁定，2026-10-15 补）**：**流程状态位一律由 `orchestrator` 在各 Gate 落定** —— 即 `<ID>.md` / `<ID>-design.md` / `<ID>-ui-spec.md` / `contracts/<ID>.md` 这四件 frontmatter 里的 `status` / `gate1` / `gate2` / `gate4` / `prdVersion` 字段行，**不受上表「可写路径」限制**（其余正文内容仍严格归各属主）。
+> **为什么必须写进本表**：总纲 §3.1 要求「状态位写在当前阶段主产物的 frontmatter」、§9.7 要求「Gate4 签收 ⇒ 落 `gate4: approved` + `status: done`，两个字段必须一起写」，但这些文件在上表里只判给了 pm / ui-designer ⇒ 两条规则不可能同时满足（属主表缺口，验收报告 §4-7 已登记）。
+> **附带工作方式（0.4.0 装置规避，一并说明）**：0.4.0 的状态加载器把 `prd/*.md` 中**每个**带 `id` 的 frontmatter 都当包记录候选、**先读到者赢**，而本机 `readdir` 顺序是 `-design.md → -ui-spec.md → <ID>.md` ⇒ 包状态实际取自子产物。因此这四件的状态位**必须保持锁步**（漏一个就可能让 `process_status` 报错值甚至崩掉，验收报告 §5.5 有完整取证）。装置修好后此「锁步」可放宽为「只维护 `<ID>.md`」。
+>
+> **`README.md` 属主（2026-10-15 补，收口后）**：仓库根 `README.md` 是**本仓对外的入口文档**（示例项目的「这是什么 / 怎么跑 / 这一步一步花了多久」），归 `orchestrator`。**补这条的原因**：它此前不在任何角色的可写路径里 ⇒ 一旦落盘就会被落点门禁与属主审计判**越界**（两条门禁均 exit 1），而把对外入口文档写进 `reports/` 又不合人读习惯；属主表是**项目适配接口**，路径该增就增，**但不允许「先写文件再指望门禁放行」**。改动只影响「可写路径」列（35 → 36 条），**不改变任何判据与状态位**。
 
 | 角色 | 可写路径 | 禁止 |
 | --- | --- | --- |
-| `orchestrator`（主控） | `docs/process/README.md`、`docs/process/orchestrator.md`、`docs/process/PROJECT.md`、`docs/process/input/**`、`docs/process/ui/**`、`docs/process/tools/README.md`、`docs/process/prd/*.journal.jsonl`、`docs/process/prd/*.journal.jsonl.meta.json`、`scripts/process/**`、`reports/orchestrator/**`、`reports/gaps/**`、`reports/_archives/**`、`AGENTS.md`、`.gitignore`、`.npmrc`、`package.json`、`package-lock.json` | 写实现 / 写测试 / 替人做 Gate 决策 |
+| `orchestrator`（主控） | `docs/process/README.md`、`docs/process/orchestrator.md`、`docs/process/PROJECT.md`、`docs/process/input/**`、`docs/process/ui/**`、`docs/process/tools/README.md`、`docs/process/prd/*.journal.jsonl`、`docs/process/prd/*.journal.jsonl.meta.json`、`scripts/process/**`、`reports/orchestrator/**`、`reports/gaps/**`、`reports/_archives/**`、`AGENTS.md`、`README.md`、`.gitignore`、`.npmrc`、`package.json`、`package-lock.json` | 写实现 / 写测试 / 替人做 Gate 决策 |
 | `pm` | `docs/process/prd/**`、`docs/process/contracts/**`、`docs/process/uat/*-checklist.md`、`reports/pm-review/**` | 读业务实现 / 测试 / e2e / 日志；写实现 |
 | `ui-designer` | `docs/process/prd/*-ui-spec.md`、`docs/process/prototypes/**` | 改实现源码；读后端实现 / 前端组件内部实现 / 测试 / e2e / 日志 |
 | `test-agent` | `test/**`、`docs/process/rules/**`、`reports/test/**`、`docs/process/tools/FEAT-001/**` | 改 `server/`、`web/` 实现源码；读业务实现细节（接口签名 / schema 除外） |
@@ -75,8 +81,6 @@ processVersion: 1
 | 台账目录 | `docs/process/rules` | `<ID>.yaml` 台账所在目录 |
 | PRD 目录 | `docs/process/prd` | `<ID>.md` 与 `<ID>-design.md` 所在目录 |
 | 登记区文件 | `docs/process/tools/README.md` | 登记区的登记行即为落点门禁的第二放行来源 |
-| UI 项目令牌 | 不适用（回落框架默认层 `docs/process/ui/tokens.md`） | 全新项目尚无既有设计令牌源；**同一包内不得一半抄默认一半自创** |
-| UI 原型目录 | 不适用（本包声明不使用几何工具链） | 见 `docs/process/prd/FEAT-001-ui-spec.md` §8.0：环境无浏览器 / PSD 适配器，视觉结论交人裁 |
 | UI 几何网格 | `8` | 网格符合率 ⚠ 提示用 |
 | UI 文字最小间隙 | `4` | 同列文字行盒垂直间隙下限（px） |
 | UI 居中偏差上限 | `1` | 声明 `align` 的元素居中偏差上限（px） |
@@ -92,16 +96,14 @@ processVersion: 1
 | --- | --- | --- |
 | core 后端 | `http://127.0.0.1:3000` | 存活探测与端点探测基地址 |
 | web 前端 | `http://127.0.0.1:3000` | 本包前后端**同端口**，故与 core 同址 |
-| 移动端 | 不适用 | 本包不做移动端 |
-| 验收账号 | 不适用 | 本包无鉴权 ⇒ 登录与端点权限探测按未配置**降级为 ⚠**（不阻断） |
-| 验收口令 | 不适用 | 同上 |
-| 目标端点 | `products`、`products/P-001`、`cart`、`orders` | 相对「端点前缀」；应返回 HTTP 200 |
+| 目标端点 | `products`、`cart`、`orders` | 相对「端点前缀」；应返回 HTTP 200。**不写具体商品 ID** —— 判据与探测一律不得依赖夹具主键 |
 | 端点前缀 | `/api/v1` | 拼在 `core 后端` 之后 |
-| 登录路径 | 不适用 | 无鉴权 |
-| 令牌字段 | 不适用 | 无鉴权 |
-| 真机 CDP | 不适用（本机无浏览器 / CDP 端点） | 不通只 ⚠ 不阻断，但须在 UAT 报告中如实写明 |
 | 清单目录 | `docs/process/uat` | `<ID>-checklist.md` 缺失即判阻断 |
 | 证据目录 | `reports/uat/evidence` | `--progress` 时报逐项完成度 |
+
+> **未启用的行一律删掉，不要写「不适用」** —— 这是实测踩到的坑，见下方「填写纪律」：
+> 「移动端」「验收账号」「验收口令」「登录路径」「令牌字段」「真机 CDP」六项本包均未启用，故**整行删除**（删掉即回落默认值；无账号时登录与端点探测自动降级为 ⚠）。
+> 本包无鉴权、无移动端、无真机与 CDP 端点，三项状态在 §6 有说明。
 
 ---
 

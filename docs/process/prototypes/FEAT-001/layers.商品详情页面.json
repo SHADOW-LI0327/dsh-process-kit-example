@@ -1,0 +1,282 @@
+{
+  "screen": "商品详情页面",
+  "id": "FEAT-001",
+  "canvas": "1280×800 @ 72 ppi",
+  "generatedBy": "docs/process/prototypes/FEAT-001/build-prototypes.mjs",
+  "tokens": "docs/process/ui/tokens.md（通用默认层；项目未配 UI 项目令牌）",
+  "note": "分层源（脚本侧图层清单）。PSD 本身即原生分层源；此处 bounds 为引擎 info 导出值，仅供人工比读，几何判据用 geometry.<屏幕名>.json。",
+  "layers": [
+    {
+      "name": "侧栏-logo",
+      "kind": "text",
+      "text": "电商小铺",
+      "sizePt": 17,
+      "bounds": [
+        33,
+        31,
+        69,
+        18
+      ]
+    },
+    {
+      "name": "侧栏-分隔线",
+      "kind": "shape",
+      "bounds": [
+        16,
+        72,
+        208,
+        1
+      ]
+    },
+    {
+      "name": "侧栏-选中背板-商品列表",
+      "kind": "shape",
+      "bounds": [
+        16,
+        88,
+        209,
+        40
+      ]
+    },
+    {
+      "name": "侧栏-导航-商品列表",
+      "kind": "text",
+      "text": "商品列表",
+      "sizePt": 15,
+      "bounds": [
+        39,
+        101,
+        64,
+        16
+      ]
+    },
+    {
+      "name": "侧栏-导航-购物车",
+      "kind": "text",
+      "text": "购物车",
+      "sizePt": 15,
+      "bounds": [
+        39,
+        157,
+        48,
+        16
+      ]
+    },
+    {
+      "name": "侧栏-导航-订单列表",
+      "kind": "text",
+      "text": "订单列表",
+      "sizePt": 15,
+      "bounds": [
+        39,
+        213,
+        64,
+        16
+      ]
+    },
+    {
+      "name": "标题",
+      "kind": "text",
+      "text": "商品详情",
+      "sizePt": 26,
+      "bounds": [
+        280,
+        54,
+        106,
+        25
+      ]
+    },
+    {
+      "name": "副标题",
+      "kind": "text",
+      "text": "价格以元显示，单次加购上限 8 件",
+      "sizePt": 13,
+      "bounds": [
+        279,
+        95,
+        214,
+        14
+      ]
+    },
+    {
+      "name": "页头件数徽标",
+      "kind": "text",
+      "text": "购物车 · 3 件",
+      "sizePt": 15,
+      "bounds": [
+        933,
+        93,
+        107,
+        16
+      ]
+    },
+    {
+      "name": "主按钮-页头",
+      "kind": "shape",
+      "bounds": [
+        1064,
+        56,
+        178,
+        44
+      ]
+    },
+    {
+      "name": "主按钮-页头-文字",
+      "kind": "text",
+      "text": "去购物车",
+      "sizePt": 15,
+      "bounds": [
+        1122,
+        70,
+        63,
+        16
+      ]
+    },
+    {
+      "name": "详情占位色块",
+      "kind": "shape",
+      "bounds": [
+        280,
+        144,
+        177,
+        176
+      ]
+    },
+    {
+      "name": "详情占位色块-首字",
+      "kind": "text",
+      "text": "手",
+      "sizePt": 30,
+      "bounds": [
+        354,
+        218,
+        29,
+        28
+      ]
+    },
+    {
+      "name": "详情信息卡",
+      "kind": "shape",
+      "bounds": [
+        472,
+        144,
+        769,
+        344
+      ]
+    },
+    {
+      "name": "详情商品名",
+      "kind": "text",
+      "text": "手冲咖啡壶",
+      "sizePt": 24,
+      "bounds": [
+        496,
+        163,
+        122,
+        24
+      ]
+    },
+    {
+      "name": "详情价格",
+      "kind": "text",
+      "text": "¥ 129.00",
+      "sizePt": 30,
+      "bounds": [
+        495,
+        216,
+        138,
+        26
+      ]
+    },
+    {
+      "name": "详情库存",
+      "kind": "text",
+      "text": "库存 8 件",
+      "sizePt": 15,
+      "bounds": [
+        495,
+        267,
+        70,
+        16
+      ]
+    },
+    {
+      "name": "详情分隔线",
+      "kind": "shape",
+      "bounds": [
+        496,
+        312,
+        744,
+        1
+      ]
+    },
+    {
+      "name": "详情描述标签",
+      "kind": "text",
+      "text": "商品描述",
+      "sizePt": 13,
+      "bounds": [
+        495,
+        341,
+        56,
+        13
+      ]
+    },
+    {
+      "name": "详情描述",
+      "kind": "text",
+      "text": "玻璃壶身，300ml；手冲与冷萃两用，附滤纸 5 张。",
+      "sizePt": 15,
+      "bounds": [
+        495,
+        371,
+        361,
+        16
+      ]
+    },
+    {
+      "name": "主按钮-加入购物车",
+      "kind": "shape",
+      "bounds": [
+        496,
+        416,
+        202,
+        44
+      ]
+    },
+    {
+      "name": "主按钮-加入购物车-文字",
+      "kind": "text",
+      "text": "加入购物车",
+      "sizePt": 15,
+      "bounds": [
+        558,
+        430,
+        79,
+        16
+      ]
+    },
+    {
+      "name": "次按钮-返回列表",
+      "kind": "shape",
+      "bounds": [
+        712,
+        416,
+        178,
+        44
+      ]
+    },
+    {
+      "name": "次按钮-返回列表-文字",
+      "kind": "text",
+      "text": "返回商品列表",
+      "sizePt": 15,
+      "bounds": [
+        754,
+        430,
+        95,
+        16
+      ]
+    }
+  ]
+}

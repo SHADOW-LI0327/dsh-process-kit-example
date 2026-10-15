@@ -6,7 +6,7 @@
   "description": "电商 app 示例（后端 API + Web 前端），由 dsh-process-kit 流程从空仓跑到交付",
   "scripts": {
     "start": "node server/src/index.mjs",
-    "test": "node --test test/",
+    "test": "node --test 'test/**/*.test.mjs'",
     "process:journal": "node scripts/process/journal-append.mjs",
     "check:artifact-paths": "node scripts/process/check-artifact-paths.mjs",
     "check:rules": "node scripts/process/check-rules.mjs"

@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>电商小铺</title>
+    <link rel="stylesheet" href="/src/styles.css" />
+  </head>
+  <body>
+    <div class="app">
+      <aside class="sidebar">
+        <div class="sidebar__brand">电商小铺</div>
+        <div class="sidebar__rule"></div>
+        <nav class="sidebar__nav">
+          <a class="nav-item" data-nav="products" href="#/products">商品列表</a>
+          <a class="nav-item" data-nav="cart" href="#/cart">购物车</a>
+          <a class="nav-item" data-nav="orders" href="#/orders">订单列表</a>
+        </nav>
+      </aside>
+
+      <div class="main">
+        <header class="page-header">
+          <div class="page-header__titles">
+            <h1 class="page-header__title" id="page-title">商品列表</h1>
+            <p class="page-header__subtitle" id="page-subtitle">共 {{PRODUCT_COUNT}} 件商品，价格以元显示</p>
+          </div>
+          <div class="page-header__actions">
+            <span class="badge" id="cart-badge">购物车 · 0 件</span>
+            <a class="btn btn--primary" id="header-action" href="#/cart">去购物车</a>
+          </div>
+        </header>
+
+        <main class="content" id="content">
+          <p class="loading" id="boot-loading">加载中…</p>
+        </main>
+
+        <noscript class="nojs">{{NOSCRIPT_CATALOG}}</noscript>
+      </div>
+    </div>
+
+    <script type="module" src="/src/main.mjs"></script>
+  </body>
+</html>

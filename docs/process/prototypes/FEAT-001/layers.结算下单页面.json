@@ -1,0 +1,330 @@
+{
+  "screen": "结算下单页面",
+  "id": "FEAT-001",
+  "canvas": "1280×800 @ 72 ppi",
+  "generatedBy": "docs/process/prototypes/FEAT-001/build-prototypes.mjs",
+  "tokens": "docs/process/ui/tokens.md（通用默认层；项目未配 UI 项目令牌）",
+  "note": "分层源（脚本侧图层清单）。PSD 本身即原生分层源；此处 bounds 为引擎 info 导出值，仅供人工比读，几何判据用 geometry.<屏幕名>.json。",
+  "layers": [
+    {
+      "name": "侧栏-logo",
+      "kind": "text",
+      "text": "电商小铺",
+      "sizePt": 17,
+      "bounds": [
+        33,
+        31,
+        69,
+        18
+      ]
+    },
+    {
+      "name": "侧栏-分隔线",
+      "kind": "shape",
+      "bounds": [
+        16,
+        72,
+        208,
+        1
+      ]
+    },
+    {
+      "name": "侧栏-导航-商品列表",
+      "kind": "text",
+      "text": "商品列表",
+      "sizePt": 15,
+      "bounds": [
+        39,
+        101,
+        64,
+        16
+      ]
+    },
+    {
+      "name": "侧栏-选中背板-购物车",
+      "kind": "shape",
+      "bounds": [
+        16,
+        144,
+        209,
+        40
+      ]
+    },
+    {
+      "name": "侧栏-导航-购物车",
+      "kind": "text",
+      "text": "购物车",
+      "sizePt": 15,
+      "bounds": [
+        39,
+        157,
+        48,
+        16
+      ]
+    },
+    {
+      "name": "侧栏-导航-订单列表",
+      "kind": "text",
+      "text": "订单列表",
+      "sizePt": 15,
+      "bounds": [
+        39,
+        213,
+        64,
+        16
+      ]
+    },
+    {
+      "name": "标题",
+      "kind": "text",
+      "text": "结算",
+      "sizePt": 26,
+      "bounds": [
+        280,
+        53,
+        53,
+        27
+      ]
+    },
+    {
+      "name": "副标题",
+      "kind": "text",
+      "text": "确认订单内容后提交，下单即支付成功",
+      "sizePt": 13,
+      "bounds": [
+        279,
+        94,
+        235,
+        15
+      ]
+    },
+    {
+      "name": "页头件数徽标",
+      "kind": "text",
+      "text": "购物车 · 3 件",
+      "sizePt": 15,
+      "bounds": [
+        933,
+        93,
+        107,
+        16
+      ]
+    },
+    {
+      "name": "主按钮-页头",
+      "kind": "shape",
+      "bounds": [
+        1064,
+        56,
+        178,
+        44
+      ]
+    },
+    {
+      "name": "主按钮-页头-文字",
+      "kind": "text",
+      "text": "返回购物车",
+      "sizePt": 15,
+      "bounds": [
+        1114,
+        70,
+        79,
+        16
+      ]
+    },
+    {
+      "name": "订单内容卡",
+      "kind": "shape",
+      "bounds": [
+        280,
+        144,
+        961,
+        288
+      ]
+    },
+    {
+      "name": "订单内容标题",
+      "kind": "text",
+      "text": "订单内容",
+      "sizePt": 20,
+      "bounds": [
+        303,
+        175,
+        83,
+        20
+      ]
+    },
+    {
+      "name": "内容分隔线",
+      "kind": "shape",
+      "bounds": [
+        304,
+        216,
+        912,
+        1
+      ]
+    },
+    {
+      "name": "内容商品名-1",
+      "kind": "text",
+      "text": "手冲咖啡壶",
+      "sizePt": 15,
+      "bounds": [
+        303,
+        247,
+        79,
+        15
+      ]
+    },
+    {
+      "name": "内容件数-1",
+      "kind": "text",
+      "text": "× 2 件",
+      "sizePt": 13,
+      "bounds": [
+        854,
+        249,
+        46,
+        13
+      ]
+    },
+    {
+      "name": "内容小计-1",
+      "kind": "text",
+      "text": "¥ 258.00",
+      "sizePt": 15,
+      "bounds": [
+        1142,
+        248,
+        74,
+        14
+      ]
+    },
+    {
+      "name": "内容商品名-2",
+      "kind": "text",
+      "text": "陶瓷滤杯",
+      "sizePt": 15,
+      "bounds": [
+        304,
+        299,
+        63,
+        16
+      ]
+    },
+    {
+      "name": "内容件数-2",
+      "kind": "text",
+      "text": "× 1 件",
+      "sizePt": 13,
+      "bounds": [
+        854,
+        301,
+        46,
+        13
+      ]
+    },
+    {
+      "name": "内容小计-2",
+      "kind": "text",
+      "text": "¥ 68.00",
+      "sizePt": 15,
+      "bounds": [
+        1152,
+        300,
+        64,
+        14
+      ]
+    },
+    {
+      "name": "合计分隔线",
+      "kind": "shape",
+      "bounds": [
+        304,
+        344,
+        912,
+        1
+      ]
+    },
+    {
+      "name": "应付合计标签",
+      "kind": "text",
+      "text": "应付合计",
+      "sizePt": 15,
+      "bounds": [
+        303,
+        383,
+        64,
+        15
+      ]
+    },
+    {
+      "name": "应付合计金额",
+      "kind": "text",
+      "text": "¥ 326.00",
+      "sizePt": 30,
+      "bounds": [
+        1078,
+        372,
+        138,
+        26
+      ]
+    },
+    {
+      "name": "主按钮-提交订单",
+      "kind": "shape",
+      "bounds": [
+        1048,
+        480,
+        194,
+        44
+      ]
+    },
+    {
+      "name": "主按钮-提交订单-文字",
+      "kind": "text",
+      "text": "提交订单",
+      "sizePt": 15,
+      "bounds": [
+        1114,
+        494,
+        63,
+        16
+      ]
+    },
+    {
+      "name": "次按钮-返回购物车",
+      "kind": "shape",
+      "bounds": [
+        840,
+        480,
+        194,
+        44
+      ]
+    },
+    {
+      "name": "次按钮-返回购物车-文字",
+      "kind": "text",
+      "text": "返回购物车",
+      "sizePt": 15,
+      "bounds": [
+        898,
+        494,
+        79,
+        16
+      ]
+    },
+    {
+      "name": "下单提示",
+      "kind": "text",
+      "text": "下单即支付成功（假支付），无需填写收货信息",
+      "sizePt": 13,
+      "bounds": [
+        279,
+        496,
+        290,
+        15
+      ]
+    }
+  ]
+}

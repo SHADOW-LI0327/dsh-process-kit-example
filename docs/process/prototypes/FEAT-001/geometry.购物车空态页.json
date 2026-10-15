@@ -1,0 +1,267 @@
+{
+  "source": "photocraft-cli info → docs/process/prototypes/FEAT-001/购物车空态页-FEAT-001.psd",
+  "adapter": "photocraft-cli",
+  "artifact": "docs/process/prototypes/FEAT-001/购物车空态页-FEAT-001.psd",
+  "canvas": {
+    "width": 1280,
+    "height": 800
+  },
+  "elements": [
+    {
+      "name": "结算提示",
+      "kind": "text",
+      "bounds": [
+        1023,
+        544,
+        158,
+        15
+      ],
+      "sizePt": 13
+    },
+    {
+      "name": "主按钮-去结算-文字",
+      "kind": "text",
+      "bounds": [
+        1097,
+        494,
+        48,
+        16
+      ],
+      "sizePt": 15
+    },
+    {
+      "name": "主按钮-去结算",
+      "kind": "container",
+      "bounds": [
+        1024,
+        480,
+        194,
+        44
+      ]
+    },
+    {
+      "name": "结算合计金额",
+      "kind": "text",
+      "bounds": [
+        303,
+        528,
+        98,
+        26
+      ],
+      "sizePt": 30
+    },
+    {
+      "name": "结算合计标签",
+      "kind": "text",
+      "bounds": [
+        303,
+        495,
+        32,
+        16
+      ],
+      "sizePt": 15
+    },
+    {
+      "name": "结算件数",
+      "kind": "text",
+      "bounds": [
+        303,
+        461,
+        75,
+        13
+      ],
+      "sizePt": 13
+    },
+    {
+      "name": "结算卡",
+      "kind": "container",
+      "bounds": [
+        280,
+        432,
+        961,
+        144
+      ]
+    },
+    {
+      "name": "空态次级说明",
+      "kind": "text",
+      "bounds": [
+        601,
+        321,
+        318,
+        14
+      ],
+      "sizePt": 13
+    },
+    {
+      "name": "空态说明",
+      "kind": "text",
+      "bounds": [
+        714,
+        268,
+        94,
+        16
+      ],
+      "sizePt": 15
+    },
+    {
+      "name": "空态图标字",
+      "kind": "text",
+      "bounds": [
+        749,
+        221,
+        24,
+        23
+      ],
+      "sizePt": 24
+    },
+    {
+      "name": "空态图标",
+      "kind": "container",
+      "bounds": [
+        728,
+        200,
+        65,
+        64
+      ]
+    },
+    {
+      "name": "购物车表格卡",
+      "kind": "container",
+      "bounds": [
+        280,
+        144,
+        961,
+        264
+      ]
+    },
+    {
+      "name": "主按钮-页头-文字",
+      "kind": "text",
+      "bounds": [
+        1122,
+        70,
+        63,
+        16
+      ],
+      "sizePt": 15
+    },
+    {
+      "name": "主按钮-页头",
+      "kind": "container",
+      "bounds": [
+        1064,
+        56,
+        178,
+        44
+      ]
+    },
+    {
+      "name": "页头件数徽标",
+      "kind": "text",
+      "bounds": [
+        933,
+        93,
+        107,
+        16
+      ],
+      "sizePt": 15
+    },
+    {
+      "name": "副标题",
+      "kind": "text",
+      "bounds": [
+        279,
+        95,
+        172,
+        14
+      ],
+      "sizePt": 13
+    },
+    {
+      "name": "标题",
+      "kind": "text",
+      "bounds": [
+        279,
+        54,
+        80,
+        26
+      ],
+      "sizePt": 26
+    },
+    {
+      "name": "侧栏-导航-订单列表",
+      "kind": "text",
+      "bounds": [
+        39,
+        213,
+        64,
+        16
+      ],
+      "sizePt": 15
+    },
+    {
+      "name": "侧栏-导航-购物车",
+      "kind": "text",
+      "bounds": [
+        39,
+        157,
+        48,
+        16
+      ],
+      "sizePt": 15
+    },
+    {
+      "name": "侧栏-选中背板-购物车",
+      "kind": "container",
+      "bounds": [
+        16,
+        144,
+        209,
+        40
+      ]
+    },
+    {
+      "name": "侧栏-导航-商品列表",
+      "kind": "text",
+      "bounds": [
+        39,
+        101,
+        64,
+        16
+      ],
+      "sizePt": 15
+    },
+    {
+      "name": "侧栏-分隔线",
+      "kind": "decoration",
+      "bounds": [
+        16,
+        72,
+        208,
+        1
+      ]
+    },
+    {
+      "name": "侧栏-logo",
+      "kind": "text",
+      "bounds": [
+        33,
+        31,
+        69,
+        18
+      ],
+      "sizePt": 17
+    },
+    {
+      "name": "Background",
+      "kind": "decoration",
+      "bounds": [
+        0,
+        0,
+        1280,
+        800
+      ]
+    }
+  ]
+}
