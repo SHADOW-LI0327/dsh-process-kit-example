@@ -116,6 +116,7 @@ node scripts/process/check-rules.mjs            # 流程门禁②：台账 ↔ �
 | 运行时 | Node `v24.14.1` · npm 11.11.0 · 开发依赖仅 `jsdom 30.1.2` |
 | 真机 | Microsoft Edge 155.0.4283.45 无头 + CDP（需 `--headless=new --no-sandbox`，且 `--user-data-dir` / `--crash-dumps-dir` 必须落在可写目录） |
 | 归档 | `reports/_archives/` 与 `reports/**` 按 `.gitignore` 不入库 |
-| git | **全程零 commit**：工作区停在基线 `dffa22b` + 未提交改动（提交范围与信息交人） |
+| git | 基线 `dffa22b`（`process_init` 骨架）→ 交付提交 **`4d94ab4`**「feat(FEAT-001): 一句话需求「做一个电商 app」的端到端交付」（72 文件，+12751/−17）；作者身份是本仓占位配置 `dsh-process-kit-example <dev@example.local>`，要挂到自己名下需 `git commit --amend --reset-author` |
+| **克隆即用（实测）** | `git clone` 到空目录 → `npm install --offline`（36 包，仅一条无害 `EBADENGINE`）→ **`npm test` = 53/53 exit 0** → `PORT=0 npm start` → `GET /` 200（2907B，「共 8 件商品」）+ `/api/v1/products` 200 ⇒ **交付仓自带自足、无需本机预设** |
 
 **已知偏离与未覆盖（不掩盖）**：收口归档**不删原件**、状态位由主控写（属主表缺口已补注）、`V-01`（库存 <8 时「＋」不禁用）登记不返工、`U-12`/`E-14` 属自动化专有面、**场景只跑了 1 次**（第二次必须在 0.5.0 上跑）—— 逐条见 🔒 [验收报告](reports/orchestrator/FEAT-001-验收报告.md) §4 与 §7（该报告不入库，见 §5）。

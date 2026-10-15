@@ -11,3 +11,6 @@ reports/
 # 运行时产物
 *.log
 .DS_Store
+
+# journal 写入器每次追加都会重写的上一版备份（回滚用），属瞬时文件，不入库
+docs/process/prd/*.journal.jsonl.bak
