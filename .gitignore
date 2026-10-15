@@ -1,0 +1,13 @@
+# 依赖与本地缓存（沙箱环境下 npm 缓存必须落在工作区内）
+node_modules/
+.npm-cache/
+
+# 过程载体：一次性脚本 / 探针 / 取证（含登记区），不进版本库
+docs/process/tools/
+
+# 报告与批次归档：过程产物，不进版本库
+reports/
+
+# 运行时产物
+*.log
+.DS_Store
