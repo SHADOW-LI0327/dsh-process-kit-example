@@ -6,7 +6,7 @@
  * 时钟走注入缝，绝不真实等待。
  *
  * @prd FEAT-002
- * @prdVersion 2
+ * @prdVersion 3
  * @priority P0
  * @status active
  * @case TC-FEAT-002-18
@@ -264,47 +264,154 @@ test('请求体大小上限（AC-22）', async () => {
   });
 });
 
-test('写接口频次限流（AC-23）', async () => {
-  await withTempDb(async ({ dbPath }) => {
-    await withApp({ dbPath }, async (app) => {
-      const R = 60; // 生产默认阈值（实测值）
-      for (let round = 0; round < 3; round += 1) {
+test('写接口频次限流三维可分辨（AC-23）', async () => {
+  // 判据（PRD `AC-23` v3 / 发布前评审 🔴）：三维固定窗口（窗口 60 秒）—— **每会话** `R = RATE_LIMIT_MAX`、
+  // **每 IP** `R_ip = 4 × RATE_LIMIT_MAX`、**全局** `R_all = 20 × RATE_LIMIT_MAX`，外加**在途并发**上限 `C = 16`；
+  // 超限一律复用 429 `RATE_LIMITED` + 整数 `Retry-After`，且被限流的写请求不得产生副作用。
+  // **维度可分辨**（v3 核心新增，防「三维写成一维」的假绿）：② 每 IP 档只拦该来源 IP、换 IP 必须放行；
+  // ③ 全局档必须由「新会话 + 新来源 IP」也被拦来证明（否则证明不了触发的是全局维度）。
+  // 量级处理：PRD 明写后两维与基准成**固定倍数** ⇒ 注入基准 `RATE_LIMIT_MAX = 2` 使三维都能在有限请求内触达
+  // （缩放不改变语义；`C = 16` 是存量常量，不随基准缩放）。三维各用一个独立实例（限流器随 `createApp` 建立 ⇒ 窗口互不污染）。
+  const BASE = 2;
+  const R = BASE;
+  const R_IP = 4 * BASE;
+  const R_ALL = 20 * BASE;
+  const C = 16;
+  const scaled = { RATE_LIMIT_MAX: String(BASE) };
+  const trusted = { RATE_LIMIT_MAX: String(BASE), TRUST_PROXY: '1' };
+  const forwarded = (ip) => ({ headers: { 'x-forwarded-for': ip } });
+  // 限流按**会话**计数 ⇒ 先做一次读请求把会话落到 cookie 上（读不进额度），每次写用带 `X-Forwarded-For` 的独立会话。
+  const write = async (app, ip) => {
+    const client = newClient(app);
+    await getCart(client);
+    return client.post('/api/v1/auth/login', { email: uniqueEmail('ac23'), password: PW }, forwarded(ip));
+  };
+
+  await withTempDb(async ({ dbPath, path }) => {
+    // ① 每会话维度：边界点（前 R 次放行 / 第 R+1 次 429）+ 429 形状；重复 3 轮（PRD「每例重复 3 次」的边界档）
+    for (let round = 0; round < 3; round += 1) {
+      await withApp({ dbPath, config: scaled }, async (app) => {
         const client = newClient(app);
-        await getCart(client); // 先落到一个确定的会话（限流按会话计）
-        let last;
+        await getCart(client);
         const codes = [];
+        let last;
         for (let i = 0; i < R + 1; i += 1) {
-          last = await login(client, uniqueEmail(`ac23r${round}`), PW);
+          last = await client.post('/api/v1/auth/login', { email: uniqueEmail(`ac23s${round}`), password: PW });
           codes.push(last.status);
         }
         assert.equal(
           codes.slice(0, R).some((s) => s === 429),
           false,
-          `第 ${round + 1} 轮：前 ${R} 次不得出现 429，实际 ${codes.filter((s) => s === 429).length} 次`,
+          `每会话档第 ${round + 1} 轮：前 R=${R} 次不得 429，实际 ${codes.join(',')}`,
         );
-        assert.equal(codes[R], 429, `第 ${round + 1} 轮：第 ${R + 1} 次必须 429，实际 ${codes[R]}`);
-        assert.equal(data(last).code, 'RATE_LIMITED');
+        assert.equal(codes[R], 429, `每会话档第 ${round + 1} 轮：第 R+1=${R + 1} 次必须 429，实际 ${codes.join(',')}`);
+        assert.equal(data(last).code, 'RATE_LIMITED', '超限必须复用 429 RATE_LIMITED');
         assert.match(
           String(last.headers['retry-after'] ?? ''),
           /^\d+$/,
           `429 必须带整数 Retry-After，实际 ${JSON.stringify(last.headers['retry-after'])}`,
         );
-      }
+      });
+    }
 
-      // 被限流的请求不得产生副作用
+    // ① 续：被限流的写请求不得产生副作用（额度用尽后购物车与库存都必须原样）
+    await withApp({ dbPath, config: scaled }, async (app) => {
       const worker = newClient(app);
       await getCart(worker);
       const target = await productAt(worker, 0);
-      await registerOrFail(worker, uniqueEmail('ac23side'), PW);
-      assert.equal((await worker.post('/api/v1/cart/items', { productId: target.id, quantity: 1 })).status, 201);
+      await registerOrFail(worker, uniqueEmail('ac23side'), PW); // 写 1
+      assert.equal(
+        (await worker.post('/api/v1/cart/items', { productId: target.id, quantity: 1 })).status,
+        201,
+        '额度内的加购必须 201',
+      ); // 写 2（= R）
+      // 额度用尽后再连打：会话键在注册时可能轮换 ⇒ 不写死「第几次必然 429」，只要求**有界次数内必被拦**，
+      // 然后验证被拦期间购物车与库存原样（这才是本条要断的语义：被限流的写不得产生副作用）。
       let limited;
-      for (let i = 0; i < R + 2; i += 1) {
+      let blockedHits = 0;
+      for (let i = 0; i < R + 5; i += 1) {
         limited = await worker.patch(`/api/v1/cart/items/${target.id}`, { quantity: 1 });
+        if (limited.status === 429) {
+          blockedHits += 1;
+          break;
+        }
+        assert.equal(limited.status, 200, `会话额度内 / 额度边的写必须按业务口径 200，实际 ${limited.status}`);
       }
-      assert.equal(limited.status, 429, '写接口超阈值必须 429');
-      const cart = await getCart(worker);
-      assert.equal(cart.quantityTotal, 1, '被限流的写请求不得改变购物车');
+      assert.equal(
+        blockedHits,
+        1,
+        `会话额度（R=${R}）用尽后，有界次数（R+5=${R + 5}）内必须出现 429，实际末次 ${limited.status}`,
+      );
+      const reLimited = await worker.patch(`/api/v1/cart/items/${target.id}`, { quantity: 1 });
+      assert.equal(reLimited.status, 429, `已被限流后继续写必须继续 429，实际 ${reLimited.status}`);
+      assert.equal((await getCart(worker)).quantityTotal, 1, '被限流的写请求不得改变购物车');
       assert.equal((await productAt(worker, 0)).stock, target.stock, '被限流的写请求不得改变库存');
+    });
+
+    // ② 每 IP 维度可分辨：同一来源 IP 用**各自独立会话**打到 R_ip，只拦该 IP，换 IP 必须放行
+    await withApp({ dbPath, config: trusted }, async (app) => {
+      const ipA = '203.0.113.7';
+      const ipB = '203.0.113.8';
+      const codes = [];
+      for (let i = 0; i < R_IP; i += 1) codes.push((await write(app, ipA)).status);
+      assert.equal(
+        codes.some((s) => s === 429),
+        false,
+        `每 IP 档：同一来源 IP 前 R_ip=${R_IP} 次（每次独立会话，未触每会话额度 R=${R}）不得 429，实际 ${codes.join(',')}`,
+      );
+      const blocked = await write(app, ipA);
+      assert.equal(blocked.status, 429, `每 IP 档：第 R_ip+1=${R_IP + 1} 次（新会话、同 IP）必须 429，实际 ${blocked.status}`);
+      assert.equal(data(blocked).code, 'RATE_LIMITED', '每 IP 超限必须复用 429 RATE_LIMITED');
+      const other = await write(app, ipB);
+      assert.notEqual(
+        other.status,
+        429,
+        `每 IP 档**维度可分辨**：只允许 ipA 被拦 —— 换来源 IP（新会话）必须仍按业务口径应答，实际 ${other.status}`,
+      );
+    });
+
+    // ③ 全局维度可分辨：每个来源 IP + 每个会话都只用一次，直到全局额度用尽 ⇒ 第 R_all+1 次仍被拦只能由全局维度解释
+    await withApp({ dbPath, config: trusted }, async (app) => {
+      let blockedAt = null;
+      let prevStatus = null;
+      let attempts = 0;
+      for (let i = 0; i < R_ALL + 5 && blockedAt === null; i += 1) {
+        const res = await write(app, `198.51.100.${i % 200}`);
+        prevStatus = res.status;
+        attempts += 1;
+        if (res.status === 429) blockedAt = attempts;
+      }
+      assert.equal(
+        blockedAt,
+        R_ALL + 1,
+        `全局档**维度可分辨**：每个来源 IP / 会话都只用一次时，必须恰在第 R_all+1=${R_ALL + 1} 次被拦（新会话 + 新 IP 也被拦 ⇒ 只能是全局维度；提前被拦说明别的维度串了进来），实际第 ${blockedAt} 次（末次状态 ${prevStatus}）`,
+      );
+    });
+
+    // ④ 在途并发上限 C = 16：把三维额度都放到远高于并发数，唯一可能触发的是**在途**维度；峰值过后必须恢复放行。
+    //    ⚠ **测不准（如实登记，勿误读为精确断过 C = 16）**：无确定性负载缝时，无法让 16 个写请求**同时**挂在途，
+    //    也无法断言「被拒个数恰为并发数 − 16」。故本条只断「并发 C+4 个写请求中 **≥1** 个 429 且峰值后恢复放行」；
+    //    精确计数需要可控在途负载缝（本包**不为此新开**——成本不成比例，主控 2026-10-16 准）。
+    await withApp({ dbPath: path('ac23-conc.db'), config: { RATE_LIMIT_MAX: String(R_ALL + 50) } }, async (app) => {
+      const results = await Promise.all(
+        Array.from({ length: C + 4 }, () => register(newClient(app), uniqueEmail('ac23c'), PW).then((r) => r.status)),
+      );
+      const blocked = results.filter((s) => s === 429).length;
+      assert.ok(
+        blocked >= 1,
+        `在途并发档：并发 ${C + 4} 个写请求（在途上限 C=${C}）必须至少有 1 个被判 429，实际 ${JSON.stringify(results)}`,
+      );
+      assert.ok(
+        results.some((s) => s !== 429),
+        `在途并发档：不得把所有并发请求一并拒绝（上限是 ${C}，不是 0），实际 ${JSON.stringify(results)}`,
+      );
+      const after = newClient(app);
+      await getCart(after);
+      assert.notEqual(
+        (await after.post('/api/v1/cart/items', { productId: (await productAt(after, 0)).id, quantity: 1 })).status,
+        429,
+        '并发峰过后必须恢复放行（证明限的是在途数，而不是把会话 / IP / 全局额度打满）',
+      );
     });
   });
 });

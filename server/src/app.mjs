@@ -4,17 +4,18 @@
  * 设计取舍：
  *  ① **工厂是同步的**：配置与种子非法时在**构造期**就抛，而不是等到第一个请求。
  *     启动期失败能给出「哪个变量错了」的日志并非零退出；请求期失败只能给 500。
- *  ② **一个请求 = 一段同步处理**：路由处理里没有 `await`，因此单个实例内的并发请求
- *     天然串行 —— 下单的「查库存 / 扣库存 / 写单」在 SQLite 事务里不可能交错，
- *     这正是「不超卖」最省事的实现方式（不需要额外的行锁或重试）。
+ *  ② **业务事务仍然是同步的一段**：路由处理只在**口令派生**这一处 `await`（scrypt 是内存硬
+ *     哈希，同步版会把整个事件循环按住），其余全同步 —— 下单的「查库存 / 扣库存 / 写单」
+ *     依旧在同一个 SQLite 事务里不可能交错，这正是「不超卖」最省事的实现方式。
+ *     派生**绝不跨越**业务事务：它只发生在进事务之前。
  *  ③ **请求体先读完再进路由**：`durationMs` 从收到请求头开始计，因此包含了慢客户端
  *     上传体的时间；慢请求标记才有意义（否则「服务端慢」和「客户端慢」分不开）。
  */
 import { createServer } from 'node:http';
-import { createHash, randomBytes, randomUUID, scryptSync, timingSafeEqual } from 'node:crypto';
-import { readFileSync } from 'node:fs';
+import { createHash, createHmac, randomBytes, randomUUID, scrypt, timingSafeEqual } from 'node:crypto';
+import { existsSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 
-import { loadConfig } from './config.mjs';
+import { MIN_SESSION_SECRET_LENGTH, loadConfig } from './config.mjs';
 import { LATEST_VERSION, migrateAndSeed, openDatabase } from './db.mjs';
 import { createLogger } from './log.mjs';
 import { cartView, createStore, orderView, userView } from './store.mjs';
@@ -47,7 +48,26 @@ const SLOW_REQUEST_MS = 500;
 const PASSWORD_MIN_LENGTH = 8;
 const PASSWORD_MAX_LENGTH = 128;
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+/** 口令派生的内存硬参数：与契约一致，`maxmem` 必须显式给足（默认上限小于所需内存）。 */
 const SCRYPT_KEYLEN = 64;
+const SCRYPT_OPTIONS = Object.freeze({ N: 16384, r: 8, p: 1, maxmem: 64 * 1024 * 1024 });
+/**
+ * 账号不存在时用的哑元行：让「邮箱不存在」与「口令错」付出同一次派生代价。
+ * 值是固定的假盐 + 全零派生值，只用于消耗等量计算，不参与任何判定。
+ */
+const DUMMY_PASSWORD_ROW = Object.freeze({
+  password_salt: '5d41402abc4b2a76b9719d911017c592',
+  password_hash: '0'.repeat(SCRYPT_KEYLEN * 2),
+});
+/**
+ * 限流的另外两维与在途并发上限，都按每会话额度取固定倍数：
+ * 这样新增维度不需要新增环境变量（变量集与部署文档的变量表必须双向一致）。
+ */
+const RATE_LIMIT_IP_FACTOR = 4;
+const RATE_LIMIT_GLOBAL_FACTOR = 20;
+const RATE_LIMIT_IN_FLIGHT_MAX = 16;
+/** 限流桶的键数超过它就顺手扫一遍过期键：匿名请求的键不能再无界堆在内存里。 */
+const RATE_LIMIT_SWEEP_THRESHOLD = 512;
 const SHUTDOWN_GRACE_MS = 10_000;
 
 function readVersion() {
@@ -74,21 +94,76 @@ function raise(code, messageKey = code) {
   throw new ApiError(code, messageKey);
 }
 
-function hashToken(token) {
-  return createHash('sha256').update(token).digest('hex');
+/**
+ * 开发档（未提供 `SESSION_SECRET`）用的会话密钥：随机生成一把，**存在库文件旁边**。
+ *
+ * 为什么不写死一个默认值：那等于没有密钥，任何人都能拿着源码伪造会话。
+ * 为什么不是每次启动换一把：那样本地每次重启都会把会话全部踢下线（重启不掉线是本地开发的常态）。
+ * 生产档走不到这里：缺密钥时配置校验直接拒启。
+ */
+function loadDevSessionSecret(dbPath, logger) {
+  // 字段名避开 `path`：请求级日志用 `path` 表示请求路径，这里的落盘位置换个名字，
+  // 否则这行非请求日志会被「带 path 就必须带 requestId」的口径判成请求行。
+  const warn = (extra) =>
+    logger.warn({
+      level: 'warn',
+      outcome: 'session_secret_missing',
+      message: '未提供 SESSION_SECRET：已生成一把随机密钥供本地使用（生产必须显式提供）',
+      ...extra,
+    });
+  if (typeof dbPath === 'string' && dbPath !== '' && dbPath !== ':memory:') {
+    const path = `${dbPath}.dev-session-secret`;
+    let existing = null;
+    try {
+      existing = readFileSync(path, 'utf8').trim();
+    } catch {
+      existing = null;
+    }
+    if (existing !== null && existing.length >= MIN_SESSION_SECRET_LENGTH) {
+      warn({ secretFile: path, reused: true });
+      return existing;
+    }
+    const generated = randomBytes(32).toString('hex');
+    try {
+      writeFileSync(path, generated, { mode: 0o600 });
+      warn({ secretFile: path, reused: false });
+      return generated;
+    } catch {
+      // 落不了盘就退回进程内随机：开发档不能因为写不了文件就起不来。
+      warn({ secretFile: null, reused: false });
+      return generated;
+    }
+  }
+  warn({ secretFile: null, reused: false });
+  return randomBytes(32).toString('hex');
 }
 
 /**
- * 口令派生：scrypt + 每用户独立随机盐。
- * 存的是「盐 + 派生值」，比对用等时比较，避免按字节提前返回的时序侧信道。
+ * 会话 token 的库内表示：用会话密钥对它做 HMAC 派生。
+ * 为什么不是裸 `sha256`：那样密钥就只是个装饰 —— 换密钥后旧 cookie 依然能验上。
+ * 库内只存派生值，明文 token 只在 cookie 里出现。
  */
-function derivePassword(password, salt) {
-  return scryptSync(password, salt, SCRYPT_KEYLEN).toString('hex');
+function hashToken(token, secret) {
+  return createHmac('sha256', secret).update(token).digest('hex');
 }
 
-function verifyPassword(password, row) {
+/**
+ * 口令派生：scrypt + 每用户独立随机盐，**异步**。
+ * 为什么必须异步：scrypt 是内存硬哈希（此参数下单次约 16 MiB），同步版会把单线程事件循环
+ * 整个按住 —— 并发登录时连 `/health` 都要排队。
+ */
+function derivePassword(password, salt) {
+  return new Promise((resolve, reject) => {
+    scrypt(password, salt, SCRYPT_KEYLEN, SCRYPT_OPTIONS, (err, key) => {
+      if (err) reject(err);
+      else resolve(key.toString('hex'));
+    });
+  });
+}
+
+async function verifyPassword(password, row) {
   const expected = Buffer.from(String(row.password_hash), 'hex');
-  const actual = Buffer.from(derivePassword(password, String(row.password_salt)), 'hex');
+  const actual = Buffer.from(await derivePassword(password, String(row.password_salt)), 'hex');
   return expected.length === actual.length && timingSafeEqual(expected, actual);
 }
 
@@ -99,23 +174,62 @@ function orderDay(at) {
   return `${date.getUTCFullYear()}${pad2(date.getUTCMonth() + 1)}${pad2(date.getUTCDate())}`;
 }
 
-/** 固定窗口限流：窗口内计数超过上限即拒，并给出还要等多久。 */
-function createRateLimiter({ windowMs, max, now }) {
+/**
+ * 固定窗口限流：**三维独立计数**（每会话 / 每来源 IP / 全局），窗口内超过该维上限即拒。
+ *
+ * 为什么三个维度必须各自成桶：只按会话计数时，换个会话就能把额度重置；只按 IP 计数时，
+ * 同一台机器上的多个用户会互相拖累。写成同一维还会让「是哪一维拦的」不可分辨。
+ * 为什么桶要回收：键（尤其是匿名请求的键）只增不删就是一段无界内存。
+ */
+function createRateLimiter({ windowMs, sessionMax, ipMax, globalMax, now }) {
+  const limits = { session: sessionMax, ip: ipMax, global: globalMax };
   const hits = new Map();
+
+  function sweep(at) {
+    for (const [key, stamps] of hits) {
+      const recent = stamps.filter((stamp) => at - stamp < windowMs);
+      if (recent.length === 0) hits.delete(key);
+      else if (recent.length !== stamps.length) hits.set(key, recent);
+    }
+  }
+
+  function take(dimension, key, at) {
+    const id = `${dimension}:${key}`;
+    const recent = (hits.get(id) ?? []).filter((stamp) => at - stamp < windowMs);
+    if (recent.length >= limits[dimension]) {
+      // 已超限的这一维不再记新戳：否则持续重试会把窗口一直往后拖，客户端永远等不到恢复。
+      hits.set(id, recent);
+      const retryAfterMs = Math.max(1, windowMs - (at - recent[0]));
+      return { allowed: false, dimension, retryAfterSeconds: Math.max(1, Math.ceil(retryAfterMs / 1000)) };
+    }
+    recent.push(at);
+    hits.set(id, recent);
+    return { allowed: true, dimension };
+  }
+
   return {
-    check(key) {
+    check({ session = 'anon', ip = 'unknown' } = {}) {
       const at = now();
-      const recent = (hits.get(key) ?? []).filter((stamp) => at - stamp < windowMs);
-      if (recent.length >= max) {
-        hits.set(key, recent);
-        const retryAfterMs = Math.max(1, windowMs - (at - recent[0]));
-        return { allowed: false, retryAfterSeconds: Math.max(1, Math.ceil(retryAfterMs / 1000)) };
-      }
-      recent.push(at);
-      hits.set(key, recent);
-      return { allowed: true };
+      // 三维都要记账：某一维超限不该让另外两维的额度「用不完」，否则全局额度形同虚设。
+      const verdicts = [take('session', session, at), take('ip', ip, at), take('global', 'all', at)];
+      if (hits.size > RATE_LIMIT_SWEEP_THRESHOLD) sweep(at);
+      return verdicts.find((verdict) => !verdict.allowed) ?? { allowed: true, dimension: null };
     },
   };
+}
+
+/**
+ * 限流用的来源 IP：`TRUST_PROXY=1` 时取 `X-Forwarded-For` 的**首个（最左）**地址
+ * （那是原始客户端；右侧是逐跳追加的代理）。不信任转发头时一律按对端地址，
+ * 否则伪造一个头就能把自己该受的额度甩给别人。
+ */
+function sourceIp(headers, remoteAddress, trustProxy) {
+  if (trustProxy) {
+    const raw = headers?.['x-forwarded-for'];
+    const first = Array.isArray(raw) ? raw[0] : raw;
+    if (typeof first === 'string' && first.trim() !== '') return first.split(',')[0].trim();
+  }
+  return remoteAddress ?? 'local';
 }
 
 export function createApp(options = {}) {
@@ -132,21 +246,39 @@ export function createApp(options = {}) {
 
   let store = options.store;
   let db = store ? store.db : undefined;
+  // 落盘物「本次启动是不是我建的」：回滚时据此决定删不删 —— 预先存在的库/密钥一律不碰。
+  const diskPaths = config.dbPath === ':memory:' || config.dbPath === ''
+    ? []
+    : [config.dbPath, `${config.dbPath}-wal`, `${config.dbPath}-shm`];
+  const secretPath = diskPaths.length > 0 ? `${config.dbPath}.dev-session-secret` : null;
+  const dbExistedBefore = diskPaths.length === 0 || existsSync(config.dbPath);
+  const secretExistedBefore = secretPath === null || existsSync(secretPath);
   if (!store) {
     db = openDatabase(config.dbPath);
     try {
       migrateAndSeed(db, products, { now, authoritative: seedProvided });
     } catch (err) {
       db.close();
+      // 建库这一路自己失败（迁移/种子出错）时也别留半个库：本次才建出来的才删。
+      if (!dbExistedBefore) for (const path of diskPaths) rmSync(path, { force: true });
       throw err;
     }
     store = createStore({ db, now });
   }
 
   const logger = options.logger ?? createLogger({ stream: options.logStream, level: config.logLevel });
-  const limiter = createRateLimiter({ windowMs: config.rateLimitWindowMs, max: config.rateLimitMax, now });
+  const sessionSecret = config.sessionSecret ?? loadDevSessionSecret(config.dbPath, logger);
+  const createdSecretFile = secretPath !== null && !secretExistedBefore && existsSync(secretPath);
+  const limiter = createRateLimiter({
+    windowMs: config.rateLimitWindowMs,
+    sessionMax: config.rateLimitMax,
+    ipMax: config.rateLimitMax * RATE_LIMIT_IP_FACTOR,
+    globalMax: config.rateLimitMax * RATE_LIMIT_GLOBAL_FACTOR,
+    now,
+  });
   const startedAt = now();
   const cookieOptions = { secure: config.cookieSecure };
+  let inFlightWrites = 0;
 
   // ── 身份 ──────────────────────────────────────────────────────────────────
 
@@ -155,7 +287,7 @@ export function createApp(options = {}) {
     const at = now();
     const sid = readCookie(headers.cookie, 'sid');
     if (sid) {
-      const session = store.findSession(hashToken(sid));
+      const session = store.findSession(hashToken(sid, sessionSecret));
       if (session && session.expires_at > at && session.last_seen_at + SESSION_IDLE_MS > at) {
         const user = store.findUserById(session.user_id);
         if (user) {
@@ -204,7 +336,7 @@ export function createApp(options = {}) {
   function issueSession(userId, at) {
     const token = randomBytes(32).toString('base64url');
     store.insertSession({
-      tokenHash: hashToken(token),
+      tokenHash: hashToken(token, sessionSecret),
       userId,
       createdAt: at,
       expiresAt: at + SESSION_TTL_MS,
@@ -265,7 +397,7 @@ export function createApp(options = {}) {
     return ok(product);
   }
 
-  function routeRegister(request) {
+  async function routeRegister(request) {
     const body = readJsonBody(request);
     const email = typeof body.email === 'string' ? body.email.trim().toLowerCase() : null;
     if (!email || email.length > 254 || !EMAIL_PATTERN.test(email)) raise('INVALID_BODY');
@@ -283,7 +415,7 @@ export function createApp(options = {}) {
     const user = store.insertUser({
       id: randomUUID(),
       email,
-      passwordHash: derivePassword(password, salt),
+      passwordHash: await derivePassword(password, salt),
       passwordSalt: salt,
       createdAt: request.at,
     });
@@ -294,13 +426,16 @@ export function createApp(options = {}) {
     );
   }
 
-  function routeLogin(request) {
+  async function routeLogin(request) {
     const body = readJsonBody(request);
     const email = typeof body.email === 'string' ? body.email.trim().toLowerCase() : '';
     const password = typeof body.password === 'string' ? body.password : '';
     const row = email ? store.findUserByEmail(email) : undefined;
     // 口令错与邮箱不存在返回逐字相同的响应：否则这个端点就成了账号枚举器。
-    if (!row || !password || !verifyPassword(password, row)) raise('INVALID_CREDENTIALS');
+    // 时序上也要一样：账号不存在照样按同参数跑一次派生（哑元盐），不得提前短路返回 ——
+    // 否则「响应快 = 账号不存在」本身就是枚举器。
+    const matched = await verifyPassword(password, row ?? DUMMY_PASSWORD_ROW);
+    if (!row || !password || !matched) raise('INVALID_CREDENTIALS');
 
     const existing = request.actor.kind === 'anon' ? request.actor.cart : undefined;
     const userCartId = store.withTx(() => {
@@ -344,7 +479,7 @@ export function createApp(options = {}) {
 
   function routeLogout(request) {
     const sid = readCookie(request.headers.cookie, 'sid');
-    if (sid) store.deleteSession(hashToken(sid));
+    if (sid) store.deleteSession(hashToken(sid, sessionSecret));
     return ok(
       { ok: true },
       {
@@ -503,7 +638,7 @@ export function createApp(options = {}) {
     return 'anon';
   }
 
-  function dispatchApi(request) {
+  async function dispatchApi(request) {
     const rest = request.pathname.slice(API_PREFIX.length);
     const segments = rest.split('/').filter((part) => part !== '');
     const method = request.method;
@@ -513,7 +648,10 @@ export function createApp(options = {}) {
 
     const isWrite = method !== 'GET' && method !== 'HEAD';
     if (isWrite) {
-      const verdict = limiter.check(sessionKey(request.headers));
+      const verdict = limiter.check({
+        session: sessionKey(request.headers),
+        ip: sourceIp(request.headers, request.remoteAddress, config.trustProxy),
+      });
       if (!verdict.allowed) {
         return json(
           429,
@@ -542,8 +680,8 @@ export function createApp(options = {}) {
     if (method === 'GET' && head === 'products' && segments.length === 2) return routeProductDetail(request, second);
 
     if (head === 'auth') {
-      if (method === 'POST' && second === 'register' && segments.length === 2) return routeRegister(request);
-      if (method === 'POST' && second === 'login' && segments.length === 2) return routeLogin(request);
+      if (method === 'POST' && second === 'register' && segments.length === 2) return await routeRegister(request);
+      if (method === 'POST' && second === 'login' && segments.length === 2) return await routeLogin(request);
       if (method === 'POST' && second === 'logout' && segments.length === 2) return routeLogout(request);
       if (method === 'GET' && second === 'me' && segments.length === 2) return routeMe(request);
     }
@@ -565,7 +703,7 @@ export function createApp(options = {}) {
     return fail('NOT_FOUND');
   }
 
-  function dispatch(request) {
+  async function dispatch(request) {
     const url = request.url ?? request.pathname ?? '/';
     let pathname = url;
     let search = '';
@@ -600,7 +738,7 @@ export function createApp(options = {}) {
         }
         return finalize(serveStatic(pathname, { products: products_, search, headers }) ?? notFoundText());
       }
-      return finalize(dispatchApi({
+      return finalize(await dispatchApi({
         method: (request.method ?? 'GET').toUpperCase(),
         pathname,
         query,
@@ -609,6 +747,7 @@ export function createApp(options = {}) {
         at,
         actor: { kind: 'none' },
         cookies: [],
+        remoteAddress: request.remoteAddress,
       }));
     } catch (err) {
       if (err instanceof ApiError) return fail(err.code, err.messageKey);
@@ -646,11 +785,16 @@ export function createApp(options = {}) {
     res.end(buffer);
   }
 
+  const WRITE_METHODS = new Set(['POST', 'PUT', 'PATCH', 'DELETE']);
+
   const server = createServer((req, res) => {
     const startedNs = process.hrtime.bigint();
     const requestId = randomUUID();
     const method = (req.method ?? 'GET').toUpperCase();
     const url = req.url ?? '/';
+    // 在途并发上限只拦写请求：它们是内存硬哈希与事务的入口，也是唯一会阻塞连接的一类。
+    // 计数从**读完请求体之前**就占位，慢客户端才占得住名额（这正是要防的形态）。
+    let holdsSlot = false;
     let pathname = url;
     try {
       pathname = new URL(url, 'http://localhost').pathname;
@@ -661,6 +805,12 @@ export function createApp(options = {}) {
     let settled = false;
     const chunks = [];
     let received = 0;
+
+    const releaseSlot = () => {
+      if (!holdsSlot) return;
+      holdsSlot = false;
+      inFlightWrites -= 1;
+    };
 
     const logLine = (status, level, extra = {}) => {
       const durationMs = Number(process.hrtime.bigint() - startedNs) / 1e6;
@@ -678,6 +828,7 @@ export function createApp(options = {}) {
     const respond = (response) => {
       if (settled) return;
       settled = true;
+      releaseSlot();
       writeResponse(res, response, { head: method === 'HEAD' });
       if (response.status >= 500) logLine(response.status, 'error');
       else logLine(response.status, 'info');
@@ -687,6 +838,7 @@ export function createApp(options = {}) {
     const abort = () => {
       if (settled) return;
       settled = true;
+      releaseSlot();
       const durationMs = Number(process.hrtime.bigint() - startedNs) / 1e6;
       logger.warn({
         requestId,
@@ -697,6 +849,22 @@ export function createApp(options = {}) {
         outcome: 'client_aborted',
       });
     };
+
+    if (WRITE_METHODS.has(method)) {
+      if (inFlightWrites >= RATE_LIMIT_IN_FLIGHT_MAX) {
+        // 超在途上限复用既有 429 词表码（不新增错误码），且**不进入业务逻辑**。
+        respond(
+          json(
+            429,
+            { code: 'RATE_LIMITED', message: ERROR_MESSAGES.RATE_LIMITED },
+            { 'retry-after': '1' },
+          ),
+        );
+        return;
+      }
+      holdsSlot = true;
+      inFlightWrites += 1;
+    }
 
     req.on('data', (chunk) => {
       if (settled) return;
@@ -711,16 +879,26 @@ export function createApp(options = {}) {
 
     req.on('end', () => {
       if (settled) return;
-      respond(
-        dispatch({
-          method,
-          url,
-          headers: req.headers,
-          body: Buffer.concat(chunks),
-          at: now(),
+      dispatch({
+        method,
+        url,
+        headers: req.headers,
+        body: Buffer.concat(chunks),
+        at: now(),
+        requestId,
+        remoteAddress: req.socket && req.socket.remoteAddress,
+      }).then(respond, (err) => {
+        // dispatch 自己已有兜底，这里只防「兜底本身出错」变成未处理拒绝。
+        if (settled) return;
+        logger.error({
           requestId,
-        }),
-      );
+          level: 'error',
+          outcome: 'internal_error',
+          message: err && err.message ? String(err.message) : String(err),
+          stack: err && err.stack ? String(err.stack) : undefined,
+        });
+        respond(fail('INTERNAL_ERROR'));
+      });
     });
 
     req.on('aborted', abort);
@@ -744,8 +922,11 @@ export function createApp(options = {}) {
   /** 进程内直调缝：把「一次请求」表达成一个纯函数，供探针与单测绕过 socket。 */
   async function fetch(url, init = {}) {
     const target = typeof url === 'string' ? url : url && url.url;
-    const response = dispatch({
-      method: (init.method ?? (typeof url === 'object' && url.method) ?? 'GET').toUpperCase(),
+    // `(typeof url === 'object' && url.method)` 在只给 URL 字符串时是布尔 `false`，
+    // 而 `??` 只跳 null / undefined ⇒ 必须先把「有没有方法名」收敛成 undefined，否则会命中外层兜底。
+    const fromUrl = typeof url === 'object' && url !== null && typeof url.method === 'string' ? url.method : undefined;
+    const response = await dispatch({
+      method: (init.method ?? fromUrl ?? 'GET').toUpperCase(),
       url: target,
       headers: init.headers ?? (typeof url === 'object' ? url.headers : undefined) ?? {},
       body: init.body,
@@ -804,6 +985,35 @@ export function createApp(options = {}) {
     logger.info({ level: 'info', outcome: 'shutdown_complete', signal, message: '停机完成' });
   }
 
+  /**
+   * 启动期失败（典型：`listen` 报 `EADDRNOTAVAIL` / `EADDRINUSE`）后的回滚。
+   * 关库，并只删**本次启动自己建出来**的文件：库 + 它的 `-wal`/`-shm`、开发档的密钥旁挂文件。
+   * 预先存在的库与密钥一律不碰 —— 起不来的进程不该顺手毁掉别人的数据。
+   */
+  function rollbackStartup() {
+    try {
+      if (db && typeof db.close === 'function') db.close();
+    } catch {
+      // 关库失败不能挡住退出。
+    }
+    if (!dbExistedBefore) {
+      for (const path of diskPaths) {
+        try {
+          rmSync(path, { force: true });
+        } catch {
+          // 删不掉也不能挡住退出（例如目录权限变了）。
+        }
+      }
+    }
+    if (createdSecretFile) {
+      try {
+        rmSync(secretPath, { force: true });
+      } catch {
+        // 同上。
+      }
+    }
+  }
+
   return {
     server,
     handle: server,
@@ -817,5 +1027,6 @@ export function createApp(options = {}) {
     fetch,
     shutdown,
     close,
+    rollbackStartup,
   };
 }

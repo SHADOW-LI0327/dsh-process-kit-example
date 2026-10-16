@@ -1,0 +1,47 @@
+import { openPage, outDir } from '/Users/admin/workspace/dsh-process-kit-example/e2e/uat-feat002/lib-cdp.mjs';
+const B='http://127.0.0.1:3000';
+const p=await openPage({width:1280,height:900,dsf:1,mobile:false});
+await p.send('Network.enable',{},p.sid);
+await p.send('Network.clearBrowserCookies',{},p.sid);
+const E=(x)=>p.eval(x);
+const T=async(n=240)=>E(`(document.body.innerText||'').replace(/\\n+/g,' | ').slice(0,${n})`);
+const goHash=async(h,ms=2500)=>{await E(`location.hash=${JSON.stringify(h)}`);await p.wait(ms);};
+const R={};
+await p.navigate(B+'/',3200);
+// 1) 缺货角标（P-002 现货 0）
+R['1_列表缺货']=await E(`(()=>{const c=[...document.querySelectorAll('.card')].find(x=>/P-002/.test(x.outerHTML));if(!c)return 'NO_CARD';const b=[...c.querySelectorAll('.badge')].map(x=>x.innerText.trim());return JSON.stringify({cardText:c.innerText.replace(/\\n+/g,' | '),badges:b,badgeStyle:[...c.querySelectorAll('.badge')].map(x=>{const s=getComputedStyle(x);return s.backgroundColor+'/'+s.color;}),stock:c.querySelector('.card__stock')?c.querySelector('.card__stock').innerText.trim():null});})()`);
+R['1b_全部角标']=await E(`JSON.stringify([...document.querySelectorAll('.card')].map(c=>({id:c.dataset.productId,stock:(c.querySelector('.card__stock')||{}).innerText,badge:[...c.querySelectorAll('.badge')].map(b=>b.innerText.trim()).join('+')})))`);
+await p.shot(outDir('U-57-缺货角标-列表.png'));
+await goHash('#/products/P-002',2600);
+R['2_缺货详情']=await E(`(()=>{const bs=[...document.querySelectorAll('button')].map(b=>({t:b.innerText.trim(),disabled:b.disabled,w:+b.getBoundingClientRect().width.toFixed(1)}));return JSON.stringify({txt:document.body.innerText.replace(/\\n+/g,' | ').slice(0,200),buttons:bs});})()`);
+await p.shot(outDir('U-57-缺货详情-按钮.png'));
+R['2b_缺货加购尝试']=await E(`(()=>{const b=[...document.querySelectorAll('button')].find(x=>/加入购物车/.test(x.innerText));if(!b)return 'NO_BTN';if(b.disabled)return 'DISABLED';b.click();return 'CLICKED';})()`);
+await p.wait(1800);
+R['2c_尝试后']={txt:await T(200)};
+// 2) 有货商品（P-006）加购 → 1280 购物车两栏结算卡
+await goHash('#/products/P-006',2600);
+await p.eval(`(()=>{const b=[...document.querySelectorAll('button')].find(x=>/加入购物车/.test(x.innerText));b.click();return 1;})()`);
+await p.wait(1600);
+await goHash('#/cart',2800);
+R['3_购物车1280']=await E(`(()=>{const out={txt:document.body.innerText.replace(/\\n+/g,' | ').slice(0,200),innerW:innerWidth,scrollW:document.documentElement.scrollWidth};out.面板=[...document.querySelectorAll('.panel')].map(e=>{const r=e.getBoundingClientRect();return {cls:e.className,w:+r.width.toFixed(1),x:+r.left.toFixed(1),right:+r.right.toFixed(1),h:+r.height.toFixed(1)};});const lay=document.querySelector('.cart-layout');out.布局子项=lay?[...lay.children].map(e=>{const r=e.getBoundingClientRect();return {cls:e.className,w:+r.width.toFixed(1),x:+r.left.toFixed(1),right:+r.right.toFixed(1)};}):null;const sc=document.querySelector('.summary-card');out.结算卡=sc?{cls:sc.className,w:+sc.getBoundingClientRect().width.toFixed(1),x:+sc.getBoundingClientRect().left.toFixed(1),radius:getComputedStyle(sc).borderRadius,pad:getComputedStyle(sc).padding}:null;return JSON.stringify(out);})()`);
+await p.shot(outDir('U-60-购物车1280-结算卡.png'));
+await goHash('#/checkout',2800);
+R['4_结算1280']=await E(`(()=>{const out={txt:document.body.innerText.replace(/\\n+/g,' | ').slice(0,200)};out.面板=[...document.querySelectorAll('.panel')].map(e=>{const r=e.getBoundingClientRect();return {cls:e.className,w:+r.width.toFixed(1),x:+r.left.toFixed(1),right:+r.right.toFixed(1),h:+r.height.toFixed(1)};});return JSON.stringify(out);})()`);
+await p.shot(outDir('U-60-结算页1280-结算卡.png'));
+// 3) 双页签：同源 cookie 是否共享购物车
+const q=await openPage({width:390,height:844,dsf:2,mobile:true});
+await q.navigate(B+'/',3000);
+await q.eval(`location.hash='#/cart'`); await q.wait(2600);
+R['5_第二页签看车']={txt:(await q.eval(`(document.body.innerText||'').replace(/\\n+/g,' | ').slice(0,160)`))};
+await q.eval(`location.hash='#/products/P-004'`); await q.wait(2600);
+await q.eval(`(()=>{const b=[...document.querySelectorAll('button')].find(x=>/加入购物车/.test(x.innerText));b.click();return 1;})()`);
+await q.wait(1600);
+await q.eval(`location.hash='#/cart'`); await q.wait(2600);
+R['6_第二页签加购后']={txt:(await q.eval(`(document.body.innerText||'').replace(/\\n+/g,' | ').slice(0,180)`))};
+await E(`location.hash='#/cart'`); await p.wait(2600);
+R['7_第一页签再看车']={txt:await T(180)};
+await q.close();
+const cks=await p.send('Network.getCookies',{urls:[B+'/']},p.sid);
+R['8_最终cookie']=(cks.result.cookies||[]).map(c=>c.name+'='+c.value.slice(0,8)+'(path='+c.path+',domain='+c.domain+')').join(' ; ');
+console.log(JSON.stringify(R,null,1));
+await p.close();

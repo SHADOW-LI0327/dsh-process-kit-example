@@ -11,6 +11,7 @@ export const PATHS = {
   orders: '#/orders',
   me: '#/me',
   login: '#/login',
+  register: '#/register',
 };
 
 export function parseRoute(hash) {
@@ -35,6 +36,8 @@ export function parseRoute(hash) {
       return { name: 'me' };
     case 'login':
       return { name: 'login' };
+    case 'register':
+      return { name: 'register' };
     default:
       return { name: 'notfound' };
   }
@@ -43,8 +46,9 @@ export function parseRoute(hash) {
 /** 当前路由该点亮哪个底部 Tab。 */
 export function tabOf(routeName) {
   if (routeName === 'product') return 'products';
+  if (routeName === 'order') return 'orders';
   if (routeName === 'checkout') return 'cart';
-  if (routeName === 'login') return 'me';
+  if (routeName === 'login' || routeName === 'register') return 'me';
   return routeName;
 }
 

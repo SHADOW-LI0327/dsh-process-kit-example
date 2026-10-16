@@ -5,7 +5,7 @@
  * 商品一律**按名称**定位，绝不写死主键；跨实例复用的只有「同一个临时库路径」。
  *
  * @prd FEAT-002
- * @prdVersion 2
+ * @prdVersion 3
  * @priority P0
  * @status active
  * @case TC-FEAT-002-01

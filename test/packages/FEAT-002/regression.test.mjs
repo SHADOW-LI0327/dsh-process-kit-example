@@ -5,7 +5,7 @@
  * 「重启后仍可查」用同一临时库起第二个实例来证明。
  *
  * @prd FEAT-002
- * @prdVersion 2
+ * @prdVersion 3
  * @status active
  * @case TC-FEAT-002-55
  * @case TC-FEAT-002-E13

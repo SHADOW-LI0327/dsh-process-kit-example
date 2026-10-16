@@ -24,6 +24,10 @@ data/
 *.sqlite-wal
 *.sqlite-shm
 
+# 开发档会话密钥 sidecar（随 DB_PATH 落盘，0600）。`*.db` 只匹配以 .db 结尾的名字，
+# 覆盖不到 `shop.db.dev-session-secret` 这种 sidecar，故单列一条防误提交（dev r3 发现）
+*.dev-session-secret
+
 # Phase 2：本地配置与密钥（`.env.example` 入库，真实 `.env` 永不入库）
 .env
 .env.local

@@ -5,7 +5,7 @@
  * 主图逐个文件跑，不以一个代表八个；真机网络抓包与断网渲染归 UAT（本文件只做可机器判定的替代判据）。
  *
  * @prd FEAT-002
- * @prdVersion 2
+ * @prdVersion 3
  * @priority P1
  * @status active
  * @case TC-FEAT-002-31
@@ -13,6 +13,7 @@
  * @case TC-FEAT-002-50
  * @case TC-FEAT-002-51
  * @case TC-FEAT-002-52
+ * @case TC-FEAT-002-62
  * @case TC-FEAT-002-E12
  * @case TC-FEAT-002-E16
  * @case TC-FEAT-002-E17
@@ -20,14 +21,17 @@
  */
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { globSync, statSync } from 'node:fs';
+import { globSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { JSDOM } from 'jsdom';
+import { DEFAULT_SEED } from '../../../server/src/seed.mjs';
 import {
   REPO_ROOT,
+  contentFingerprint,
   getHtml,
   getModuleText,
   getStyleText,
+  jpegStructure,
   listProducts,
   newClient,
   rawGet,
@@ -88,11 +92,21 @@ test('静态缓存策略（AC-31）', async () => {
       assert.equal(second.status, 304, `回带 If-None-Match 必须 304，实际 ${second.status}`);
       assert.equal(second.raw, '', '304 响应体必须为空');
 
-      // ③ 带指纹：public + immutable + max-age ≥ 31536000
+      // ③ 带**真**指纹：public + immutable + max-age ≥ 31536000
+      //    v3 口径（主控裁定；PRD `AC-31` ⑤ + 契约 §7.2）：`?v=` 的值**必须等于该资源文件字节的 `sha256` 前 10 位 hex（小写）**。
+      //    「形态合法的正则」降级为**前置**（不再是判据本身）—— 形态合法但退化的值（`?v=0` / `?v=000000`）走下面 ⑤ 档判红。
       const fingerprinted = refs.find((u) => /[?&]v=/.test(u));
       assert.ok(
         fingerprinted,
         '前置未成立：首帧 HTML 未给脚本 / 样式 / 主图注入内容指纹查询串（契约 §七 前置）⇒ 带指纹档不可构造，须在报告如实标注',
+      );
+      const fpPath = fingerprinted.split('?')[0];
+      const fpWant = contentFingerprint(readFileSync(join(REPO_ROOT, 'web', fpPath.replace(/^\//, ''))));
+      const fpGot = (fingerprinted.match(/[?&]v=([^&]*)/) ?? [])[1];
+      assert.equal(
+        fpGot,
+        fpWant,
+        `首帧注入的指纹必须等于该文件**字节**的 sha256 前 10 位 hex（小写；契约 §7.2 v3 定义钉死）：${fpPath} 期望 ${fpWant}，实际 ${fpGot}`,
       );
       const fp = await client.get(fingerprinted);
       assert.equal(fp.status, 200, `带指纹静态 ${fingerprinted} 必须 200，实际 ${fp.status}`);
@@ -101,6 +115,34 @@ test('静态缓存策略（AC-31）', async () => {
       assert.match(fpCc, /immutable/, `带指纹静态必须 immutable，实际 "${fpCc}"`);
       const maxAge = Number((fpCc.match(/max-age=(\d+)/) ?? [])[1] ?? -1);
       assert.ok(maxAge >= 31536000, `带指纹静态 max-age 必须 ≥ 31536000，实际 ${maxAge}（"${fpCc}"）`);
+
+      // ⑤ 退化指纹档（v3 新增，判据来源 = 发布前评审 🔴）：长度 / 形态合法但**不等于**该文件真指纹的值
+      //    ⇒ **不得**换来一年强缓存。真源口径（PRD `AC-31` ⑤ **同版收口** + 契约 §7.2，主控 2026-10-16 裁定）：
+      //    **必须仍返回 `200`** 且按无指纹档处置（`no-cache` + `ETag`），并且不得返回 `public, max-age=31536000, immutable`；
+      //    **不接受 `404`**（或任何「把已存在的资源说成不存在」的处置）—— 该档真正要断的是「不得得到 `immutable`」，不是「可以 404」。
+      for (const value of ['0', '000000']) {
+        const url = `${fpPath}?v=${value}`;
+        const res = await client.get(url);
+        assert.notEqual(
+          res.status,
+          404,
+          `退化指纹 ${url} **不得 404**（资源文件确实存在，伪造查询串不得把已存在的资源说成不存在；真源明写 404 判红），实际 ${res.status}`,
+        );
+        assert.equal(res.status, 200, `退化指纹 ${url} 必须仍 200，实际 ${res.status}`);
+        const cc = String(res.headers['cache-control'] ?? '');
+        assert.ok(
+          /no-cache|max-age=0/.test(cc),
+          `退化指纹 ${url} 必须按**无指纹档**处置（no-cache + ETag 协商缓存），实际 "${cc}"`,
+        );
+        assert.ok(res.headers.etag, `退化指纹 ${url} 必须带 ETag（无指纹档协商缓存），实际 ${res.headers.etag}`);
+        assert.equal(
+          /immutable/.test(cc),
+          false,
+          `退化指纹 ${url} 不得返回 immutable（一次伪造 / 退化指纹不得把错误版本钉在客户端一年），实际 "${cc}"`,
+        );
+        const ma = Number((cc.match(/max-age=(\d+)/) ?? [])[1] ?? -1);
+        assert.ok(ma < 31536000, `退化指纹 ${url} 的 max-age 必须落进无指纹档（< 31536000），实际 ${ma}（"${cc}"）`);
+      }
     });
   });
 });
@@ -144,6 +186,16 @@ test('商品主图可访问（AC-49）', async () => {
           wire.body.length,
           diskBytes,
           `${url} 线上必须原样送出整份文件：收到 ${wire.body.length} 字节，盘上 ${diskBytes} 字节（utf8 再编码 / 截断都算红）`,
+        );
+        // v3（发布前评审 🔴）：服务端**忠实转发**的字节本身也必须**结构完整** —— 旧口径下「忠实转发一个坏文件」
+        // ⚠ 口径现状（主控 2026-10-16 裁定）：该要求**尚未写进 `AC-49` 字面**（已派 pm 补），当前为「`AC-48` ③ 同一口径 + 字节相等」的**推导口径**；
+        //   对合规实现**不会判红**（结构完整是字节相等的必要延伸），pm 落字面后核对口径一致即可。
+        // （content-length 相符 + 逐字节相等都成立）仍会绿。这里复用 `AC-48` ③ 的同一份结构走查（同一口径，不另抄一份）。
+        // ⚠ 机器只保证结构完整；「能否被真实解码器解出图像」属人工 / 真机判断（PRD `AC-48` ③ 明写）。
+        const wireWalk = jpegStructure(wire.body);
+        assert.ok(
+          wireWalk.ok,
+          `${url} 线上转发的字节必须结构完整（与 AC-48 ③ 同一口径：段长自洽 + SOS 后有非空熵数据 + 以 EOI 结束），实际：${wireWalk.reason}`,
         );
         resolved.add(url.split('?')[0]);
       }
@@ -357,4 +409,63 @@ test('favicon 链接元素（UI-64）', async () => {
   assert.equal(icon.getAttribute('type'), 'image/svg+xml', '图标链接的 type 必须逐字为 "image/svg+xml"（自制 SVG）');
   assert.equal(icon.getAttribute('href'), '/assets/favicon.svg', '图标链接的 href 必须逐字为 "/assets/favicon.svg"');
   assert.ok(icon.closest('head'), '图标链接必须位于 <head> 内（放进 <body> 不生效）');
+});
+
+test('首帧 noscript 目录封顶（AC-62）', async () => {
+  // 判据（PRD `AC-62`；字面值以 ui-spec `UI-51` 为准，本用例只断「与规格字面值一致」）：
+  //  · `<noscript>` 目录**最多输出 7 行**，每行形如「<商品名>　¥ x.xx」（**全角空格**分隔）；
+  //  · `N > 7` 时末尾出现逐字「还有 N−7 件商品（<第 8 件商品名>）」；`N ≤ 7` **不出现**该行；`N = 0` 目录为空且不出现该行；
+  //  · **禁止全量输出**（`N = 8` 时不得出现 8 行）。
+  //  商品名**以 `DEFAULT_SEED` 为准**：这里直接注入种子切片、按名称断言，**不硬编码名字**、不依赖夹具主键（PROJECT.md 口径）。
+  const escapeRe = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const cases = [
+    {
+      n: 8,
+      seed: DEFAULT_SEED.slice(0, 8),
+      expectLines: 7,
+      expectSummary: `还有 1 件商品（${DEFAULT_SEED[7].name}）`,
+    },
+    { n: 7, seed: DEFAULT_SEED.slice(0, 7), expectLines: 7, expectSummary: null },
+    { n: 0, seed: [], expectLines: 0, expectSummary: null },
+  ];
+  for (const item of cases) {
+    await withTempDb(async ({ dbPath }) => {
+      await withApp({ dbPath, seed: item.seed }, async (app) => {
+        const html = await getHtml(app, '/');
+        const raw = html.raw ?? html;
+        assert.match(raw, /<noscript[\s\S]*?<\/noscript>/i, `N=${item.n}：首帧必须含 <noscript>`);
+        const noscript = new JSDOM(raw).window.document.querySelector('noscript');
+        const rows = [...noscript.querySelectorAll('li')];
+        assert.equal(
+          rows.length,
+          item.expectLines,
+          `N=${item.n}：目录行数必须 = min(N,7) = ${item.expectLines}（**禁止全量输出**），实际 ${rows.length} 行`,
+        );
+        for (const [i, row] of rows.entries()) {
+          const expect = item.seed[i];
+          const price = `¥ ${(expect.priceCents / 100).toFixed(2)}`;
+          const text = row.textContent.replace(/\s+/g, ' ').trim();
+          assert.ok(text.includes(expect.name), `N=${item.n} 第 ${i + 1} 行必须含商品名「${expect.name}」，实际「${text}」`);
+          assert.ok(text.includes(price), `N=${item.n} 第 ${i + 1} 行必须含价格「${price}」，实际「${text}」`);
+          assert.ok(
+            new RegExp(`${escapeRe(expect.name)}\\u3000\\s*¥`).test(row.textContent),
+            `N=${item.n} 第 ${i + 1} 行必须形如「<商品名>　¥ x.xx」（**全角空格**分隔，ui-spec UI-51 字面），实际「${text}」`,
+          );
+        }
+        const flat = noscript.textContent.replace(/\s+/g, ' ');
+        if (item.expectSummary) {
+          assert.ok(
+            flat.includes(item.expectSummary),
+            `N=${item.n}：目录末尾必须出现逐字「${item.expectSummary}」封顶行，实际「${flat.slice(0, 200)}」`,
+          );
+        } else {
+          assert.equal(
+            /还有\s*\d+\s*件商品/.test(flat),
+            false,
+            `N=${item.n}：N ≤ 7（含 N=0）时**不得**出现「还有 N−7 件商品」封顶行，实际「${flat.slice(0, 200)}」`,
+          );
+        }
+      });
+    });
+  }
 });

@@ -5,7 +5,7 @@
  * 会话载体落库这件事由「新实例 + 同一 cookie」来证明，而不是读实现。
  *
  * @prd FEAT-002
- * @prdVersion 2
+ * @prdVersion 3
  * @priority P0
  * @status active
  * @case TC-FEAT-002-10

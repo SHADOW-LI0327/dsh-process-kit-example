@@ -9,6 +9,7 @@
       content="手冲咖啡器材与咖啡豆的小铺：浏览商品、加入购物车、假支付下单与查看订单的演示站点。"
     />
     <link rel="stylesheet" href="/src/styles.css?v={{V_STYLES}}" />
+    <script type="application/json" id="asset-versions">{{ASSET_VERSIONS}}</script>
     <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg" />
     <script type="module" src="/src/main.mjs?v={{V_MAIN}}"></script>
   </head>
@@ -34,10 +35,7 @@
 
     <main class="page" id="view">
       <section class="hero" aria-labelledby="hero-title">
-        <p class="hero__tags">
-          <span class="badge badge--success">包邮</span>
-          <span class="badge badge--accent">秒杀</span>
-        </p>
+        <p class="promo">满 99 元包邮</p>
         <h1 class="hero__title" id="hero-title">手冲器材 · 今日现货</h1>
         <p class="hero__count" id="product-count">共 {{PRODUCT_COUNT}} 件商品</p>
         <p class="hero__note">
@@ -46,8 +44,8 @@
       </section>
 
       <section class="catalog" aria-labelledby="catalog-title">
-        <h2 class="catalog__title" id="catalog-title">全部商品</h2>
-        <p class="catalog__empty" id="search-empty" hidden>没有匹配的商品，换个词再试。</p>
+        <h2 class="catalog__title" id="catalog-title">商品列表</h2>
+        <p class="catalog__empty" id="search-empty" hidden>没有找到相关商品<span class="empty__hint">换个词再试，或清空顶部搜索框。</span></p>
         <ul class="grid" id="product-grid">{{PRODUCT_CARDS}}</ul>
       </section>
 

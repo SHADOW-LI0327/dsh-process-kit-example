@@ -2,6 +2,8 @@
 # 用法：docker compose -f deploy/docker-compose.yml up -d
 # HTTPS：加 --profile proxy（见 deploy/Caddyfile 与 docs/DEPLOY.md「需要 HTTPS 时」）。
 # 变量可放进 deploy/.env（见 deploy/.env.example）。
+# 应用端口只发布到宿主回环：对外一律经反代，别让应用裸听在对外网卡上。
+# 反代档启动时会自检 COOKIE_SECURE / TRUST_PROXY 是否都为 1，不为 1 直接拒起（宁可不给流量）。
 name: shop
 
 services:
@@ -36,12 +38,14 @@ services:
       BACKUP_RETENTION_DAYS: "14"
       LOG_LEVEL: info
       NODE_ENV: production
-      # 生产必须替换成真随机值：openssl rand -hex 32
-      SESSION_SECRET: ${SESSION_SECRET:-dev-only-change-me-with-openssl-rand-hex-32}
+      # 必填且**不给默认值**：默认一个「能用的」密钥等于把所有人的会话交给公开值。
+      # 未提供时这里是空串 —— 生产档会以配置错误拒启（不静默退回弱密钥）。
+      SESSION_SECRET: ${SESSION_SECRET}
       COOKIE_SECURE: ${COOKIE_SECURE:-0}
       TRUST_PROXY: ${TRUST_PROXY:-0}
     ports:
-      - "3000:3000"
+      # 只绑宿主回环：需要对外时走反代档案（`--profile proxy`），不直接把应用暴露到公网。
+      - "127.0.0.1:3000:3000"
     volumes:
       - shop-data:/data
     tmpfs:
@@ -67,6 +71,18 @@ services:
   proxy:
     image: caddy:alpine
     profiles: ["proxy"]
+    # 反代在 TLS 上终结 ⇒ 应用侧必须发 Secure cookie、并采信转发头。
+    # 这里只做「不满足就拒起」的自检（不替使用者改应用侧的值），免得哪天悄悄跑成明文 cookie。
+    command:
+      - sh
+      - -c
+      - >-
+        [ "$$COOKIE_SECURE" = "1" ] && [ "$$TRUST_PROXY" = "1" ] ||
+        { echo "反代档必须同时置 COOKIE_SECURE=1 与 TRUST_PROXY=1（写在 deploy/.env 里）" >&2; exit 1; };
+        exec caddy run --config /etc/caddy/Caddyfile --adapter caddyfile
+    environment:
+      COOKIE_SECURE: ${COOKIE_SECURE:-0}
+      TRUST_PROXY: ${TRUST_PROXY:-0}
     depends_on:
       app:
         condition: service_healthy

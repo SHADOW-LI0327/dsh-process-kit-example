@@ -7,7 +7,7 @@
  * 字面值来源 = UI 规格（`prd/FEAT-002-ui-spec.md`）；本文件只断「与规格字面值一致」+「旧值不得残留」。
  *
  * @prd FEAT-002
- * @prdVersion 2
+ * @prdVersion 3
  * @priority P0
  * @status active
  * @case TC-FEAT-002-38
@@ -34,6 +34,7 @@ import {
   getHtml,
   getModuleText,
   getStyleText,
+  jpegStructure,
   listProducts,
   newClient,
   readRepoFile,
@@ -471,39 +472,9 @@ test('移动优先布局（AC-47）', async () => {
 });
 
 /**
- * 解析 JPEG 的 SOF 段取宽高（判据口径：ui-spec §九「正方形 400×400」+ `UI-12` aspect-ratio 1/1）。
- * 不引入任何无依据的体积阈值：只按 JPEG 结构本身判 —— 段长推进、跳过 APPn/DQT/DHT，命中的第一个 SOFn
- * （`FFC0`~`FFCF` 中除去 `C4`/`C8`/`CC`）里 precision(1) + height(2) + width(2)。
+ * JPEG 结构解析已上移到装置 `helpers/harness.mjs` 的 `jpegStructure()`（`static.test.mjs` 的 `AC-49` 也要用同一份口径：
+ * 「服务端忠实转发的字节本身也必须结构完整」）。此处不再保留本地副本，避免两处漂移。
  */
-function jpegSize(buf) {
-  if (buf.length < 4 || buf[0] !== 0xff || buf[1] !== 0xd8) return null;
-  let pos = 2;
-  while (pos + 3 < buf.length) {
-    if (buf[pos] !== 0xff) {
-      pos += 1;
-      continue;
-    }
-    const marker = buf[pos + 1];
-    if (marker === 0xff) {
-      pos += 1;
-      continue;
-    }
-    if (marker === 0x01 || (marker >= 0xd0 && marker <= 0xd9)) {
-      pos += 2;
-      continue;
-    }
-    const length = buf.readUInt16BE(pos + 2);
-    if (length < 2) return null;
-    const isSof = marker >= 0xc0 && marker <= 0xcf && marker !== 0xc4 && marker !== 0xc8 && marker !== 0xcc;
-    if (isSof) {
-      if (pos + 9 > buf.length) return null;
-      return { marker, bits: buf[pos + 4], height: buf.readUInt16BE(pos + 5), width: buf.readUInt16BE(pos + 7) };
-    }
-    if (marker === 0xda) return null;
-    pos += 2 + length;
-  }
-  return null;
-}
 
 test('本仓自托管商品主图（AC-48）', async () => {
   await withTempDb(async ({ dbPath }) => {
@@ -532,9 +503,17 @@ test('本仓自托管商品主图（AC-48）', async () => {
         [0xff, 0xd8, 0xff],
         `${name} 必须是**真 JPEG**（SOI + 段标记，头 3 字节 FF D8 FF），实际 ${[...buf.subarray(0, 4)].map((b) => b.toString(16).padStart(2, '0')).join(' ')}`,
       );
-      // 尺寸口径（有依据，不写无依据阈值）：ui-spec §九「正方形 400×400」+ `UI-12` 的 `aspect-ratio: 1/1`
-      // ⇒ 按 JPEG 结构解析 SOF 段取宽高，断言「正方形 + 边长 ≥ 400（400 是**下限**，dev 实际可用 800×800）」。
-      const size = jpegSize(buf);
+      // ③ 结构化完整性（v3 主控裁定：由「头部自证」升级为**按 JPEG 段结构走完整文件**）：
+      //    从 SOI 起逐段 2 字节大端段长自洽（≥2 且落在文件内）→ SOF 正方形且边长 ≥ 400 → SOS → **非空熵数据** → **必须以 EOI 结束**。
+      //    为什么必须升级：32 字节量级的伪 JPEG（合法 SOI + 合法 SOF0 400×400 + SOS + EOI，**熵数据为空**）能骗过「magic bytes + 头部 SOF 自证」
+      //    而解不出任何图像（logic-review 反例）—— 下面同时把它固化成**回归断言**（自证解析器拒收它）。
+      //    ⚠ 机器只保证**结构完整**；「能否被真实解码器解出图像」属人工 / 真机判断（PRD `AC-48` ③ 明写，本条不写「可解码」）。
+      const walk = jpegStructure(buf);
+      assert.ok(
+        walk.ok,
+        `${name} 必须按 JPEG 段结构走完整文件且结构自洽（v3：段长自洽 + SOS 后有非空熵数据 + 以 EOI 结束），实际：${walk.reason}`,
+      );
+      const size = walk.sof;
       assert.ok(size, `${name} 必须含可解析的 JPEG SOF 段（真位图；只有文件头像 JPEG 不算），实际解析失败`);
       assert.equal(
         size.width,
@@ -546,6 +525,31 @@ test('本仓自托管商品主图（AC-48）', async () => {
         `${name} 边长必须 ≥ 400（ui-spec §九 照片规格 400×400 作下限，允许 800×800 等更大正方形），实际 ${size.width}`,
       );
     }
+    // ③ 回归断言（logic-review 反例，v3 新增）：32~33 字节伪 JPEG 必须被**拒收** —— 否则「头部自证」这一档仍能被骗过。
+    const fakeJpeg = Buffer.from('ffd8ffc00011080190019003011100021101031101ffda0008010100003f00ffd9', 'hex');
+    assert.equal(
+      [...fakeJpeg.subarray(0, 3)].map((b) => b.toString(16).padStart(2, '0')).join(' '),
+      'ff d8 ff',
+      '自证前置：这份反例必须先是「magic bytes 合法」的伪 JPEG（否则证明不了新判据的价值）',
+    );
+    const fakeWalk = jpegStructure(fakeJpeg);
+    assert.equal(
+      fakeWalk.ok,
+      false,
+      `32 字节伪 JPEG 必须被判红（magic bytes 与 SOF 400×400 都合法，但 SOS 后无熵数据、解不出图像）⇒ 实际判绿 = 判据有洞`,
+    );
+    assert.match(
+      String(fakeWalk.reason),
+      /熵编码数据|熵数据|空扫描/,
+      `伪 JPEG 的判红理由应指向「SOS 后无熵数据」，实际：${fakeWalk.reason}`,
+    );
+    const overrun = Buffer.from(readFileSync(join(REPO_ROOT, 'web/assets/products', expected[0])));
+    overrun.writeUInt16BE(0xffff, 4); // 把首个带段长的段改成一个越界段长
+    assert.equal(
+      jpegStructure(overrun).ok,
+      false,
+      `段长越界（声称 65535 字节、文件只有 ${overrun.length} 字节）必须判红 —— 否则「逐段段长自洽」这一条没有落实`,
+    );
     await withApp({ dbPath }, async (app) => {
       const client = newClient(app);
       const products = await listProducts(client);

@@ -9,7 +9,7 @@
  *  ④ 子进程退出码必须不经管道直接读（管道会把 7 读成 0）。
  *
  * @prd FEAT-002
- * @prdVersion 2
+ * @prdVersion 3
  * @priority P0
  * @status active
  * @case TC-FEAT-002-I01

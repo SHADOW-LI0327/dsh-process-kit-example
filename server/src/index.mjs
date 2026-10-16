@@ -37,6 +37,12 @@ const server = app.server;
 
 server.on('error', (err) => {
   logger.error({ outcome: 'listen_failed', message: String(err && err.message) });
+  // 起不来就不该在盘上留半个库：回滚掉本次启动自己建的文件（预先存在的库/密钥不碰）。
+  try {
+    if (typeof app.rollbackStartup === 'function') app.rollbackStartup();
+  } catch (rollbackError) {
+    logger.warn({ outcome: 'rollback_failed', message: String(rollbackError && rollbackError.message) });
+  }
   process.exit(1);
 });
 

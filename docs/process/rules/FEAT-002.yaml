@@ -1,5 +1,18 @@
 # FEAT-002 台账（机器可读镜像；与 PRD frontmatter / 测试文件头 prdVersion 三方一致）
-# 合计 82 条：自动化 node 82 条（红波次实测 red 73 条 / green 9 条 = 装置自检 5 条 + 存量已成立 4 条）。
+# 合计 95 条：自动化 node 95 条（v3：AC-57~AC-64 + TC-65（AC-63）+ TC-66（AC-45）+ TC-67（AC-46）+ TC-68（AC-14）+ TC-69（AC-54））；
+# ⚠ v3 升版（2026-10-16，pm 依发布前评审三件套把真源移到 `prdVersion: 3`；test 随版同步，**判据确变、非勘误**）：
+#   · 新增 8 条：TC-002-57 订单详情页（他人 / 不存在均逐字「订单不存在」且零订单内容、②③ 完全一致）· 58 账号三页可达 + Tab 归属 ·
+#     59 空车 `#/checkout` 自动回 `#/cart`（含「非空车可达」对照组）· 60 本地筛选（按 ui-spec `UI-06` 字面「滤」⇒ 2 件 + 逐字「没有找到相关商品」+ **零新请求**）·
+#     61 我的页三胶囊（全部 / 已支付 / 已完成，「已完成」⇒ 0 条、切换零请求）· 62 首帧 noscript 封顶 `min(N,7)` + 全角空格 + 「还有 N−7 件商品（…）」·
+#     63 `SESSION_SECRET` 真被消费（换密钥旧 cookie 401，**换回原密钥旧 cookie 恢复 200** 以排除「重启即失效」假绿）· 64 `TRUST_PROXY` 最左语义 + `=0` 时伪造头无效。
+#   · 既有 4 条**收紧**（不明放宽任何一条）：TC-002-31 ③ 指纹值必须 == 该文件**字节** `sha256` 前 10 位 hex（形态正则降级为前置）、⑤ 新增退化指纹档（`?v=0` / `?v=000000` 不得换来 `immutable` / 一年强缓存）；
+#     TC-002-48 ③ 由「头部自证」升级为**结构化完整性**（逐段段长自洽 ≥2 且不越界 → SOF → SOS 后**非空熵数据** → 必须以 EOI 结束），并把 logic-review 的 33 字节伪 JPEG 固化为回归断言（判红理由必须指向「SOS 后无熵数据」）；
+#     TC-002-49 新增「线上转发的字节本身也必须结构完整」（与 48 ③ 同一份走查，忠实转发坏文件不再假绿）；TC-002-23 由单维改**三维 + 在途并发 + 维度可分辨**（每 IP 档只拦该 IP、全局档必须由新会话 + 新 IP 也被拦来证明；基准按 `RATE_LIMIT_MAX` 缩放，PRD 明写三维与基准成固定倍数）。
+#   · 时点读数（**与 dev 并行改源码期间**，非最终 verify；dev 在本轮内已多次推绿）：`ui` 13/13 rc=0 · `static` 10/10 rc=0 · `security` AC-23 rc=0 · `ops` AC-63 / AC-64 rc=0 · `routes` 3/5（**红 AC-59 / AC-61**）·
+#     未复跑 `AC-25`（需占用 3000）与 `deploy.test.mjs`（需容器）⇒ 这两处 `actual` 沿用上一轮基线，本轮不宣称复测。
+#   · 主控 2026-10-16 五条裁定已落（本轮已按裁定改断言 / 写注释）：① `AC-31` ⑤ **真源同版已收口** ⇒ 断言收紧为「必须仍 200 + 无指纹档 + **`404` 判红**」（dev 现选 `200 + no-cache + ETag` ⇒ 仍绿）；
+#     ② `AC-49` 结构完整性维持**推导口径**（pm 正补 PRD 字面）；③ `AC-23` 并发档「测不准」已如实写进用例与台账（本包不新开负载缝）；
+#     ④ `AC-60` 匹配字段 = `product.name` 已写进断言注释（pm / ui-designer 正冻结字面；数字 2 成立）；⑤ jsdom 真执行前端 ESM 的机器层分工变更已采纳，待 pm 在「平台差异」栏备案。
 # ⚠ v2 重开（2026-10-16T01:42Z，交付后·人裁定「主图由本仓自制 SVG 换成自托管真实照片」）：判据确变（非勘误）⇒
 #   TC-002-48 语义重写（8 张 P-00N.jpg 且逐张真 JPEG + 按 SOF 解析出**正方形、边长 ≥400**（删原 2 KiB 暂定阈值）+ 逐卡 `src` 与本卡商品 id 一致、
 #   路径全命中 `/assets/products/P-00[1-8].jpg`、查询串只许 `?v=<hash>` + `CREDITS.md` **逐行 6 项齐全**（本地文件名 + **商品名** + **作者** + **来源页 URL**（照片页，不得用许可 URL 顶替）+ **许可名** + **许可 URL**；主控 2026-10-16 两轮收紧，对齐 `UI-67` / `AC-48` ⑤））；
@@ -44,7 +57,7 @@
 #   ⚠ 结构性教训：独立 verify 只能证明「实现与判据一致」，证明不了「判据本身对」—— 判据错时 verify 照样全绿，本条是 UAT 的黑盒用户视角抓出来的。
 #   ⚠ 契约 §五 表格仍留旧文案（「可选注释掉的反代服务定义」），属契约回填，属主 PM / 主控，非 test-agent 可改。
 #   ⚠ v2 重开：本行随主图判据变更对齐到 2（与 10 个 FEAT-002 测试文件头一致）；PRD / 设计的 frontmatter 由 PM 同步，未落地前 check-rules ⑥ 会如实报不一致。
-prdVersion: 2
+prdVersion: 3
 invariants: []
 cases:
   - id: TC-FEAT-002-I01
@@ -279,6 +292,12 @@ cases:
     expect: red
     actual: green
     blocker: none
+    note: |
+      v3 收紧（主控裁定）：由「每会话单维」改为**三维固定窗口 + 在途并发 + 维度可分辨**（每会话 R / 每 IP 4R / 全局 20R / 在途 C=16，超限复用 429 + 整数 Retry-After）。
+      基准按注入配置 `RATE_LIMIT_MAX = 2` 缩放（PRD 明写后两维与该基准成**固定倍数** ⇒ 缩放不改语义；C 为存量常量不缩放）；三维各起一个独立实例，窗口互不污染。
+      **可分辨性**为本条核心：每 IP 档「只拦该来源 IP、换 IP（新会话）必须仍放行」；全局档「每个来源 IP 与每个会话都只用一次时，必须恰在第 R_all+1 次被拦」⇒ 三维写成同一维即红。
+      被限流的写请求不得产生副作用：额度用尽后**有界次数内必现 429**，随后购物车件数与库存必须原样（不写死「第几次必然 429」，因会话键在注册时可能轮换）。
+      ⚠ **测不准如实登记**（主控 2026-10-16 准，勿误读为精确断过 `C = 16`）：无确定性负载缝时无法让 16 个写请求**同时**挂在途，也无法断言「被拒个数 == 并发数 − 16」；故并发档只断「并发 `C+4` 中 **≥1** 个 429 且峰值后恢复放行」。精确计数需可控在途负载缝，本包**不为此新开**（成本不成比例）。
   - id: TC-FEAT-002-24
     title: 安全响应头齐备｜所有响应带约定的四项安全响应头且可被断言
     ac: AC-24
@@ -347,6 +366,9 @@ cases:
     actual: green
     blocker: none
     note: ③ 带指纹档前置 = HTML 注入内容指纹；未注入时明确报「前置未成立」而非静默改判
+      v3 收紧（发布前评审 🔴）：③ 由「查询串形态合法」升级为「`?v=` **必须等于该资源文件字节的 `sha256` 前 10 位 hex（小写）**」—— 形态正则降级为**前置**，不再是判据本身；
+      ⑤ 退化指纹档：`?v=0` / `?v=000000` **必须仍返回 200** 且按无指纹档处置（`no-cache` + `ETag`）、**不得** `immutable` / `max-age ≥ 31536000`、**`404` 判红**（主控 2026-10-16 同版收口：资源确在，伪造查询串不得把已存在资源说成不存在；该档真正要断的是「不得得到 immutable」）。实测 dev 已选 `200 + no-cache + ETag` ⇒ 本档绿。
+      本档为**直接状态码 + 响应头**断言（不依赖任何装置缝）⇒ 若实现返回 404 或 immutable，两条断言分别判红，无假绿空间。
   - id: TC-FEAT-002-32
     title: 备份保留十四天｜每日备份库文件、保留 14 天、恢复步骤可执行
     ac: AC-32
@@ -550,6 +572,9 @@ cases:
          ✅ 真源对等性**已闭合**（主控 2026-10-16T02:25Z 授权，本轮已落）：⑤ 的逐行要求由 4 项收到真源的 **6 项**（补「商品名」「许可 URL」）；`R-4` 的 `&amp;` 半已机器化，「URL 被截断」半按主控裁定**不造假护栏**、维持文档要求。
             收紧后复跑（随机端口，未碰 `:3000` / 容器）：`ui.test.mjs` 13/13 rc=0、`static.test.mjs` 9/9 rc=0（dev 真件直接通过 6 项口径）；`check-rules` rc=0。
          PRD 口径核对：`docs/process/prd/FEAT-002.md:639` 已由 pm 改为「`SOF` 解析出的边长（整数比较 ≥ 400）+ 宽 == 高」并写明「不保留任何暂定值阈值（原 `≥ 2 KiB` 已删）」⇒ 与本条一致（无口径打架；§11 变更记录里保留的 `2 KiB` 是历史记载 + 同版收口说明，非遗留口径）。
+      v3 收紧（发布前评审 🔴）：③ 由「头部自证」升级为**按 JPEG 段结构走完整文件** —— 逐段 2 字节大端段长必须 ≥2 且落在文件剩余长度内 → 必须出现 SOF → `SOS` 之后必须有**非空熵数据** → 必须以 `EOI` 结束且解析一致走到文件尾；
+      并把 logic-review 的 **33 字节伪 JPEG**（合法 `SOI` + 合法 `SOF0` 400×400 + `SOS` + `EOI`、**熵数据为空**；旧口径能骗过 48 + 49）固化为**回归断言**：解析器必须判红，且判红理由须指向「SOS 后无熵数据」；另加「段长越界必须判红」一条。
+      ⚠ 边界（PRD 明写）：机器只保证**结构完整**，不承诺「可被真实解码器解出图像」—— 后者属人工 / 真机判断，本条不写该承诺。
   - id: TC-FEAT-002-49
     title: 商品主图可访问｜逐商品 `GET /assets/products/P-00N.jpg` 必须 200 且 `content-type: image/jpeg`，线上字节逐字节等于盘上文件
     ac: AC-49
@@ -571,6 +596,8 @@ cases:
          反例隔离（校验和比对通过的副本，逐条只破坏该处）：① 静态读盘退回 utf8（白名单与 content-type 仍对）⇒ 本条 ③ 红，首命中「content-length 应等于盘上 28258 字节，实际 50674」；
          ② **等长**改写盘上字节 ⇒ 本条 ④ 红，首命中「线上响应体头 3 字节必须是 JPEG SOI，实际 `3f d8 ff`」（此刻 ③ 是绿的）⇒ ③④ 覆盖不同链节、不可互替，本轮再次实证。
          真照片 8 张逐个 200 + `content-type: image/jpeg` + `content-length` == 盘上字节数 + 线上逐字节相等，全部通过（真机交付态）。
+      v3 新增：服务端**忠实转发**的字节本身也必须**结构完整**（复用 48 ③ 的同一份走查）—— 旧口径下「忠实转发一个坏文件」（`content-length` 相符 + 逐字节相等都成立）仍会绿。
+      ⚠ 口径现状（主控 2026-10-16 裁定）：该「忠实转发的字节也须结构完整」要求**尚未写进 `AC-49` 字面**（已派 pm 补），当前为「`AC-48` ③ 同口径 + 字节相等」的**推导口径**，对合规实现不会判红；pm 落字面后核对一致即可。
   - id: TC-FEAT-002-50
     title: 静态路径不越界｜穿越与白名单外路径一律 404 且不返回 `web/` 之外的内容
     ac: AC-50
@@ -631,6 +658,165 @@ cases:
     expect: red
     actual: green
     blocker: none
+  - id: TC-FEAT-002-57
+    title: 订单详情页可达与不暴露存在性｜`#/orders/<id>` 呈现本单；他人或不存在均逐字「订单不存在」且不出现任何订单内容
+    ac: AC-57
+    ac_name: 订单详情页可达与不暴露存在性｜`#/orders/<id>` 呈现本单；他人或不存在均逐字「订单不存在」且不出现任何订单内容
+    automation: node
+    expect: red
+    actual: green
+    blocker: none
+    note: |
+      载体：`test/packages/FEAT-002/routes.test.mjs`（v3 随版同步；机器层只断 DOM / 文案 / hash / 请求序列，观感与真机交互归 UAT）。
+      实测：2026-10-16 时点读数 = red（dev 正并行改源码；本读数不代表最终结论）。
+  - id: TC-FEAT-002-58
+    title: 账号三页路由可达｜`#/login` / `#/register` / `#/me` 三页均可直达且 Tab 归属正确
+    ac: AC-58
+    ac_name: 账号三页路由可达｜`#/login` / `#/register` / `#/me` 三页均可直达且 Tab 归属正确
+    automation: node
+    expect: red
+    actual: green
+    blocker: none
+    note: |
+      载体：`test/packages/FEAT-002/routes.test.mjs`（v3 随版同步；机器层只断 DOM / 文案 / hash / 请求序列，观感与真机交互归 UAT）。
+      实测：2026-10-16 时点读数 = green（dev 正并行改源码；本读数不代表最终结论）。
+  - id: TC-FEAT-002-59
+    title: 结算页空车不可达｜购物车为空时直达 `#/checkout` 自动回到 `#/cart`
+    ac: AC-59
+    ac_name: 结算页空车不可达｜购物车为空时直达 `#/checkout` 自动回到 `#/cart`
+    automation: node
+    expect: red
+    actual: green
+    blocker: none
+    note: |
+      载体：`test/packages/FEAT-002/routes.test.mjs`（v3 随版同步；机器层只断 DOM / 文案 / hash / 请求序列，观感与真机交互归 UAT）。
+      实测：2026-10-16 时点读数 = green（dev 正并行改源码；本读数不代表最终结论）。
+      **实为装置缺陷（已修）**：根因 = 一个用例同时开两个 mount 时，后者的全局快照把前者的 fetch 包装记成「原值」⇒ 用例结束后全局 fetch 仍绑上一个用例的会话 cookie ⇒ 下个用例前端带旧 sid 发请求 ⇒ 401 ⇒ 按未登录渲染（0 卡 / 空车回退）。修法：包装恒基于原生 fetch + 条件式还原（`helpers/browser.mjs`）；复现 2/2、同文件连跑 5/5 全绿。产品侧正确性已由独立探针单独复现。
+  - id: TC-FEAT-002-60
+    title: 本地搜索过滤｜输入关键字在已加载商品内本地过滤，且不产生任何搜索请求
+    ac: AC-60
+    ac_name: 本地搜索过滤｜输入关键字在已加载商品内本地过滤，且不产生任何搜索请求
+    automation: node
+    expect: red
+    actual: green
+    blocker: none
+    note: |
+      载体：`test/packages/FEAT-002/routes.test.mjs`（v3 随版同步；机器层只断 DOM / 文案 / hash / 请求序列，观感与真机交互归 UAT）。
+      实测：2026-10-16 时点读数 = green（dev 正并行改源码；本读数不代表最终结论）。
+      匹配字段（主控 2026-10-16 裁定）：`AC-60` 此前**从未规定匹配字段**（规格歧义缺陷）；UAT 实测原实现按「名称 + 描述」得 4 件、与字面「2 件」冲突，dev 已改为按 **`product.name`** 匹配 ⇒ 与字面一致（数字 2 成立、真源数字不改）。本断言按 `DEFAULT_SEED` 的**商品名**推导命中数（种子变化不假红）；pm 在 `AC-60` / ui-designer 在 `UI-06` 冻结字面后即为真源口径。
+  - id: TC-FEAT-002-61
+    title: 订单状态筛选｜我的页三个筛选胶囊可用且按状态过滤订单集合
+    ac: AC-61
+    ac_name: 订单状态筛选｜我的页三个筛选胶囊可用且按状态过滤订单集合
+    automation: node
+    expect: red
+    actual: green
+    blocker: none
+    note: |
+      载体：`test/packages/FEAT-002/routes.test.mjs`（v3 随版同步；机器层只断 DOM / 文案 / hash / 请求序列，观感与真机交互归 UAT）。
+      实测：2026-10-16 时点读数 = green（dev 正并行改源码；本读数不代表最终结论）。
+      **实为装置缺陷（已修）**：根因 = 一个用例同时开两个 mount 时，后者的全局快照把前者的 fetch 包装记成「原值」⇒ 用例结束后全局 fetch 仍绑上一个用例的会话 cookie ⇒ 下个用例前端带旧 sid 发请求 ⇒ 401 ⇒ 按未登录渲染（0 卡 / 空车回退）。修法：包装恒基于原生 fetch + 条件式还原（`helpers/browser.mjs`）；复现 2/2、同文件连跑 5/5 全绿。产品侧正确性已由独立探针单独复现。
+  - id: TC-FEAT-002-62
+    title: 首帧 noscript 目录封顶｜禁用 JS 时目录最多 7 行 + 末行「还有 N−7 件商品（…）」
+    ac: AC-62
+    ac_name: 首帧 noscript 目录封顶｜禁用 JS 时目录最多 7 行 + 末行「还有 N−7 件商品（…）」
+    automation: node
+    expect: red
+    actual: green
+    blocker: none
+    note: |
+      载体：`test/packages/FEAT-002/static.test.mjs`（v3 随版同步；机器层只断 DOM / 文案 / hash / 请求序列，观感与真机交互归 UAT）。
+      实测：2026-10-16 时点读数 = red（dev 正并行改源码；本读数不代表最终结论）。
+  - id: TC-FEAT-002-63
+    title: 会话密钥真被消费｜换 `SESSION_SECRET` 后旧会话失效（HMAC 派生确实生效）
+    ac: AC-63
+    ac_name: 会话密钥真被消费｜换 `SESSION_SECRET` 后旧会话失效（HMAC 派生确实生效）
+    automation: node
+    expect: red
+    actual: green
+    blocker: none
+    note: |
+      载体：`test/packages/FEAT-002/ops.test.mjs`（v3 随版同步；机器层只断 DOM / 文案 / hash / 请求序列，观感与真机交互归 UAT）。
+      实测：2026-10-16 时点读数 = green（dev 正并行改源码；本读数不代表最终结论）。
+  - id: TC-FEAT-002-64
+    title: 反代头真被采信｜`TRUST_PROXY=1` 时按 `X-Forwarded-For` 真实 IP 计数，`=0` 时伪造头无效
+    ac: AC-64
+    ac_name: 反代头真被采信｜`TRUST_PROXY=1` 时按 `X-Forwarded-For` 真实 IP 计数，`=0` 时伪造头无效
+    automation: node
+    expect: red
+    actual: green
+    blocker: none
+    note: |
+      载体：`test/packages/FEAT-002/ops.test.mjs`（v3 随版同步；机器层只断 DOM / 文案 / hash / 请求序列，观感与真机交互归 UAT）。
+      实测：2026-10-16 时点读数 = green（dev 正并行改源码；本读数不代表最终结论）。
+  - id: TC-FEAT-002-65
+    title: 开发档密钥跳过落盘｜`:memory:` 或父目录不可写 ⇒ 不生成 `*dev-session-secret` + 进程可起 + `warn` 且不含密钥
+    ac: AC-63
+    ac_name: 会话密钥真被消费｜换 `SESSION_SECRET` 后旧会话失效（HMAC 派生确实生效）—— 本条为其**持久化跳过条件**面（契约 §7.1 同版收口，`AC` 编号不变）
+    automation: node
+    expect: red
+    actual: green
+    blocker: none
+    note: |
+      载体 `test/packages/FEAT-002/ops.test.mjs`。判据（契约 §7.1 同版收口）：`DB_PATH` 为 `:memory:`、或其父目录不可写时，开发档**跳过持久化** —— 退化为进程内随机密钥 + `warn`，不生成任何 sidecar 文件；**生产档不受此豁免**。
+      三条件：① 「`DB_PATH` 旁 / 仓根 / 临时目录」**启动前后各扫一次**，断言无任何 `*dev-session-secret`（不因仓根没有就判绿）；② 进程能 listen 且业务面 200；③ 日志有 `level":"warn"` + 点明密钥/sidecar 处置 + **不含密钥本身**（正则只许长度/指纹形态）。
+      档③ 生产档负向对照：`NODE_ENV=production` + 不可写父目录 + 删掉密钥 ⇒ **仍拒起、退出码非 0、日志点名 `SESSION_SECRET`**（防本条被读成全局放宽）。
+      ⚠ 装置前提：父目录不可写档需**非 root**（root 对 0500 仍可写 ⇒ 「文件不存在」会假红）；用例已断言 `getuid() !== 0`，若日后以 root 跑则**如实红**，不放宽。
+      ⚠ 构造纪律：两档都必须 `delete env.SESSION_SECRET`（`envFor` 默认注入测试密钥）—— 否则走不到「开发档生成随机密钥」分支，会假绿。
+      **三档形态（主控 2026-10-16 裁定 (b)）**：① `DB_PATH=:memory:` **真跑且绿**（本口径的**唯一机器承载**：启动前后扫「DB_PATH 旁 / 仓根 / 临时目录」无任何 `*dev-session-secret` + 能 listen 且业务 200 + 日志有 `warn`、`secretFile:null`、不含密钥本身）；
+      ② 「父目录不可写」**显式 skip（不计 pass、不留红）**，逐字理由 = sidecar 路径 `<DB_PATH>.dev-session-secret` 与库**同目录** ⇒「库可用」已蕴含「目录可写」⇒ 该分支**逻辑为空**、受 `E-04` 前置遮蔽、无独立机器判据（构造实测：先建库再 `chmod 0500`，SQLite 仍要建 `-wal`/`-shm` ⇒ 库先失败、进程正当拒起）；
+      ③ 生产档负向对照 **独立真跑且绿**（`NODE_ENV=production` + 删密钥，不叠加不可写目录 ⇒ 必须仍拒起、退出码非 0、日志点名 `SESSION_SECRET`、不留监听端口）—— 防本条被读成全局放宽。
+      实测：`node --test --test-name-pattern="开发档密钥跳过落盘"` ⇒ rc=0（pass 1 / skipped 1）；skip **不计入 pass**。
+  - id: TC-FEAT-002-66
+    title: 卡内角标词表与优先级｜每卡恰 1 个**卡内**角标 + 词表（缺货/包邮/热卖，秒杀 0 命中）+ 优先级 + 分布 4/4/0 + 缺货夹具 3/4/1
+    ac: AC-45
+    ac_name: 卡内角标词表与优先级｜每卡恰 1 个**卡内**角标 + 词表（缺货/包邮/热卖，秒杀 0 命中）+ 优先级 + 分布 4/4/0 + 缺货夹具 3/4/1
+    automation: node
+    expect: red
+    actual: green
+    blocker: none
+    note: |
+      判据（ui-designer 冻结 `UI-17`/`W-09`，挂既有 `AC-45`）：② 「角标必须落在卡元素内」**在卡元素内查询**（不得全页查询 —— 那正是要堵的「页头有包邮就假绿」通道）；
+      ④ 优先级 = 缺货 > 包邮（元价 ≥ ¥99，与 `W-04`/`W-15` 同门槛）> 热卖；⑤ 期望分布由 `DEFAULT_SEED` **推导**（不硬编码）；⑥ 缺货档用**测试注入的种子夹具**（stock=0），断言该卡「缺货」+ 分布 3/4/1 + `.card__veil` 仅缺货卡有。
+      本轮实测：**绿**（卡内恰 1 个、词表合规、秒杀 0 命中、分布 4/4/0、夹具 3/4/1 + 遮罩）。
+  - id: TC-FEAT-002-67
+    title: 图片盒 1:1 且禁止「非 1:1 盒 + cover」｜样式声明层断盒必须 1:1
+    ac: AC-46
+    ac_name: 图片盒 1:1 且禁止「非 1:1 盒 + cover」｜样式声明层断盒必须 1:1
+    automation: node
+    expect: red
+    actual: green
+    blocker: none
+    note: |
+      判据（ui-designer 收窄 `UI-12`/`UI-24`，挂既有 `AC-46`）：**禁止「非 1:1 盒 + `object-fit: cover`」组合**（`160×300` 竖裁的根因）⇒ 断**盒是 1:1**，不是只断 `object-fit` 属性值。
+      ⚠ 机器层口径：jsdom 无排版引擎 ⇒ 「渲染比值 1.000±0.01 / 390px `160px±1` / 1280px `251.5px±1` / 详情 `340px±1`」由 **UAT 真机读数**承载（dev 已出读数）；本条断**样式声明层**（≥2 处 1:1 盒、任何 `aspect-ratio` 只许 `1/1`、凡 `object-fit: cover` 的块必须同时声明 1:1）。
+      **本轮实测：红** —— 见 `reports/test/FEAT-002-v3-sync-and-cases-20261016T0315Z.log` §十四 的失败原因（待下一轮收口）。
+      **已收窄（主控 2026-10-16 裁定，乙类）**：管辖面限定为**卡片主图 + 详情主图**（选择器含 card/detail），`.line__thumb` 不归 AC-46 ⇒ **绿**。读数：`.card__img` = `aspect-ratio: 1/1`、`.detail__img` = `aspect-ratio: 1 / 1` + `object-fit: cover`；`.line__thumb` = `width:72px; height:72px`（**声明盒本就 1:1 ⇒ cover 无害**，合规但不归本 AC）。**只收窄选择器、强度不变**（管辖面内 cover 仍必须同时 1:1），且**两侧各自**必须被覆盖到。
+  - id: TC-FEAT-002-68
+    title: 未登录提交订单拦截｜跳 #/login + 逐字「请先登录后再下单」+ 下单请求数 0
+    ac: AC-14
+    ac_name: 未登录提交订单拦截｜跳 #/login + 逐字「请先登录后再下单」+ 下单请求数 0
+    automation: node
+    expect: red
+    actual: green
+    blocker: none
+    note: |
+      判据（ui-designer 冻结 `W-60`，挂既有 `AC-14`）：未登录在 `#/checkout` 点「提交订单」⇒ 跳 `#/login` + 页内**逐字「请先登录后再下单」**（原文取自 `web/src/pages/checkout.mjs` 的 `loginReason`）+ **不得发出下单请求**（不白跑注定 401 的请求）。
+      **本轮实测：红** —— 卡在「必须能点到「提交订单」」这一档；须先判定是「匿名车未随 cookie 注入而持久」还是「页面未渲染按钮」（装置 vs 实现），下一轮给读数与归因。
+      **本轮实测：绿** —— 装置修好 `clickText`（全等优先 + 子串回退：`W-39` 冻结字面是「提交订单 ¥ 129.00」）后，跳 `#/login` + 逐字「请先登录后再下单」+ 下单请求数 0 三条全部真跑到。
+  - id: TC-FEAT-002-69
+    title: 缺货详情页 CTA 真点不动 + 数量 1 时「−」禁用｜真 MouseEvent 派发 + POST 请求数 0 + hash 不变
+    ac: AC-54
+    ac_name: UI行为继承（RSK-07）｜改版后 FEAT-001 的界面行为判据仍然成立（本次承载 dev r7 修的 V-01 同型行为）
+    automation: node
+    expect: red
+    actual: green
+    blocker: none
+    note: |
+      载体 test/packages/FEAT-002/routes.test.mjs。**登录态** client（匿名点 CTA 落 #/login 是 AC-14 的正当行为，会污染读数）；**每个 CTA 各在一个新 mount 里单独点**。
+      断法：`disabled` 属性 **+** 真 MouseEvent 派发后 hash 不变 **+** POST 请求数 0（只看属性会放过「属性为真但事件仍生效」的假绿）。
+      ⚠ **未断言的一档（如实申报，不写弱断言）**：「＋ 按 min(现货, 8) 封顶」（V-01 的复现档）我**断言不了** —— jsdom 下数量值的 DOM 取数口未取到，不能拿被污染读数下结论 ⇒ 该档**无机器承载、归 UAT 真机**；不新增 AC、不改判据。
+      ⚠ 注册/登录页 5 条本地自校验文案与「坏输入 0 请求」：**是否已有 AC 承载未经核对** ⇒ 同记「无机器承载、归 UAT 真机」。
   - id: TC-FEAT-002-E01
     title: 会话畸形过期
     ac: E-01

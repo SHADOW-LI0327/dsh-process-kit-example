@@ -7,7 +7,7 @@
  * 归**真机层 UAT** 与主控复跑，本文件不假绿。
  *
  * @prd FEAT-002
- * @prdVersion 2
+ * @prdVersion 3
  * @priority P1
  * @status active
  * @case TC-FEAT-002-32
@@ -148,7 +148,17 @@ const COMPOSE_FILE = 'deploy/docker-compose.yml';
 // `COMPOSE_PROJECT_NAME` 覆盖（实测卷名 `feat002t_shop-data`）⇒ 文档里那条命令可以**逐字**执行，
 // 而卷与容器全落在本项目里，绝不与 UAT 正在跑的 `shop` 栈抢卷或抢 3000/80/443。
 const E7_PROJECT = 'feat002t';
-const E7_ENV = { COMPOSE_PROJECT_NAME: E7_PROJECT };
+/**
+ * 测试用环境：`E7_PROJECT` 隔离项目名 + **测试专用 `SESSION_SECRET`**。
+ *
+ * 为什么必须注入：dev 按 SEC-05 去掉了 compose 里那个「能用的默认密钥」⇒ 生产档**缺密钥即拒起**（fail-closed 生效，
+ * 实测 `compose run app` rc=1 并逐字点名 `SESSION_SECRET`）。这是**产品正确行为**，不是缺陷 ⇒ 装置必须自己给密钥。
+ * ⚠ 该值**只用于测试**（≥32 字符以满足生产档校验），不是任何环境的真实凭据，也不写入任何入库文件。
+ */
+const E7_ENV = {
+  COMPOSE_PROJECT_NAME: E7_PROJECT,
+  SESSION_SECRET: 'feat002-deploy-verify-only-secret-0123456789abcdef',
+};
 
 /** 在独立项目名下调 compose（`-f` 指向交付物本身，不做任何改写）。 */
 function compose(args, options = {}) {

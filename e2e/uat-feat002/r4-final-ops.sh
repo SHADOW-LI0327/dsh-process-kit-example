@@ -45,7 +45,7 @@ echo "  rc=$?"; grep -vE 'Creating|Created|Network' "$OPS/r4-u43-incontainer2.ou
 h "U-44 一键起（等健康 + 容器内五面 + 端口映射读数）"
 $DC up -d > "$OPS/r4-u44-up2.out" 2>&1; echo "  up -d rc=$?"
 for i in $(seq 1 40); do ST=$(docker inspect -f '{{.State.Health.Status}}' uater4-app-1 2>/dev/null || echo none); [ "$ST" = "healthy" ] && break; sleep 1; done
-echo "  app 健康状态=$ST（等 ${i}s）"
+echo "  app 健康状态=${ST}（等 ${i}s）"
 echo "  端口映射：$(docker compose -f "$ROOT/deploy/docker-compose.yml" port app 3000 2>&1 | tr '\n' ' ')"
 echo "  backup 容器：$(docker ps -a --format '{{.Names}} {{.Status}}' | grep uater4 | tr '\n' ' ')"
 $DC exec -T app node -e 'fetch("http://127.0.0.1:3000/health").then(r=>r.json()).then(j=>console.log("  容器内 /health = "+JSON.stringify(j)))' 2>&1 | tail -2

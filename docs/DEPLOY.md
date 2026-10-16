@@ -23,17 +23,24 @@ curl -s http://127.0.0.1:3000/health
 
 ```bash
 docker build -f deploy/Dockerfile -t shop:local .
-docker run --rm -p 3000:3000 -v shop-standalone-data:/data \
+docker run --rm -p 127.0.0.1:3000:3000 -v shop-standalone-data:/data \
   -e SESSION_SECRET="$(openssl rand -hex 32)" shop:local
 ```
 
 3）单机编排一键起（推荐，库与备份都在具名卷里）：
 
 ```bash
-cp deploy/.env.example deploy/.env      # 先改 SESSION_SECRET（openssl rand -hex 32）
+cp deploy/.env.example deploy/.env      # 里面的 SESSION_SECRET 是空占位，必须自己填
+openssl rand -hex 32                    # 生成一把，粘进 deploy/.env 的 SESSION_SECRET=
 docker compose -f deploy/docker-compose.yml up -d
 docker compose -f deploy/docker-compose.yml ps
 ```
+
+> `SESSION_SECRET` 是**没有默认值的必需项**：`.env.example` 里那一行故意留空，compose 也不再给默认值 ——
+> 任何「能用的」默认值都等于把所有人的会话交给一份公开值。缺失或短于 32 字符时应用**启动即失败**并点名变量
+> （实测 `docker compose run --rm --no-deps app` ⇒ 退出码 `1`，日志
+> `"outcome":"startup_failed","variable":"SESSION_SECRET"`），既不退回弱密钥，也不带病起服 —— 所以
+> **别抄样例、也别跳过这一步**。
 
 起服前会先跑一次 `scripts/ops/backup.mjs`（给现有库打快照，首次无库时跳过），健康检查走 `GET /health`：
 返回 `200` 且 `db.ok === true` 才算健康。默认这条命令起 `backup`（跑完即退）与 `app` 两个服务；
@@ -54,7 +61,18 @@ curl -k -s https://localhost/health                                    # 期望 
 - `proxy` 服务用 `caddy:alpine`，只在 `--profile proxy` 时起（**默认 `up -d` 不含它**，默认只起 `backup` 与 `app`）；
   它会等 `app` 健康（`depends_on: app: condition: service_healthy`）才开始接流量。
 - 发布 `443`（HTTPS）与 **`80`**（仅用于明文到 HTTPS 的跳转，以及 ACME 证书校验）；应用自己的
-  `3000` 端口照旧发布在宿主上，直连 HTTP 仍然可用。**宿主 80 / 443 必须空闲**，否则反代会起不来。
+  `3000` 端口只发布在**宿主回环**（`127.0.0.1:3000`）：直连调试仍可用，但应用不会裸听在对外网卡上。
+  **宿主 80 / 443 必须空闲**，否则反代会起不来。
+- **「宿主发布」与「容器内监听」是两件事，别混**：`ports:` 里的 `127.0.0.1:3000:3000` 决定「外面能不能连」，
+  所以默认**只有宿主本机能直连 `http://127.0.0.1:3000`**，对外一律经反代；而容器里的 `HOST=0.0.0.0` + `PORT=3000`
+  只是应用在容器网络里听哪个地址 —— 它**必须**是对内全网卡，否则反代与健康检查都连不进来。
+  真要对外直连（不走反代）才需要自己改这条映射，那时请自行承担暴露面。
+- `proxy` 起容器时先自检 `COOKIE_SECURE` 与 `TRUST_PROXY` **是否都为 1**：不满足就打印原因并**以非零退出**
+  （不接流量），免得 TLS 上线了却还在发不带 `Secure` 的会话 cookie。实测对照：两者未置 1 ⇒
+  `docker compose -f deploy/docker-compose.yml --profile proxy run --rm --no-deps proxy` **退出码 `1`** +
+  「反代档必须同时置 COOKIE_SECURE=1 与 TRUST_PROXY=1」；两者都置 1 ⇒ 同一段自检**退出码 `0`**（继续起 Caddy）。
+  **为什么是「拒起」而不是「替你置 1」**：compose 无法按 profile 条件改同一个服务的环境值；与其静默降级成
+  「反代起来了、cookie 却不带 Secure」，不如直接不接流量 —— 拒起比悄悄降级安全。
 - 站点配置 `deploy/Caddyfile` 只读挂进容器；`caddy-data` / `caddy-config` 两个命名卷落证书、
   ACME 状态与自动生成的配置 ⇒ 容器重建不重签证书。
 - 站点地址是 `localhost` ⇒ 证书由 Caddy 内部 CA 自签，访问要带 `-k`（或用浏览器手动信任）才能验证通过；
@@ -76,12 +94,22 @@ curl -k -s https://localhost/health                                    # 期望 
 | `LOG_LEVEL` | `info` | 日志级别：debug / info / warn / error |
 | `BODY_LIMIT_BYTES` | `131072` | 请求体上限（字节），超出即 413 |
 | `RATE_LIMIT_WINDOW_MS` | `60000` | 写接口限流窗口（毫秒） |
-| `RATE_LIMIT_MAX` | `60` | 单窗口内写请求上限，超出即 429 |
+| `RATE_LIMIT_MAX` | `60` | 限流**基数**（三维固定窗口计数的基准）：每会话 = 本值、**每 IP = ×4**（默认 240）、**全局 = ×20**（默认 1200），任一维超出即 `429` + `Retry-After`。验限流取证时把它调小即可（例：`RATE_LIMIT_MAX=5` ⇒ 同一匿名会话第 6 次写请求即 429） |
 | `BACKUP_DIR` | `./backups` | 备份落点目录（快照文件名 `shop-<UTC 日>.db`） |
 | `BACKUP_RETENTION_DAYS` | `14` | 备份保留天数，超过即清理 |
 | `NODE_ENV` | `development` | 运行环境；`production` 触发上面那条密钥必填校验 |
 
 变量取值一律走这一处校验：非法取值启动即失败，并在错误日志里点名是哪个变量（不给默认值兜底）。
+
+密钥的三点事实：
+- **生产档（`NODE_ENV=production`）**：没有它**直接拒启**，不退回任何内置值，也不往盘上落任何密钥文件。
+- **开发档**：允许缺席 —— 此时在库文件旁生成一份随机密钥 `<DB_PATH>.dev-session-secret`（权限 `0600`，
+  已存在且够长就复用）并打一条 `warn`。为什么要落盘而不是每次随机：本地**换进程重启是常态**，
+  每次换一把会把已登录的会话全部踢下线。日志只打这份文件的**路径**（字段 `secretFile`）与是否复用，
+  **不打密钥本身**。
+- **这份文件不入库**：它是本地开发产物，默认库路径 `./data/shop.db` 落在已被忽略的 `data/` 下，sidecar 随之一并被忽略；
+  若你把 `DB_PATH` 指到别的目录，请自行确认那份同名 sidecar 没被提交。备份/迁移也不必带上它 ——
+  换一份即等于全员下线。
 
 ## 升级
 
@@ -180,6 +208,14 @@ DB_PATH=./data/shop.db BACKUP_DIR=./backups BACKUP_RETENTION_DAYS=14 node script
 - 恢复步骤：停服 → 用最新快照替换 `DB_PATH`（卷路径交给 compose 解析，见「回滚」第 2 步那条
   `docker compose run` 命令，不要手写宿主卷名）→ 起服 → `GET /health` 为 `200` →
   **按 `orderNo` 能查到快照时刻那笔订单**（只有 `200` 不能证明替换真的生效）。
-- 会话与匿名车的清理**不在本期自动执行**（单实例、量小）：`sessions` 与无主 `cart` 行会随使用增长，
-  需要时按到期时间手工删（停服后 `DELETE FROM sessions WHERE expires_at < <毫秒时间戳>`），
-  或直接依赖快照 + 重建。
+- 会话与匿名车的清理**不在本期自动执行，是一条手工步骤**（单实例、量小；口径见 PRD `Q-18` 选项 B
+  「不主动清理，文档化增长 + 手工步骤」）：`sessions` 与无主 `cart` 行会随使用增长，需要时**停服后**手工删
+  （`DELETE FROM sessions WHERE expires_at < <毫秒时间戳>`），或直接依赖快照 + 重建。
+- 要用一条命令搞定时用可选的 `scripts/ops/cleanup-carts.mjs`（**手工执行；应用启动时不会跑它**）。
+  它只清两类行：**已过期会话**（`expires_at` 已过）与**长期没动过的匿名车**
+  （`user_id IS NULL` 且最后一次加购距今超过 `--days`，默认 30 天）。**登录车一律不动**；老车但近期还加过购也不动
+  （判定按「最近一次加购时间」，没有行才退回建车时间）。**默认干跑只报告**（打印 `expiredSessions` /
+  `idleAnonCarts`，一行 JSON），确认无误后加 `--apply` 才真删。例：
+  `DB_PATH=/data/shop.db node scripts/ops/cleanup-carts.mjs --days=30` 先看一眼，
+  再 `DB_PATH=/data/shop.db node scripts/ops/cleanup-carts.mjs --days=30 --apply`；
+  **删之前建议先跑一次 `node scripts/ops/backup.mjs` 打快照**（清理是删除动作，没有 undo）。

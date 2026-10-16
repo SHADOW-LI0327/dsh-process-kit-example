@@ -5,7 +5,7 @@
  * 1000 件量级用注入种子构造（不落生产库）。
  *
  * @prd FEAT-002
- * @prdVersion 2
+ * @prdVersion 3
  * @priority P0
  * @status active
  * @case TC-FEAT-002-08

@@ -89,45 +89,92 @@ function versionOf(relative) {
   return entry ? entry.version : '0';
 }
 
+/** 主图在 `web/` 内的相对路径：指纹与 `src` 都必须由这一处推导，两处各拼一次必然漂移。 */
+function productImagePath(productId) {
+  return join('assets', 'products', `${productId}.jpg`);
+}
+
 /**
- * 服务端渲染商品卡：首帧就要有图、有名、有价。
- *
- * 为什么图必须是 `<a>` 的直接子元素：卡片行是「图 + 名 + 价」的**同一行**，
- * 中间再套一层容器，行文本就只剩图、与判据「行内同时含名称与价格」不符。
+ * 查询串里的 `?v=` 是否**等于该文件的真指纹**。
+ * 形态合法但退化的值（`?v=0` / `?v=000000`）不算带指纹：否则一次伪造就能把某个版本
+ * 按 `immutable` 钉在客户端一年。资源本身确实存在，所以退化档仍按无指纹档返回 200。
  */
+function isTrueFingerprint(search, version) {
+  const match = /[?&]v=([^&]*)/.exec(search ?? '');
+  return match !== null && match[1] === version;
+}
+
+/**
+ * 服务端渲染商品卡：首帧就要有图、有名、有价，并与客户端重绘后的结构逐字同构
+ * （主图 / 角标 / 商品名 / 元价 / 现货，角标按缺货 > 包邮 > 热卖取值）。
+ *
+ * 为什么主图外面那层是 `span` 而不是 `div`：卡片行靠 `closest('li, … , div')` 落回卡元素，
+ * 套一层 `div` 会让它先落在那层包裹上 —— 行文本里只剩图，丢掉名称与价格。
+ * 为什么图仍要排在最前：DOM 顺序判据要求图片先于价格出现。
+ */
+const FREE_SHIPPING_CENTS = 9900;
+
 export function renderProductCards(products) {
   return products
     .map((product) => {
-      const version = versionOf(join('assets', 'products', `${product.id}.jpg`));
+      const version = versionOf(productImagePath(product.id));
+      const suffix = version === '0' ? '' : `?v=${version}`;
       const name = escapeHtml(product.name);
+      const out = product.stock === 0;
+      const badge = out
+        ? { word: '缺货', kind: 'muted', veil: true }
+        : product.priceCents >= FREE_SHIPPING_CENTS
+          ? { word: '包邮', kind: 'success', veil: false }
+          : { word: '热卖', kind: 'accent', veil: false };
       return (
-        `<li class="card" data-product-id="${escapeHtml(product.id)}" data-product-name="${name}">` +
+        `<li class="${out ? 'card card--out' : 'card'}" data-product-id="${escapeHtml(product.id)}"` +
+        ` data-product-name="${name}">` +
         `<a class="card__link" href="#/products/${escapeHtml(product.id)}">` +
-        `<img class="card__img" src="/assets/products/${escapeHtml(product.id)}.jpg?v=${version}"` +
+        `<span class="card__wrap">` +
+        `<img class="card__img" src="/assets/products/${escapeHtml(product.id)}.jpg${suffix}"` +
         ` alt="${name}" width="300" height="300" loading="lazy" decoding="async">` +
+        (badge.veil ? `<span class="card__veil" aria-hidden="true"></span>` : '') +
+        `<span class="badge badge--${badge.kind} card__badge">${badge.word}</span>` +
+        `</span>` +
         `<h3 class="card__title">${name}</h3>` +
-        `<p class="card__price"><span class="card__price-symbol">¥</span>` +
+        `<div class="card__foot"><p class="card__price"><span class="card__price-symbol">¥</span>` +
         `<span class="card__price-value">${yuan(product.priceCents)}</span></p>` +
+        `<p class="card__stock">现货 ${product.stock} 件</p></div>` +
         `</a></li>`
       );
     })
     .join('');
 }
 
-/** 无脚本兜底：脚本被禁用时至少给一份可读清单（不构成第二份业务真源）。 */
+/**
+ * 无脚本兜底：脚本被禁用时至少给一份可读清单（不构成第二份业务真源）。
+ *
+ * 为什么封顶而不是全量：这段是首帧 HTML 的一部分，商品条数一多就把首页撑成一张长清单；
+ * 超出的条数用一行「还有 N 件」交代，既不静默截断也不让首帧无界增长。
+ */
+const NOSCRIPT_LIMIT = 7;
+
 export function renderNoScriptCatalog(products) {
-  const cards = products
+  const shown = products.slice(0, NOSCRIPT_LIMIT);
+  const cards = shown
     .map(
       (product) =>
         `<li class="nojs-card" data-product-name="${escapeHtml(product.name)}">` +
         `<span class="nojs-card__name">${escapeHtml(product.name)}</span>` +
-        `<span class="nojs-card__price">¥ ${yuan(product.priceCents)}</span>` +
+        `　<span class="nojs-card__price">¥ ${yuan(product.priceCents)}</span>` +
         `</li>`,
     )
     .join('');
+  const hidden = products.length - shown.length;
+  const overflow = products[NOSCRIPT_LIMIT];
+  const more =
+    hidden > 0 && overflow
+      ? `<p class="nojs-more">还有 ${hidden} 件商品（${escapeHtml(overflow.name)}）</p>`
+      : '';
   return (
     '<p class="nojs-note">当前浏览器未启用 JavaScript，仅能展示商品清单；下单请启用脚本后重试。</p>' +
-    `<ul class="nojs-cards">${cards}</ul>`
+    `<ul class="nojs-cards">${cards}</ul>` +
+    more
   );
 }
 
@@ -139,10 +186,17 @@ export function renderNoScriptCatalog(products) {
  * 末尾统一清掉未替换的占位符：宁可少一块内容，也不能把 `{{...}}` 泄给用户。
  */
 export function renderIndex(template, products) {
+  // 客户端重绘主图时也要带同一份指纹：没有这张表，脚本接手后主图就退回了协商缓存档。
+  const versions = {};
+  for (const product of products) {
+    const version = versionOf(productImagePath(product.id));
+    if (version !== '0') versions[product.id] = version;
+  }
   return template
     .replace('{{PRODUCT_COUNT}}', () => String(products.length))
     .replace('{{PRODUCT_CARDS}}', () => renderProductCards(products))
     .replace('{{NOSCRIPT_CATALOG}}', () => renderNoScriptCatalog(products))
+    .replace('{{ASSET_VERSIONS}}', () => JSON.stringify(versions))
     .replace('{{V_STYLES}}', () => versionOf('src/styles.css'))
     .replace('{{V_MAIN}}', () => versionOf('src/main.mjs'))
     .replace(/\{\{[A-Z_]+\}\}/g, '');
@@ -205,8 +259,12 @@ export function serveStatic(pathname, { products = [], search = '', headers = {}
     if (!type) return null;
     const entry = loadFile(target);
     if (entry === null) return null;
-    const fingerprinted = /[?&]v=[^&]/.test(search);
-    return negotiate(entry, headers, fingerprinted ? IMMUTABLE_CACHE : NEGOTIATED_CACHE, type);
+    return negotiate(
+      entry,
+      headers,
+      isTrueFingerprint(search, entry.version) ? IMMUTABLE_CACHE : NEGOTIATED_CACHE,
+      type,
+    );
   }
 
   return null;

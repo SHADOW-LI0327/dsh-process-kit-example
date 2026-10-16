@@ -3,13 +3,13 @@ id: FEAT-002
 kind: design
 title: 电商 app Phase 2（真实数据库 + 最小账号 + 可投产部署 + 淘宝风改版）· 设计与说明
 prd: docs/process/prd/FEAT-002.md
-prdVersion: 2
+prdVersion: 3
 author: pm
 createdAt: 2026-10-15
-status: implementing
+status: done
 gate1: approved
 gate2: approved
-gate4: pending
+gate4: approved
 ---
 
 # FEAT-002 电商 app Phase 2 · 设计与说明
@@ -27,7 +27,7 @@ gate4: pending
 - 对齐进度：`R-NN` **已落实 4 / 偏差 0 / 未落实 0 / 承接但不落产品判据 1**（`R-03`，共 5 条）；`Q-1`~`Q-13` + `Q-3` 子项 3-a 四条共 **17 条全部已落实** + **`Q-22`（交付后变更，人 2026-10-15 裁定）已落实**（逐条见 §一）。**交付后变更同型改正**：`R-05` / `AC-48` / `AC-49` 由「本仓自制 SVG 主图」改为「**本仓自托管真实照片**」，`AC-52` 语义不变并补注（`prdVersion` 1 → 2，见 §七）。
 - 本轮结论：`R-01` `R-02` `R-04` `R-05` 与全部 `Q` 都有明确落点；`R-03`（登记为第二阶段并补全到可开发）的对象是**流程产物**而非产品行为，按总纲 §6.4 第 21 条**不得写成产品判据**，以「承接（登记落实处）不落 `AC`」处置，并在 §二 单列原因。
 - 阻塞项：**无**。原 `deploy/` 属主表缺口已由 orchestrator 按**文件级**补齐（PRD §7 `Q-20` 已解决）；`Q-21` 已裁定 A（Gate1 后 pm 最小回填 FEAT-001 侧副本）。
-- 最后更新轮次：`r2`（**交付后变更 · 判据窄修正**：`R-05` / `AC-48` / `AC-49` 按 `Q-22` 改为**本仓自托管真实照片**、`AC-52` 补注；`prdVersion` 1 → 2）。
+- 最后更新轮次：`r3`（**交付后变更 · 真源覆盖缺口补登 + 契约口径收口**，2026-10-16 主控裁定）：① **`server/src/auth.mjs`** 口令哈希由 `scryptSync` 改**异步 `scrypt`**（同一参数集 + `maxmem`），并对「账号不存在」的登录路径执行**等价哈希**（防时序枚举，`AC-13`）；② **`server/src/ratelimit.mjs`** 由「按会话键」扩为**三维键（会话 / IP / 全局）+ 在途并发计数**（`TRUST_PROXY=1` 时 IP 取 `X-Forwarded-For` 首个值，`AC-23` / `AC-64`）；③ **`server/src/static.mjs`** 内容指纹定义钉死 = 文件字节 `sha256` 前 10 位，且**校验**指纹真伪（退化指纹不得进强缓存档，`AC-31`）；④ **`server/src/config.mjs`** 的 `SESSION_SECRET` / `TRUST_PROXY` 由「读到即算」改为**真被消费**（`AC-63` / `AC-64`）；⑤ **`web/**`** 路由面补登九条哈希路由（含 `#/orders/<id>`）+ 本地搜索过滤 / 订单状态筛选 / `<noscript>` 目录封顶（`AC-57`~`AC-62`）；`prdVersion` **2 → 3**（沿革见 §七）。**前一版**：`r2`（**交付后变更 · 判据窄修正**：`R-05` / `AC-48` / `AC-49` 按 `Q-22` 改为**本仓自托管真实照片**、`AC-52` 补注；`prdVersion` 1 → 2）。
 
 ---
 
@@ -77,7 +77,7 @@ gate4: pending
 | `DEV-1` | `R-05` / `Q-5` 的**字面实现**（外链 / 下载 / 复制淘宝商品图片）**未落实** | **已登记的交付偏离（非静默）** | 该字面在 Gate0 被**人的情势裁定否决**（核对件 `§5.1.1` 已逐条给出理由与备选方案）⇒ 本件按**裁定形态**落实：**本仓自托管真实照片主图**（`P-001.jpg`~`P-008.jpg`；`Q-22` 交付后变更取代原「自制 SVG」形态 —— `T-9` 的"图是主角"形态要求**照做**，`AC-46` `AC-48` `AC-49`） | 见 PRD §7 `Q-14`~`Q-22` 之外的**裁定本身已闭环**；核对件 `§5.1.1` 是权威依据；**`Q-22`（2026-10-15 交付后变更）** 进一步把「来源形态」定为**自托管照片**，**「不从淘宝取图」的否决未变**。**偏差计数口径**：本件「偏差」= **设计自行改口径的条数**（= **0**）；`DEV-1` 属**裁定形态与需求字面不一致**，故单列而不计入偏差 |
 | `DEV-2` | FEAT-001 侧副本的「已被取代」标注**本轮未回填** | **流程性未落实（已裁定）** | 落点在 `prd/FEAT-001*.md`、`contracts/FEAT-001.md`、`uat/FEAT-001-checklist.md` 等**本轮明令禁改**路径（PRD §1.5 `S-1` `S-4` `S-5` `S-8` `S-9` `S-11` `S-13` `S-16` `S-17` `S-18`） | `Q-21` **已裁定 A**：Gate1 后由 orchestrator 另派 pm **最小回填**（只加标注、只改 `S-1` 对应行）；顺序「先改台账（`S-3` test 随写红）→ 再改文档」。**不影响本期任何 `AC` 的可构造性** |
 
-> **未落实项**：无（`R-01` `R-02` `R-04` `R-05` 与全部 `Q` 均有设计落点 + `AC`）。
+> **未落实项**：无（`R-01` `R-02` `R-04` `R-05` 与全部 `Q` 均有设计落点 + `AC`）。**`r3` 新增的 `AC-57`~`AC-64` 同批已给设计落点**（§3.2 模块表：`auth.mjs` 异步 `scrypt` + 时序一致性、`ratelimit.mjs` 三维键 + 在途并发、`static.mjs` 指纹校验、`web/**` 九条路由与本地过滤 / 筛选 / 首帧封顶；§3.4：`SESSION_SECRET` / `TRUST_PROXY` 的**生效**语义）—— **实现落地与用例归 dev / test**，本件只承诺设计层落点。
 > **不在本表的两类**：① 源码注释里的旧口径（`server/src/store.mjs:2,9`、`server/src/app.mjs:4`）随实现自然改写，属 dev 责任；② **历史件不回改**（`docs/process/input/FEAT-001-*.md` 是当时的 Gate0 人签依据）。
 
 ---
@@ -118,12 +118,12 @@ gate4: pending
 | `server/src/config.mjs`（新增） | 环境变量读取 → 校验 → **不可变配置对象**（含默认值） | 不读业务数据 | 全新 |
 | `server/src/db.mjs`（新增） | 打开库 / pragma / 迁移与幂等播种 / 事务封口 `withTx` / 取号 / 备份调用 | 不含 HTTP、不含业务规则 | 全新（把 `Q-1` 的"存储"落成一个模块） |
 | `server/src/store.mjs`（改造） | **存储层接口**：商品 / 购物车 / 用户 / 会话 / 订单的读写方法；**签名保持同步**（`DatabaseSync` 同步 API ⇒ 不改成 async） | 不做鉴权判定、不写 HTTP 响应 | 改造：内部从内存 Map 换为库；**对外方法名尽量保持**（`Q-7` 的注入缝语义不变） |
-| `server/src/auth.mjs`（新增） | 口令 `scrypt` 哈希/校验、会话 token 生成/校验/续期、cookie 读写属性 | 不决定越权口径（那是路由层） | 全新 |
-| `server/src/ratelimit.mjs`（新增） | 固定窗口计数（内存，按会话键） | 不落库（单实例，重启清零是可接受口径） | 全新 |
+| `server/src/auth.mjs`（新增） | 口令 **异步 `scrypt`** 哈希/校验（**禁 `scryptSync`**：同步版会阻塞事件循环；参数与 `maxmem` 见契约 §4.1）、**对不存在账号的登录也执行等价哈希**（防时序枚举，`AC-13`）、会话 token 生成/校验/续期（**校验值由 `SESSION_SECRET` 派生**，换密钥即失效，`AC-63`）、cookie 读写属性 | 不决定越权口径（那是路由层） | 全新 |
+| `server/src/ratelimit.mjs`（新增） | 固定窗口计数（内存，**三维键：会话 / IP / 全局**）+ **在途并发计数上限**（`C`）；IP 维在 `TRUST_PROXY=1` 时取 `X-Forwarded-For` **首个**值、默认按对端地址（`AC-23` / `AC-64`） | 不落库（单实例，重启清零是可接受口径） | 全新 |
 | `server/src/logger.mjs`（新增） | 结构化日志（可注入流）、requestId、慢请求标记 | 不记录敏感字段 | 全新 |
-| `server/src/static.mjs`（改造） | 静态白名单 + 内容类型 + 路径包含（**复用 `resolveWithinWeb`**）+ 缓存头 | 不处理 API 路由 | 改造：白名单扩 `/assets/**` `/favicon.ico`，`CONTENT_TYPES` 加 `.svg`（favicon）与 **`.jpg → image/jpeg`（主图，`Q-22`）**，未知路径 404 改纯文本 |
+| `server/src/static.mjs`（改造） | 静态白名单 + 内容类型 + 路径包含（**复用 `resolveWithinWeb`**）+ 缓存头（**内容指纹 = 文件字节 `sha256` 前 10 位；带指纹档必须校验真伪**，退化指纹不得进强缓存，`AC-31`） | 不处理 API 路由 | 改造：白名单扩 `/assets/**` `/favicon.ico`，`CONTENT_TYPES` 加 `.svg`（favicon）与 **`.jpg → image/jpeg`（主图，`Q-22`）**，未知路径 404 改纯文本 |
 | `server/src/app.mjs`（改造） | 路由分发、请求体读取与上限、鉴权中间步、错误映射（**最外层 ⇒ 500**）、安全响应头、静态与 API 合流 | 不含 SQL | 改造：`safeDispatch` 的「异常 ⇒ 404」**必须去掉**；新增 `dbPath` / `now` / `logStream` / `config` 注入缝 |
-| `web/index.html` + `web/src/**` | 首帧渲染（注入种子数 / 指纹）、哈希路由、五面交互、淘宝风样式、演示标注 | 不发起第三方请求、不做搜索请求 | 改版（`T-1`~`T-10`） |
+| `web/index.html` + `web/src/**` | 首帧渲染（注入种子数 / **真指纹** / `<noscript>` 目录**封顶 7 行**）、**九条哈希路由（含 `#/orders/<id>`）**、五面交互、**本地搜索过滤与订单状态筛选**、淘宝风样式、演示标注 | 不发起第三方请求、**不产生服务端搜索请求**（本地过滤不触网，`AC-60`） | 改版（`T-1`~`T-10` + `AC-57`~`AC-62`） |
 | `web/assets/products/*.jpg` + `web/assets/products/CREDITS.md` + `web/assets/favicon.svg` | 8 张**本仓自托管真实照片**主图（真 JPEG，`P-001.jpg`~`P-008.jpg` —— `Q-22` 取代原自制 SVG）+ 图片来源与许可 + favicon（自制 SVG） | 主图**不含任何外部引用**、随仓交付（离线可用）；`CREDITS.md` 记来源与许可供人复核 | 全新（替换原 8 张 `P-00N.svg`） |
 
 **模块间硬边界**：① 只有 `db.mjs` / `store.mjs` 能碰 `node:sqlite`；② 只有 `auth.mjs` 能碰 `node:crypto` 的口令与 token 逻辑；③ 只有 `app.mjs` 能写 HTTP 响应与状态码；④ `web/**` 不得出现任何非本服务的 URL。
@@ -155,6 +155,7 @@ gate4: pending
 ### 3.4 配置项、默认值与启动序（`AC-25` `AC-26`）
 
 - **变量清单与校验规则**：**唯一真源 = 契约 §7.1**（13 项：`HOST` `PORT` `DB_PATH` `SESSION_SECRET` `COOKIE_SECURE` `TRUST_PROXY` `LOG_LEVEL` `BODY_LIMIT_BYTES` `RATE_LIMIT_WINDOW_MS` `RATE_LIMIT_MAX` `BACKUP_DIR` `BACKUP_RETENTION_DAYS` `NODE_ENV`）。本节**不复制**该表（避免两处口径）。
+- **「可配置」≠「生效」（`r3` 起明文，主控裁定）**：`SESSION_SECRET` 必须**真用于**会话 token 的派生 —— 换密钥 ⇒ 旧会话失效（`AC-63`）；`TRUST_PROXY=1` 必须**真采信** `X-Forwarded-For` 的**首个** IP（限流 IP 维，`AC-64`）；`COOKIE_SECURE` 按 `AC-12` 的「单测覆盖两种配置」断言。**不得**把变量读进来却无消费点（`security-review` 已确认 `r3` 前两者**零消费点**）。
 - **启动序（固定，任一步失败 ⇒ 非零退出 + 日志点名原因）**：
   ① 读环境变量 → ② 校验（类型 / 范围 / 必填；`NODE_ENV=production` 时 `SESSION_SECRET` 必填）→ ③ 打开库（父目录可写）→ ④ `PRAGMA journal_mode=WAL` + `foreign_keys=ON` + `busy_timeout` → ⑤ 迁移 + 幂等播种（**库版本超前 ⇒ 拒绝启动**，`E-18`）→ ⑥ 建 `createApp(config)` → ⑦ `listen(HOST, PORT)` → ⑧ 安装信号处理与进程兜底 → ⑨ 打印**一行**启动日志（含监听地址、库路径、schema 版本；**不含**密钥）。
 - **默认值来源**：`PORT` 默认 3000（沿用现状）；`HOST` 默认 `127.0.0.1`（**裁定值**：未裁前不默认对外）；`BODY_LIMIT_BYTES` / `RATE_LIMIT_*` / 会话时长 / 口令长度 = **暂定值**（依据 `Q-10` 最小可用假设 + `Q-9`，逐条登记在 PRD §7 `Q-15`~`Q-17`）。
@@ -286,3 +287,4 @@ gate4: pending
 | --- | --- | --- | --- | --- |
 | 1 | 2026-10-15 | pm | 初稿：`R-01`~`R-05` 与 `Q-1`~`Q-13`（含 3-a 四条）逐条对齐；偏差登记 `DEV-1`（`Q-5` 字面否决，属 Gate0 裁定形态）/ `DEV-2`（FEAT-001 侧副本待最小回填）；含事务边界与并发逐条表、13 项配置与启动序、日志与停机、备份恢复、部署拓扑（单机 compose + Caddy 终结 TLS + 非 root 只读根） | — → draft |
 | 2 | 2026-10-15 | pm | **交付后变更 · 判据窄修正（人直接指令，`Q-22`）**：主图由「本仓自制 SVG」改为「**本仓自托管真实照片**」（`P-001.jpg`~`P-008.jpg`）。**同型改正**：§一 `R-05` 行（裁定形态 + 契约 §五.15 指向改 `.jpg → image/jpeg` + `CREDITS.md`）、`Q-5` 行（**维持否决的一半 / 被取代的一半**划清）、**新增 `Q-22` 行**；§二 `DEV-1`（裁定形态改为自托管照片，**「不从淘宝取图」的否决未变**、偏差计数仍为 0）；§3.2 模块表的静态行（`CONTENT_TYPES` 加 `.jpg → image/jpeg`）与素材行（`*.jpg` + `CREDITS.md`）；§3.8 主图行与静态面行；§四 影响表的静态面行；§3.x 拓扑图（`/assets/products/*.jpg` ⇒ `image/jpeg`）。**为什么升版**：`AC-48` / `AC-49` 判据语义确有变更（可断言对象由文本 SVG 变为二进制 JPEG）⇒ 与 PRD 同批 `prdVersion` 1 → 2。**未变**：`Q-6`、`§6 N-2`、零第三方请求 | `implementing`（交付后变更重开；`gate1` / `gate2` 值不涂改，Gate4 前重验） |
+| 3 | 2026-10-16 | pm | **交付后变更 · 真源覆盖缺口补登 + 契约口径收口（主控裁定）⇒ `prdVersion` 2 → 3**。**同型改正**：§0 最后更新轮次（`r2` → `r3` + 前版摘要）；§3.2 模块表 —— `auth.mjs` 行（口令改**异步 `scrypt`**、**禁 `scryptSync`**、对不存在账号执行**等价哈希**防时序枚举、token 校验值由 `SESSION_SECRET` 派生）· `ratelimit.mjs` 行（按会话键 → **三维键 + 在途并发上限**，IP 维取 `X-Forwarded-For` 首个值）· `static.mjs` 行（**内容指纹 = 文件字节 `sha256` 前 10 位且必须校验真伪**）· `web/index.html` + `web/src/**` 行（**九条哈希路由（含 `#/orders/<id>`）** + 本地搜索过滤 / 订单状态筛选 + `<noscript>` 目录封顶）；§3.4 新增「**「可配置」≠「生效」**」一条（`SESSION_SECRET` / `TRUST_PROXY` / `COOKIE_SECURE` 的消费点与判据回指 `AC-63` / `AC-64` / `AC-12`）；§二 未落实项行补「`r3` 新增 `AC-57`~`AC-64` 已给设计落点，实现与用例归 dev / test」。**为什么升版**：`AC-48` ③ / `AC-31` / `AC-23` 判据语义变更 + 新增 `AC-57`~`AC-64`（含 B 档「配置生效性」新要求）⇒ 与 PRD / 契约同批 `prdVersion` 2 → 3。**未变**：非目标（PRD §2 `N-1`~`N-9`）、零第三方请求（`Q-6`）、`N-2`、15 个端点与 15 码词表规模（**三维限流不新增错误码、不新增环境变量**） | `implementing`（交付后变更重开；`gate1` / `gate2` 值不涂改，Gate4 前重验） |

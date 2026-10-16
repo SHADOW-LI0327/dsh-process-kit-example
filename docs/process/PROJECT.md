@@ -63,7 +63,7 @@ processVersion: 1
 
 | 角色 | 可写路径 | 禁止 |
 | --- | --- | --- |
-| `orchestrator`（主控） | `docs/process/README.md`、`docs/process/orchestrator.md`、`docs/process/PROJECT.md`、`docs/process/input/**`、`docs/process/ui/**`、`docs/process/tools/README.md`、**`docs/process/tools/FEAT-002/**`（与 test/uat **共享**的载体根：跨角色装置笔记与校验脚本；2026-10-15 补，理由 = 主控实测到的 `node:sqlite` / 容器权限 / 门禁副作用等**跨角色陷阱**需要有落点，写进 journal 只有主控自己会读、写进交付物又不该。该根被 `.gitignore` 排除 ⇒ 不影响落点门禁与属主审计）**、`docs/process/prd/*.journal.jsonl`、`docs/process/prd/*.journal.jsonl.meta.json`、`scripts/process/**`、`reports/orchestrator/**`、`reports/gaps/**`、`reports/_archives/**`、`AGENTS.md`、`README.md`、`.gitignore`、`.npmrc`、`package.json`、`package-lock.json` | 写实现 / 写测试 / 替人做 Gate 决策 |
+| `orchestrator`（主控） | `docs/process/README.md`、`docs/process/orchestrator.md`、`docs/process/PROJECT.md`、`docs/process/input/**`、`docs/process/ui/**`、`docs/process/tools/README.md`、**`docs/process/tools/FEAT-002/**`（与 test/uat **共享**的载体根：跨角色装置笔记与校验脚本；2026-10-15 补，理由 = 主控实测到的 `node:sqlite` / 容器权限 / 门禁副作用等**跨角色陷阱**需要有落点，写进 journal 只有主控自己会读、写进交付物又不该。该根被 `.gitignore` 排除 ⇒ 不影响落点门禁与属主审计）**、`docs/process/prd/*.journal.jsonl`、`docs/process/prd/*.journal.jsonl.meta.json`、`scripts/process/**`、`reports/orchestrator/**`、`reports/gaps/**`、`reports/_archives/**`、`AGENTS.md`、`README.md`、**`docs/images/**`（README 的 example 截图落点：`README.md` 归主控 ⇒ 它引用的图片必须与它同级可写，否则每张图一落盘就计一条越界；2026-10-16 补。**这条是「先写文件、后补授权」的偏差**——先落了 15 张图才发现该目录无授权，按本表上方补 `README.md` 那次的同一条先例（其原文：「属主表是**项目适配接口**，路径该增就增，**但不允许「先写文件再指望门禁放行」**」）**如实登记为违规**，另已回跑门禁证明 EXIT=0）**、`.gitignore`、`.npmrc`、`package.json`、`package-lock.json` | 写实现 / 写测试 / 替人做 Gate 决策 |
 | `pm` | `docs/process/prd/**`、`docs/process/contracts/**`、`docs/process/uat/*-checklist.md`、`reports/pm-review/**` | 读业务实现 / 测试 / e2e / 日志；写实现 |
 | `ui-designer` | `docs/process/prd/*-ui-spec.md`、`docs/process/prototypes/**` | 改实现源码；读后端实现 / 前端组件内部实现 / 测试 / e2e / 日志 |
 | `test-agent` | `test/**`、`docs/process/rules/**`、`reports/test/**`、`docs/process/tools/FEAT-001/**`、`docs/process/tools/FEAT-002/**` | 改 `server/`、`web/` 实现源码；读业务实现细节（接口签名 / schema 除外） |
@@ -99,7 +99,8 @@ processVersion: 1
 | UI 边距对称容差 | `1` | 内容区左右边距之差上限（px） |
 | UI 对比度下限 | `4.5` | WCAG AA 正文 |
 | UI 大字号对比度下限 | `3.0` | WCAG AA 大字号（≥24pt） |
-| UI 项目令牌 | `docs/process/prd/FEAT-001-ui-spec.md`、`docs/process/prd/FEAT-002-ui-spec.md` | 几何门禁 ⑩ 的**令牌源**（从中抽 6 位色值当项目色板，再判原型主色是否照抄）。当前真源 = FEAT-002 UI 规格的「设计令牌表」。**两个包都登记**（实测教训）：几何门禁一次判**全部**包，只登记 FEAT-002 会让**已冻结的 FEAT-001 原型**在 ⑩ 判 ❌「画面主色不在令牌里」**9 条**，把仓库级门禁拖成 exit 1 ⇒ 令牌源必须是**全体在库包调色板的并集**。代价：并集使「照抄本项目令牌」这一检查对单包变松（FEAT-001 的深色盘也算合法）；FEAT-002 侧「不得残留旧深色令牌」由 `AC-38` 的反向断言（旧令牌计数 = 0）单独守住，不依赖 ⑩。可多个，用 `、` 分隔 |
+| UI 项目令牌 | `docs/process/prd/FEAT-001-ui-spec.md`、`docs/process/prd/FEAT-002-ui-spec.md` | 几何门禁 ⑩ 的**令牌源**（从中抽 6 位色值当项目色板，再判原型主色是否照抄）。当前真源 = FEAT-002
+| 限流阈值（可调） | `RATE_LIMIT_MAX` | 环境变量，默认 `60` = 每会话上限；每 IP = ×4（240）、全局 = ×20（1200），窗口 `RATE_LIMIT_WINDOW_MS` 默认 60000ms。限流取证时调小即可：`RATE_LIMIT_MAX=5` ⇒ 同一匿名会话第 6 次写请求即 `429`（`2026-10-16` 由 dev 定位并给出 429 真读数；**未新增变量名** ⇒ `AC-35` 变量集合不变） | UI 规格的「设计令牌表」。**两个包都登记**（实测教训）：几何门禁一次判**全部**包，只登记 FEAT-002 会让**已冻结的 FEAT-001 原型**在 ⑩ 判 ❌「画面主色不在令牌里」**9 条**，把仓库级门禁拖成 exit 1 ⇒ 令牌源必须是**全体在库包调色板的并集**。代价：并集使「照抄本项目令牌」这一检查对单包变松（FEAT-001 的深色盘也算合法）；FEAT-002 侧「不得残留旧深色令牌」由 `AC-38` 的反向断言（旧令牌计数 = 0）单独守住，不依赖 ⑩。可多个，用 `、` 分隔 |
 
 ---
 

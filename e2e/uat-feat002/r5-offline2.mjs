@@ -1,0 +1,40 @@
+import { openPage, outDir } from '/Users/admin/workspace/dsh-process-kit-example/e2e/uat-feat002/lib-cdp.mjs';
+const B='http://127.0.0.1:3000';
+const p=await openPage({width:390,height:844,dsf:2,mobile:true});
+await p.send('Network.enable',{},p.sid);
+await p.send('Network.clearBrowserCookies',{},p.sid);
+const E=(x)=>p.eval(x);
+const T=async(n=200)=>E(`(document.body.innerText||'').replace(/\\n+/g,' | ').slice(0,${n})`);
+const imgs=async()=>E(`JSON.stringify([...document.querySelectorAll('img')].map(i=>({src:(i.getAttribute('src')||'').split('/').pop(),ok:i.complete&&i.naturalWidth>0,nw:i.naturalWidth,w:+i.getBoundingClientRect().width.toFixed(1)})))`);
+const R={};
+// ---- 阶段一：五个页面的请求 host 清单（不拦断） ----
+const pages=[['首页','#/products'],['详情','#/products/P-006'],['购物车','#/cart'],['结算','#/checkout'],['订单','#/orders']];
+await p.navigate(B+'/',3200);
+const host=()=>{const s=new Set();for(const e of p.events){if(e.method==='Network.requestWillBeSent'){try{s.add(new URL(e.params.request.url).host)}catch{}}}return [...s];};
+R['一_各页host']={};
+for(const [name,h] of pages){ p.events.splice(0); await E(`location.hash=${JSON.stringify(h)}`); await p.wait(2600); R['一_各页host'][name]=host(); }
+R['一_全部host并集']=host();
+// ---- 阶段二：断外网（拦断一切非环回请求）后首页/详情仍渲染 ----
+await p.send('Fetch.enable',{patterns:[{urlPattern:'*',requestStage:'Request'}]},p.sid);
+let blocked=[],allowed=0;
+const pump=async(ms)=>{const end=Date.now()+ms;while(Date.now()<end){for(const ev of p.events.splice(0)){if(ev.method==='Fetch.requestPaused'){let host='';try{host=new URL(ev.params.request.url).host}catch{}if(host==='127.0.0.1:3000'){allowed++;await p.send('Fetch.continueRequest',{requestId:ev.params.requestId},p.sid).catch(()=>{});}else{blocked.push(host||ev.params.request.url);await p.send('Fetch.failRequest',{requestId:ev.params.requestId,errorReason:'InternetDisconnected'},p.sid).catch(()=>{});}}}await p.wait(50);}};
+await E(`location.hash='#/products'`);
+await pump(6000);
+R['二_断网计数']={放行环回:allowed,拦断:blocked};
+R['二_断网首页图片']=JSON.parse(await imgs());
+R['二_断网首页文本']=await T(200);
+await p.shot(outDir('U-29-断外网-首页.png'));
+await p.shotFull(outDir('U-29-断外网-首页全页.png'));
+await E(`location.hash='#/products/P-006'`);
+await pump(5000);
+R['二_断网详情图片']=JSON.parse(await imgs());
+R['二_断网详情文本']=await T(160);
+await p.shot(outDir('U-29-断外网-详情.png'));
+await E(`location.hash='#/cart'`);
+await pump(5000);
+R['二_断网购物车图片']=JSON.parse(await imgs());
+R['二_断网购物车文本']=await T(160);
+await p.shot(outDir('U-29-断外网-购物车.png'));
+await p.send('Fetch.disable',{},p.sid);
+console.log(JSON.stringify(R,null,1));
+await p.close();

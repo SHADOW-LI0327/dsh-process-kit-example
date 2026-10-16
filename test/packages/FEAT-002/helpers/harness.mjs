@@ -14,8 +14,9 @@
  *  - 断言与 SQLite 版本无关；不断言 stderr 上是否存在实验特性告警（宿主有、容器没有）。
  *
  * @prd FEAT-002
- * @prdVersion 1
+ * @prdVersion 3
  */
+import { createHash } from 'node:crypto';
 import { request } from 'node:http';
 import { connect, createServer as createNetServer } from 'node:net';
 import { execFileSync, spawn } from 'node:child_process';
@@ -830,3 +831,84 @@ export function repoText(relPath) {
 export function repoFileExists(relPath) {
   return existsSync(join(REPO_ROOT, relPath));
 }
+
+/** 资源文件的内容指纹（`AC-31` v3 口径：文件**字节**的 `sha256` 前 10 位 hex，小写）。 */
+export function contentFingerprint(bytes) {
+  return createHash('sha256').update(bytes).digest('hex').slice(0, 10);
+}
+
+/**
+ * 递归解析 JPEG 段结构，走**完整文件**（`AC-48` ③ v3：由「头部自证」升级为「结构化完整性」）。
+ *
+ * 判据句（PRD `AC-48` ③）：从 `SOI`（`FF D8`）起逐段读 2 字节大端段长（必须 ≥ 2 且落在文件剩余长度内）并跳过该段；
+ * 必须出现 `SOF`（`FFC0`~`FFCF`，排除 `C4`/`C8`/`CC`；基线 `C0` 与渐进 `C2` 都要覆盖）；`SOS` 之后必须有**非空熵数据**；
+ * 文件必须以 `EOI`（`FF D9`）结束且解析一致走到文件尾。
+ *
+ * ⚠ 明确边界（PRD 明写，不得越界承诺）：本函数只保证**结构完整**；「能否被真实解码器解出图像」属**人工 / 真机判断**。
+ * ⚠ 为什么必须走完整文件：32 字节量级的伪 JPEG（`SOI` + 合法 `SOF0` 400×400 + `SOS` + `EOI`、**熵数据为空**）
+ *   能骗过「magic bytes + 头部 `SOF` 自证」而不被解出任何图像（logic-review 反例，已固化为回归断言）。
+ *
+ * @returns {{ok: true, sof: {marker:number,bits:number,height:number,width:number}, entropyBytes:number, eoiAt:number}
+ *          | {ok: false, reason: string}}
+ */
+export function jpegStructure(buf) {
+  if (buf.length < 4 || buf[0] !== 0xff || buf[1] !== 0xd8) return { ok: false, reason: '缺少 SOI（FF D8）' };
+  let pos = 2;
+  let sof = null;
+  for (;;) {
+    if (pos + 1 >= buf.length) {
+      return { ok: false, reason: `走到文件尾仍未见到 SOS（已解析到偏移 ${pos}/${buf.length}）` };
+    }
+    if (buf[pos] !== 0xff) {
+      return { ok: false, reason: `段边界处不是标记（偏移 ${pos} 的字节 = 0x${buf[pos].toString(16)}）` };
+    }
+    let marker = buf[pos + 1];
+    while (marker === 0xff) {
+      // `FF FF …` 填充字节：跳过
+      pos += 1;
+      marker = buf[pos + 1];
+    }
+    if (marker === 0x01 || (marker >= 0xd0 && marker <= 0xd7)) {
+      // 独立标记（TEM / RSTn）：无段长
+      pos += 2;
+      continue;
+    }
+    if (marker === 0xd9) return { ok: false, reason: `SOS 之前就出现 EOI（偏移 ${pos}）—— 没有图像数据` };
+    if (pos + 3 >= buf.length) return { ok: false, reason: `段长字段越界（偏移 ${pos}，文件长 ${buf.length}）` };
+    const length = buf.readUInt16BE(pos + 2);
+    if (length < 2) {
+      return { ok: false, reason: `段长必须 ≥ 2，实际 ${length}（偏移 ${pos}，标记 0x${marker.toString(16)}）` };
+    }
+    if (pos + 2 + length > buf.length) {
+      return {
+        ok: false,
+        reason: `段长越界：偏移 ${pos} + 2 + ${length} = ${pos + 2 + length} > 文件长 ${buf.length}（标记 0x${marker.toString(16)}）`,
+      };
+    }
+    const isSof = marker >= 0xc0 && marker <= 0xcf && marker !== 0xc4 && marker !== 0xc8 && marker !== 0xcc;
+    if (isSof && sof === null) {
+      if (length < 8) return { ok: false, reason: `SOF 段长过短（${length}），读不出宽高` };
+      sof = {
+        marker,
+        bits: buf[pos + 4],
+        height: buf.readUInt16BE(pos + 5),
+        width: buf.readUInt16BE(pos + 7),
+      };
+    }
+    if (marker === 0xda) {
+      // SOS：紧邻段头之后、EOI 之前必须有非空熵编码数据；文件必须以 EOI 结束（= 解析一致走到文件尾）
+      const scanStart = pos + 2 + length;
+      const tail = buf.subarray(buf.length - 2);
+      if (tail[0] !== 0xff || tail[1] !== 0xd9) {
+        return { ok: false, reason: `文件未以 EOI（FF D9）结束，最后 2 字节 = ${[...tail].map((b) => b.toString(16).padStart(2, '0')).join(' ')}` };
+      }
+      const entropyBytes = buf.length - 2 - scanStart;
+      if (entropyBytes <= 0) {
+        return { ok: false, reason: `SOS 之后没有熵编码数据（空扫描：${entropyBytes} 字节）—— 头部自证合法但解不出图像` };
+      }
+      return { ok: true, sof, entropyBytes, eoiAt: buf.length - 2 };
+    }
+    pos += 2 + length;
+  }
+}
+
