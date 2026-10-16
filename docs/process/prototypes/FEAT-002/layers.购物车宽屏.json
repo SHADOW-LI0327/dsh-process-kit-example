@@ -1,0 +1,756 @@
+{
+  "screen": "购物车宽屏",
+  "id": "FEAT-002",
+  "canvas": "1280×800 @ 72 ppi",
+  "generatedBy": "docs/process/prototypes/FEAT-002/build-prototypes.mjs",
+  "tokens": "docs/process/prd/FEAT-002-ui-spec.md §8.2（本仓无 UI 项目令牌；数值骨架取 docs/process/ui/tokens.md）",
+  "note": "分层源（脚本侧图层清单）。PSD 本身即原生分层源；此处 bounds 为引擎 info 导出值，仅供人工比读，几何判据用 geometry.<屏幕名>.json。",
+  "layers": [
+    {
+      "name": "底色",
+      "kind": "shape",
+      "bounds": [
+        0,
+        0,
+        1280,
+        800
+      ]
+    },
+    {
+      "name": "顶栏",
+      "kind": "shape",
+      "bounds": [
+        0,
+        0,
+        1280,
+        64
+      ]
+    },
+    {
+      "name": "顶栏下边线",
+      "kind": "shape",
+      "bounds": [
+        0,
+        64,
+        1280,
+        1
+      ]
+    },
+    {
+      "name": "品牌名",
+      "kind": "text",
+      "text": "电商小铺",
+      "sizePt": 20,
+      "bounds": [
+        61,
+        23,
+        81,
+        20
+      ]
+    },
+    {
+      "name": "顶部导航-首页",
+      "kind": "text",
+      "text": "首页",
+      "sizePt": 15,
+      "bounds": [
+        229,
+        27,
+        32,
+        16
+      ]
+    },
+    {
+      "name": "顶部导航下划线-首页",
+      "kind": "shape",
+      "bounds": [
+        230,
+        52,
+        33,
+        3
+      ]
+    },
+    {
+      "name": "顶部导航-购物车",
+      "kind": "text",
+      "text": "购物车",
+      "sizePt": 15,
+      "bounds": [
+        309,
+        27,
+        48,
+        16
+      ]
+    },
+    {
+      "name": "顶部导航-订单",
+      "kind": "text",
+      "text": "订单",
+      "sizePt": 15,
+      "bounds": [
+        389,
+        27,
+        32,
+        16
+      ]
+    },
+    {
+      "name": "顶部导航-我的",
+      "kind": "text",
+      "text": "我的",
+      "sizePt": 15,
+      "bounds": [
+        469,
+        27,
+        32,
+        15
+      ]
+    },
+    {
+      "name": "搜索框",
+      "kind": "shape",
+      "bounds": [
+        680,
+        12,
+        423,
+        40
+      ]
+    },
+    {
+      "name": "搜索-镜圈",
+      "kind": "shape",
+      "bounds": [
+        690,
+        21,
+        17,
+        16
+      ]
+    },
+    {
+      "name": "搜索-镜柄",
+      "kind": "shape",
+      "bounds": [
+        702,
+        35,
+        7,
+        2
+      ]
+    },
+    {
+      "name": "搜索-占位文字",
+      "kind": "text",
+      "text": "搜索商品",
+      "sizePt": 15,
+      "bounds": [
+        719,
+        25,
+        63,
+        16
+      ]
+    },
+    {
+      "name": "顶栏购物车",
+      "kind": "text",
+      "text": "购物车 3",
+      "sizePt": 15,
+      "bounds": [
+        1135,
+        27,
+        64,
+        16
+      ]
+    },
+    {
+      "name": "宽屏演示声明",
+      "kind": "text",
+      "text": "演示环境：下单即已支付，不产生真实扣款",
+      "sizePt": 13,
+      "bounds": [
+        955,
+        728,
+        263,
+        15
+      ]
+    },
+    {
+      "name": "购物车大标题",
+      "kind": "text",
+      "text": "购物车",
+      "sizePt": 26,
+      "bounds": [
+        59,
+        102,
+        80,
+        26
+      ]
+    },
+    {
+      "name": "购物车副标题",
+      "kind": "text",
+      "text": "共 12 件商品，价格以元显示",
+      "sizePt": 13,
+      "bounds": [
+        59,
+        137,
+        181,
+        14
+      ]
+    },
+    {
+      "name": "购物车卡",
+      "kind": "shape",
+      "bounds": [
+        60,
+        176,
+        701,
+        356
+      ]
+    },
+    {
+      "name": "行主图-1",
+      "kind": "shape",
+      "bounds": [
+        80,
+        200,
+        73,
+        72
+      ]
+    },
+    {
+      "name": "行主图-1-壶身",
+      "kind": "shape",
+      "bounds": [
+        102,
+        229,
+        32,
+        30
+      ]
+    },
+    {
+      "name": "行主图-1-壶颈",
+      "kind": "shape",
+      "bounds": [
+        107,
+        217,
+        11,
+        16
+      ]
+    },
+    {
+      "name": "行主图-1-壶嘴",
+      "kind": "shape",
+      "bounds": [
+        95,
+        214,
+        17,
+        7
+      ]
+    },
+    {
+      "name": "行主图-1-把手",
+      "kind": "shape",
+      "bounds": [
+        128,
+        234,
+        13,
+        17
+      ]
+    },
+    {
+      "name": "行名-1",
+      "kind": "text",
+      "text": "手冲咖啡壶",
+      "sizePt": 16,
+      "bounds": [
+        175,
+        208,
+        84,
+        17
+      ]
+    },
+    {
+      "name": "行单价-1",
+      "kind": "text",
+      "text": "单价 ¥ 129.00",
+      "sizePt": 13,
+      "bounds": [
+        175,
+        239,
+        99,
+        13
+      ]
+    },
+    {
+      "name": "行删除-1",
+      "kind": "text",
+      "text": "删除",
+      "sizePt": 13,
+      "bounds": [
+        175,
+        263,
+        29,
+        13
+      ]
+    },
+    {
+      "name": "步进器-1",
+      "kind": "shape",
+      "bounds": [
+        500,
+        216,
+        106,
+        36
+      ]
+    },
+    {
+      "name": "步进器-1减",
+      "kind": "text",
+      "text": "－",
+      "sizePt": 17,
+      "bounds": [
+        512,
+        233,
+        13,
+        3
+      ]
+    },
+    {
+      "name": "步进器-1值",
+      "kind": "text",
+      "text": "3",
+      "sizePt": 17,
+      "bounds": [
+        547,
+        227,
+        13,
+        16
+      ]
+    },
+    {
+      "name": "步进器-1加",
+      "kind": "text",
+      "text": "＋",
+      "sizePt": 17,
+      "bounds": [
+        582,
+        228,
+        13,
+        13
+      ]
+    },
+    {
+      "name": "行小计-1",
+      "kind": "text",
+      "text": "¥ 387.00",
+      "sizePt": 16,
+      "bounds": [
+        661,
+        225,
+        79,
+        15
+      ]
+    },
+    {
+      "name": "行分隔线-2",
+      "kind": "shape",
+      "bounds": [
+        80,
+        294,
+        660,
+        1
+      ]
+    },
+    {
+      "name": "行主图-2",
+      "kind": "shape",
+      "bounds": [
+        80,
+        318,
+        73,
+        72
+      ]
+    },
+    {
+      "name": "行主图-2-锥体",
+      "kind": "shape",
+      "bounds": [
+        100,
+        339,
+        33,
+        23
+      ]
+    },
+    {
+      "name": "行主图-2-杯口",
+      "kind": "shape",
+      "bounds": [
+        97,
+        336,
+        39,
+        7
+      ]
+    },
+    {
+      "name": "行主图-2-底托",
+      "kind": "shape",
+      "bounds": [
+        107,
+        366,
+        19,
+        6
+      ]
+    },
+    {
+      "name": "行名-2",
+      "kind": "text",
+      "text": "陶瓷滤杯",
+      "sizePt": 16,
+      "bounds": [
+        176,
+        326,
+        67,
+        17
+      ]
+    },
+    {
+      "name": "行单价-2",
+      "kind": "text",
+      "text": "单价 ¥ 68.00",
+      "sizePt": 13,
+      "bounds": [
+        175,
+        357,
+        90,
+        13
+      ]
+    },
+    {
+      "name": "行删除-2",
+      "kind": "text",
+      "text": "删除",
+      "sizePt": 13,
+      "bounds": [
+        175,
+        381,
+        29,
+        13
+      ]
+    },
+    {
+      "name": "步进器-2",
+      "kind": "shape",
+      "bounds": [
+        500,
+        334,
+        106,
+        36
+      ]
+    },
+    {
+      "name": "步进器-2减",
+      "kind": "text",
+      "text": "－",
+      "sizePt": 17,
+      "bounds": [
+        512,
+        351,
+        13,
+        3
+      ]
+    },
+    {
+      "name": "步进器-2值",
+      "kind": "text",
+      "text": "8",
+      "sizePt": 17,
+      "bounds": [
+        547,
+        345,
+        13,
+        16
+      ]
+    },
+    {
+      "name": "步进器-2加",
+      "kind": "text",
+      "text": "＋",
+      "sizePt": 17,
+      "bounds": [
+        582,
+        346,
+        13,
+        13
+      ]
+    },
+    {
+      "name": "行小计-2",
+      "kind": "text",
+      "text": "¥ 544.00",
+      "sizePt": 16,
+      "bounds": [
+        661,
+        343,
+        79,
+        15
+      ]
+    },
+    {
+      "name": "行分隔线-3",
+      "kind": "shape",
+      "bounds": [
+        80,
+        412,
+        660,
+        1
+      ]
+    },
+    {
+      "name": "行主图-3",
+      "kind": "shape",
+      "bounds": [
+        80,
+        436,
+        73,
+        72
+      ]
+    },
+    {
+      "name": "行主图-3-纸一",
+      "kind": "shape",
+      "bounds": [
+        98,
+        461,
+        37,
+        22
+      ]
+    },
+    {
+      "name": "行主图-3-折边",
+      "kind": "shape",
+      "bounds": [
+        104,
+        457,
+        25,
+        15
+      ]
+    },
+    {
+      "name": "行主图-3-纸二",
+      "kind": "shape",
+      "bounds": [
+        102,
+        476,
+        29,
+        15
+      ]
+    },
+    {
+      "name": "行名-3",
+      "kind": "text",
+      "text": "滤纸 100 张",
+      "sizePt": 16,
+      "bounds": [
+        175,
+        444,
+        97,
+        17
+      ]
+    },
+    {
+      "name": "行单价-3",
+      "kind": "text",
+      "text": "单价 ¥ 29.00",
+      "sizePt": 13,
+      "bounds": [
+        175,
+        475,
+        90,
+        13
+      ]
+    },
+    {
+      "name": "行删除-3",
+      "kind": "text",
+      "text": "删除",
+      "sizePt": 13,
+      "bounds": [
+        175,
+        499,
+        29,
+        13
+      ]
+    },
+    {
+      "name": "步进器-3",
+      "kind": "shape",
+      "bounds": [
+        500,
+        452,
+        106,
+        36
+      ]
+    },
+    {
+      "name": "步进器-3减",
+      "kind": "text",
+      "text": "－",
+      "sizePt": 17,
+      "bounds": [
+        512,
+        469,
+        13,
+        3
+      ]
+    },
+    {
+      "name": "步进器-3值",
+      "kind": "text",
+      "text": "1",
+      "sizePt": 17,
+      "bounds": [
+        550,
+        463,
+        7,
+        15
+      ]
+    },
+    {
+      "name": "步进器-3加",
+      "kind": "text",
+      "text": "＋",
+      "sizePt": 17,
+      "bounds": [
+        582,
+        464,
+        13,
+        13
+      ]
+    },
+    {
+      "name": "行小计-3",
+      "kind": "text",
+      "text": "¥ 29.00",
+      "sizePt": 16,
+      "bounds": [
+        672,
+        461,
+        68,
+        15
+      ]
+    },
+    {
+      "name": "结算卡",
+      "kind": "shape",
+      "bounds": [
+        786,
+        176,
+        435,
+        220
+      ]
+    },
+    {
+      "name": "结算卡标题",
+      "kind": "text",
+      "text": "订单摘要",
+      "sizePt": 16,
+      "bounds": [
+        805,
+        198,
+        67,
+        17
+      ]
+    },
+    {
+      "name": "结算卡分隔线",
+      "kind": "shape",
+      "bounds": [
+        806,
+        232,
+        394,
+        1
+      ]
+    },
+    {
+      "name": "结算卡件数",
+      "kind": "text",
+      "text": "商品件数",
+      "sizePt": 13,
+      "bounds": [
+        805,
+        253,
+        57,
+        13
+      ]
+    },
+    {
+      "name": "结算卡件数值",
+      "kind": "text",
+      "text": "12 件",
+      "sizePt": 15,
+      "bounds": [
+        1159,
+        251,
+        41,
+        16
+      ]
+    },
+    {
+      "name": "结算卡合计标签",
+      "kind": "text",
+      "text": "应付合计",
+      "sizePt": 13,
+      "bounds": [
+        805,
+        288,
+        56,
+        14
+      ]
+    },
+    {
+      "name": "结算卡金额",
+      "kind": "text",
+      "text": "¥ 1308.00",
+      "sizePt": 30,
+      "bounds": [
+        1043,
+        298,
+        157,
+        26
+      ]
+    },
+    {
+      "name": "主按钮-去结算",
+      "kind": "shape",
+      "bounds": [
+        806,
+        344,
+        395,
+        46
+      ]
+    },
+    {
+      "name": "主按钮-去结算文字",
+      "kind": "text",
+      "text": "去结算",
+      "sizePt": 16,
+      "bounds": [
+        979,
+        359,
+        50,
+        17
+      ]
+    },
+    {
+      "name": "结算卡提示",
+      "kind": "text",
+      "text": "下单即支付成功（演示，不产生真实扣款）",
+      "sizePt": 13,
+      "bounds": [
+        805,
+        404,
+        255,
+        15
+      ]
+    }
+  ]
+}

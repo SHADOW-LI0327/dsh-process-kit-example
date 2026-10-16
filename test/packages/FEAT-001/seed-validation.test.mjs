@@ -9,7 +9,7 @@
  */
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { loadCreateApp, makeSeed } from './helpers/app.mjs';
+import { loadCreateApp, makeSeed, tempDbPath } from './helpers/app.mjs';
 
 /** 捕获同步抛错；返回 Promise 时顺手吞掉拒绝，避免污染进程级未处理拒绝。 */
 function captureSync(fn) {
@@ -22,12 +22,15 @@ function captureSync(fn) {
   }
 }
 
-test('种子字段非法（E-14）', async () => {
+test('种子字段非法（E-14）', async (t) => {
   const createApp = await loadCreateApp();
   const [template] = makeSeed(1, { stock: 3 });
+  // 本用例直接调 createApp（不经 startApp），故显式给独立临时库：测试一律不落生产库路径（FEAT-002 契约 §8.3）。
+  const temp = tempDbPath();
+  t.after(() => temp.cleanup());
 
   // 对照组：与负分支完全同形状，只把字段换回合法值 ⇒ 必须创建成功。
-  const control = captureSync(() => createApp({ seed: [template] }));
+  const control = captureSync(() => createApp({ seed: [template], dbPath: temp.dbPath }));
   assert.equal(
     control.threw,
     false,
@@ -45,7 +48,7 @@ test('种子字段非法（E-14）', async () => {
 
   for (const variant of illegal) {
     const seed = [variant.mutate(template)];
-    const attempt = captureSync(() => createApp({ seed }));
+    const attempt = captureSync(() => createApp({ seed, dbPath: temp.dbPath }));
     assert.equal(
       attempt.threw,
       true,

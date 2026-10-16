@@ -1,84 +1,89 @@
 /**
- * 购物车管理页 / 空态页。
+ * 购物车页：行件数调整 / 删除 / 去结算。
  *
- * 每一行的件数变化都以**服务端返回的整车**为准重绘，前端不自己加减；
- * 请求在途时只禁用该行控件，被拒时数字回退为服务端当前值并给出中文提示。
+ * 每一次件数变化都以服务端返回的**整车**重绘，前端不自己加减；
+ * 被拒时把服务端 `message` 原样显示（例如「已达上限：单件商品最多买 8 件」）。
  */
-import { api } from '../api.mjs';
-import { banner, cartTable, emptyState, loading, settleCard } from '../components.mjs';
+import { api, errorMessage } from '../api.mjs';
+import { banner, el, emptyState, lineThumb, pageHead, stepper, summary } from '../components.mjs';
+import { money } from '../format.mjs';
+import { getState, setState, syncCartBadge } from '../state.mjs';
 
-const EMPTY_CART_HTML = emptyState({
-  icon: '空',
-  text: '购物车是空的',
-  sub: '去商品列表挑一件，加入购物车后可在这里提交订单',
-});
+export function renderCart(root, { error = null, notice = null } = {}) {
+  const cart = getState().cart;
+  const items = cart && Array.isArray(cart.items) ? cart.items : [];
 
-export async function render(ctx) {
-  ctx.ui.setActiveNav('cart');
-  ctx.ui.setHeader({ title: '购物车', action: { label: '继续购物', href: '#/products' } });
-  ctx.root.innerHTML = loading();
+  const head = pageHead('购物车', '件数与金额均以服务端返回为准');
 
-  let cart;
-  try {
-    cart = await api.getCart();
-  } catch (error) {
-    ctx.root.innerHTML = banner(error.message, { retry: true });
-    ctx.root.querySelector('[data-action="retry"]')?.addEventListener('click', () => render(ctx));
+  if (items.length === 0) {
+    root.replaceChildren();
+    if (notice) root.append(banner(notice, 'ok'));
+    if (error) root.append(banner(error));
+    root.append(
+      head,
+      el('section', { class: 'panel' }, [
+        emptyState('购物车是空的，无法提交订单', '先去挑几件器材，再回来结算。'),
+        el('div', { class: 'actions' }, [el('a', { class: 'btn btn--cta', href: '#/products' }, ['去挑商品'])]),
+      ]),
+    );
     return;
   }
-  ctx.ui.setCart(cart);
 
-  const paint = (nextCart, { busyId = null, message = null } = {}) => {
-    const listPart =
-      nextCart.items.length === 0
-        ? `<section class="card table-card">${EMPTY_CART_HTML}</section>`
-        : `<section class="card table-card">${cartTable(nextCart, busyId)}</section>`;
-    ctx.root.innerHTML =
-      `<div class="band">${message ? banner(message) : ''}${listPart}${settleCard(nextCart)}</div>`;
-    bind(nextCart);
-  };
+  const repaint = (patch) => renderCart(root, patch);
+  const failure = (caught) => repaint({ error: errorMessage(caught) });
 
-  const change = async (productId, delta) => {
-    const row = cart.items.find((item) => item.productId === productId);
-    if (!row) return;
-    const next = row.quantity + delta;
-    if (next < 1 || next > 8) return;
-    paint(cart, { busyId: productId });
-    try {
-      cart = await api.updateCartItem(productId, next);
-      ctx.ui.setCart(cart);
-      paint(cart);
-    } catch (error) {
-      // 不做乐观更新：失败即回到服务端当前值，附上服务端给的中文提示。
-      paint(cart, { message: error.message });
-    }
-  };
+  const lines = items.map((item) => {
+    const remove = el(
+      'button',
+      { class: 'btn btn--link', type: 'button', 'aria-label': `从购物车移除 ${item.productName}` },
+      ['移除'],
+    );
+    remove.addEventListener('click', async () => {
+      try {
+        const fresh = await api.removeItem(item.productId);
+        setState({ cart: fresh, error: null });
+        syncCartBadge();
+        repaint({});
+      } catch (caught) {
+        failure(caught);
+      }
+    });
 
-  const remove = async (productId) => {
-    paint(cart, { busyId: productId });
-    try {
-      cart = await api.deleteCartItem(productId);
-      ctx.ui.setCart(cart);
-      paint(cart);
-    } catch (error) {
-      paint(cart, { message: error.message });
-    }
-  };
+    const row = el('div', { class: 'line', dataset: { productId: item.productId } }, [
+      lineThumb(item.productId, item.productName),
+      el('div', { class: 'line__body' }, [
+        el('p', { class: 'line__name' }, [item.productName]),
+        el('p', { class: 'line__meta' }, [`单价 ${money(item.unitPriceCents)}`]),
+        stepper({
+          quantity: item.quantity,
+          onChange: async (next) => {
+            try {
+              const fresh = await api.setItem(item.productId, next);
+              setState({ cart: fresh, error: null });
+              syncCartBadge();
+              repaint({});
+            } catch (caught) {
+              failure(caught);
+            }
+          },
+        }),
+      ]),
+      el('div', {}, [el('p', { class: 'line__price' }, [money(item.lineTotalCents)]), remove]),
+    ]);
+    return row;
+  });
 
-  const bind = (current) => {
-    ctx.root.querySelector('[data-action="retry"]')?.addEventListener('click', () => render(ctx));
-    for (const row of ctx.root.querySelectorAll('tr[data-row]')) {
-      const productId = row.getAttribute('data-row');
-      row
-        .querySelector('[data-action="inc"]')
-        ?.addEventListener('click', () => change(productId, 1));
-      row
-        .querySelector('[data-action="dec"]')
-        ?.addEventListener('click', () => change(productId, -1));
-      row.querySelector('[data-action="remove"]')?.addEventListener('click', () => remove(productId));
-    }
-    ctx.ui.setSubtitle(`共 ${current.quantityTotal} 件商品，价格以元显示`);
-  };
+  const panel = el('section', { class: 'panel' }, [
+    ...lines,
+    summary('合计', cart.totalCents),
+    el('div', { class: 'actions' }, [
+      el('a', { class: 'btn btn--cta', href: '#/checkout' }, ['去结算']),
+      el('a', { class: 'btn btn--ghost', href: '#/products' }, ['继续逛']),
+    ]),
+  ]);
 
-  paint(cart);
+  root.replaceChildren();
+  if (notice) root.append(banner(notice, 'ok'));
+  if (error) root.append(banner(error));
+  root.append(head, el('div', { class: 'cart-layout' }, [panel]));
 }

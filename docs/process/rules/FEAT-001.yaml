@@ -1,6 +1,12 @@
 # FEAT-001 台账（机器可读镜像；与 PRD frontmatter / 测试文件头 prdVersion 三方一致）
 # 合计 49 条：自动化 node 49 条（写红波次预期 red 44 条 / green 5 条锁定项）。
 # 实读（返工后）：green 49 条 —— node --test 'test/**/*.test.mjs' → tests 53 / pass 53 / fail 0 / exit 0。
+# 实读（FEAT-002 红波次起）：green 48 / red 1 —— TC-FEAT-001-30 按 FEAT-002 PRD §1.5 S-1/S-2/S-3（Q-21）反转为
+#   「重启后数据仍在」，存量实现未持久化 ⇒ 该条**故意红**，属 FEAT-002 AC-01 红波次的一部分（本包 53 条中 pass 52 / fail 1）。
+# 实读（FEAT-002 存量回填后）：green 49 / red 0 —— dev 落地 SQLite 持久化 + 会话落库后 TC-FEAT-001-30 转绿；
+#   本包 52 条全绿（原 53 条：删除「DOM 中不出现图片素材」1 条，来源 N-6 已由 FEAT-002 §1.5 S-9 解除）。
+#   本包对 FEAT-002 的三类适配：① 受保护面先注册开会话（S-11 + 契约 §四，13 条下单/查单用例）；
+#   ② 空车错误码改为鉴权步优先（契约 §4.4，TC-FEAT-001-29）；③ 各实例注入独立临时 dbPath（契约 §8.3，装置侧）。
 # 上一轮「缺 Content-Type + 合法 JSON body 被判 201」的红已由 dev 修到绿（写红证据见 reports/test/evidence/FEAT-001-e11-red.raw.txt）。
 # expect = 写红波次当时登记的预期（历史值，不回溯改写）；actual = 最近一次实读。二者不一致时以实跑为准。
 # 前 44 条 = PRD 的 30 条 AC + 14 条 E，一条不少；末 5 条为装置自检锁定项，不依赖被测源码。
@@ -95,6 +101,7 @@ cases:
     expect: red
     actual: green
     blocker: none
+    note: 全量并发跑时曾因各用例共用缺省 DB_PATH 而随机红（测试侧缺陷，非能力缺口）⇒ 已由 helpers/app.mjs 按实例注入独立临时 dbPath 修正（FEAT-002 契约 §8.3）
   - id: TC-FEAT-001-12
     title: 非整数件数拒绝
     ac: AC-12
@@ -127,6 +134,7 @@ cases:
     expect: red
     actual: green
     blocker: none
+    note: 全量并发跑时曾因各用例共用缺省 DB_PATH 而随机红（测试侧缺陷，非能力缺口）⇒ 已由 helpers/app.mjs 按实例注入独立临时 dbPath 修正（FEAT-002 契约 §8.3）
   - id: TC-FEAT-001-16
     title: 购物车行数上限
     ac: AC-16
@@ -135,6 +143,7 @@ cases:
     expect: red
     actual: green
     blocker: none
+    note: 全量并发跑时曾因各用例共用缺省 DB_PATH 而随机红（测试侧缺陷，非能力缺口）⇒ 已由 helpers/app.mjs 按实例注入独立临时 dbPath 修正（FEAT-002 契约 §8.3）
   - id: TC-FEAT-001-17
     title: 购物车改与删
     ac: AC-17
@@ -143,6 +152,7 @@ cases:
     expect: red
     actual: green
     blocker: none
+    note: 全量并发跑时曾因各用例共用缺省 DB_PATH 而随机红（测试侧缺陷，非能力缺口）⇒ 已由 helpers/app.mjs 按实例注入独立临时 dbPath 修正（FEAT-002 契约 §8.3）
   - id: TC-FEAT-001-18
     title: 下单即支付成功
     ac: AC-18
@@ -151,6 +161,7 @@ cases:
     expect: red
     actual: green
     blocker: none
+    note: 前置按 FEAT-002 §1.5 S-11（解除 FEAT-001 非目标 N-1）与契约 §四 改为「先注册开会话，再下单 / 查单」；状态码、金额、库存扣减、订单号、原子性等业务断言逐条保留（改前置条件，不是放宽判据）
   - id: TC-FEAT-001-19
     title: 下单扣减库存
     ac: AC-19
@@ -159,6 +170,7 @@ cases:
     expect: red
     actual: green
     blocker: none
+    note: 前置按 FEAT-002 §1.5 S-11（解除 FEAT-001 非目标 N-1）与契约 §四 改为「先注册开会话，再下单 / 查单」；状态码、金额、库存扣减、订单号、原子性等业务断言逐条保留（改前置条件，不是放宽判据）
   - id: TC-FEAT-001-20
     title: 缺货下单拒绝
     ac: AC-20
@@ -167,6 +179,7 @@ cases:
     expect: red
     actual: green
     blocker: none
+    note: 前置按 FEAT-002 §1.5 S-11（解除 FEAT-001 非目标 N-1）与契约 §四 改为「先注册开会话，再下单 / 查单」；状态码、金额、库存扣减、订单号、原子性等业务断言逐条保留（改前置条件，不是放宽判据）
   - id: TC-FEAT-001-21
     title: 总额分为单位
     ac: AC-21
@@ -175,6 +188,7 @@ cases:
     expect: red
     actual: green
     blocker: none
+    note: 前置按 FEAT-002 §1.5 S-11（解除 FEAT-001 非目标 N-1）与契约 §四 改为「先注册开会话，再下单 / 查单」；状态码、金额、库存扣减、订单号、原子性等业务断言逐条保留（改前置条件，不是放宽判据）
   - id: TC-FEAT-001-22
     title: 空车下单拒绝
     ac: AC-22
@@ -183,6 +197,7 @@ cases:
     expect: red
     actual: green
     blocker: none
+    note: 前置按 FEAT-002 §1.5 S-11（解除 FEAT-001 非目标 N-1）与契约 §四 改为「先注册开会话，再下单 / 查单」；状态码、金额、库存扣减、订单号、原子性等业务断言逐条保留（改前置条件，不是放宽判据）；契约 §4.4 明文「未登录不能下单」优先于「空车」⇒ 空车拦截能力改由「已登录 + 空车 ⇒ 409 CART_EMPTY」保留
   - id: TC-FEAT-001-23
     title: 下单后清空车
     ac: AC-23
@@ -191,6 +206,7 @@ cases:
     expect: red
     actual: green
     blocker: none
+    note: 前置按 FEAT-002 §1.5 S-11（解除 FEAT-001 非目标 N-1）与契约 §四 改为「先注册开会话，再下单 / 查单」；状态码、金额、库存扣减、订单号、原子性等业务断言逐条保留（改前置条件，不是放宽判据）
   - id: TC-FEAT-001-24
     title: 订单列表可读
     ac: AC-24
@@ -199,6 +215,7 @@ cases:
     expect: red
     actual: green
     blocker: none
+    note: 前置按 FEAT-002 §1.5 S-11（解除 FEAT-001 非目标 N-1）与契约 §四 改为「先注册开会话，再下单 / 查单」；状态码、金额、库存扣减、订单号、原子性等业务断言逐条保留（改前置条件，不是放宽判据）
   - id: TC-FEAT-001-25
     title: 订单号唯一
     ac: AC-25
@@ -207,6 +224,7 @@ cases:
     expect: red
     actual: green
     blocker: none
+    note: 前置按 FEAT-002 §1.5 S-11（解除 FEAT-001 非目标 N-1）与契约 §四 改为「先注册开会话，再下单 / 查单」；状态码、金额、库存扣减、订单号、原子性等业务断言逐条保留（改前置条件，不是放宽判据）
   - id: TC-FEAT-001-26
     title: 订单列表同端口
     ac: AC-26
@@ -215,6 +233,7 @@ cases:
     expect: red
     actual: green
     blocker: none
+    note: 前置按 FEAT-002 §1.5 S-11（解除 FEAT-001 非目标 N-1）与契约 §四 改为「先注册开会话，再下单 / 查单」；状态码、金额、库存扣减、订单号、原子性等业务断言逐条保留（改前置条件，不是放宽判据）
   - id: TC-FEAT-001-27
     title: 前端同端口可达
     ac: AC-27
@@ -223,6 +242,7 @@ cases:
     expect: red
     actual: green
     blocker: none
+    note: FEAT-001 非目标 N-6（商品图片素材＝明确不做）已由 FEAT-002 §1.5 S-9 解除 ⇒ 删除「DOM 中不出现图片素材」判据（该面的正向判据归 FEAT-002 AC-40 / AC-46 / AC-48）；同端口可达与首帧不裸模板行为保留
   - id: TC-FEAT-001-28
     title: 种子商品可读
     ac: AC-28
@@ -239,14 +259,16 @@ cases:
     expect: red
     actual: green
     blocker: none
+    note: 第 3 项按契约 §4.4（鉴权步优先于空车）由「匿名空车 409 CART_EMPTY」改为「未登录 401 UNAUTHENTICATED」；「已登录 + 空车 ⇒ 409 CART_EMPTY」能力由 TC-FEAT-001-22 保留
   - id: TC-FEAT-001-30
-    title: 刷新即重置
+    title: 重启后数据仍在
     ac: AC-30
-    ac_name: 刷新即重置
+    ac_name: 重启后数据仍在
     automation: node
     expect: red
     actual: green
     blocker: none
+    note: 预期由 FEAT-002 PRD §1.5 S-1 反转（原「刷新即重置 / 库存回到种子初值」作废），S-3 先改；AC-30 ① 的隔离语义保留，订单腿按 FEAT-002 AC-02 / AC-14 表达为未登录 401。dev 落地 SQLite 持久化 + 会话落库后已转 green（expect 保留红波次登记值，不回溯改写）
   - id: TC-FEAT-001-E01
     title: 默认种子八条
     ac: E-01
@@ -263,6 +285,7 @@ cases:
     expect: red
     actual: green
     blocker: none
+    note: 全量并发跑时曾因各用例共用缺省 DB_PATH 而随机红（测试侧缺陷，非能力缺口）⇒ 已由 helpers/app.mjs 按实例注入独立临时 dbPath 修正（FEAT-002 契约 §8.3）
   - id: TC-FEAT-001-E03
     title: 不存在商品详情
     ac: E-03
@@ -303,6 +326,7 @@ cases:
     expect: red
     actual: green
     blocker: none
+    note: 前置按 FEAT-002 §1.5 S-11（解除 FEAT-001 非目标 N-1）与契约 §四 改为「先注册开会话，再下单 / 查单」；状态码、金额、库存扣减、订单号、原子性等业务断言逐条保留（改前置条件，不是放宽判据）
   - id: TC-FEAT-001-E08
     title: 并发抢最后一件
     ac: E-08
@@ -311,6 +335,7 @@ cases:
     expect: red
     actual: green
     blocker: none
+    note: 前置按 FEAT-002 §1.5 S-11（解除 FEAT-001 非目标 N-1）与契约 §四 改为「先注册开会话，再下单 / 查单」；状态码、金额、库存扣减、订单号、原子性等业务断言逐条保留（改前置条件，不是放宽判据）
   - id: TC-FEAT-001-E09
     title: 跨客户端隔离
     ac: E-09
@@ -319,6 +344,7 @@ cases:
     expect: red
     actual: green
     blocker: none
+    note: 全量并发跑时曾因各用例共用缺省 DB_PATH 而随机红（测试侧缺陷，非能力缺口）⇒ 已由 helpers/app.mjs 按实例注入独立临时 dbPath 修正（FEAT-002 契约 §8.3）
   - id: TC-FEAT-001-E10
     title: 重复提交下单
     ac: E-10
@@ -327,6 +353,7 @@ cases:
     expect: red
     actual: green
     blocker: none
+    note: 前置按 FEAT-002 §1.5 S-11（解除 FEAT-001 非目标 N-1）与契约 §四 改为「先注册开会话，再下单 / 查单」；状态码、金额、库存扣减、订单号、原子性等业务断言逐条保留（改前置条件，不是放宽判据）
   - id: TC-FEAT-001-E11
     title: 载荷与类型非法
     ac: E-11
@@ -343,6 +370,7 @@ cases:
     expect: red
     actual: green
     blocker: none
+    note: 前置按 FEAT-002 §1.5 S-11（解除 FEAT-001 非目标 N-1）与契约 §四 改为「先注册开会话，再下单 / 查单」；状态码、金额、库存扣减、订单号、原子性等业务断言逐条保留（改前置条件，不是放宽判据）
   - id: TC-FEAT-001-E13
     title: 未知统计字段不泄露
     ac: E-13

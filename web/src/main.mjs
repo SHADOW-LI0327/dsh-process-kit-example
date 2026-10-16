@@ -1,113 +1,114 @@
 /**
- * 前端入口：哈希路由 + 页头/徽标外壳。
+ * 前端入口：哈希路由 + 顶栏搜索（本地筛选）+ 底部 Tab。
  *
- * 五页共用一个外壳（侧栏 + 页头 + 内容区），路由只换内容区与页头文字；
- * 数据全部来自 `/api/v1`，页面不持有任何本地业务副本。
+ * 五个功能面共用同一份首帧文档；脚本接手后按路由重绘内容区，
+ * 所有数据来自 `/api/v1`，页面不持有任何本地业务副本。
  */
-import { api } from './api.mjs';
-import { banner } from './components.mjs';
-import * as cartPage from './pages/cart.mjs';
-import * as checkoutPage from './pages/checkout.mjs';
-import * as orderListPage from './pages/order-list.mjs';
-import * as productDetailPage from './pages/product-detail.mjs';
-import * as productListPage from './pages/product-list.mjs';
+import { el, emptyState, pageHead } from './components.mjs';
+import { renderAuth } from './pages/auth.mjs';
+import { renderCart } from './pages/cart.mjs';
+import { renderCheckout } from './pages/checkout.mjs';
+import { renderMe } from './pages/me.mjs';
+import { renderOrders } from './pages/order-list.mjs';
+import { renderProductDetail } from './pages/product-detail.mjs';
+import { renderProductList } from './pages/product-list.mjs';
+import { parseRoute, tabOf } from './routes.mjs';
+import {
+  loadCart,
+  loadOrders,
+  loadProducts,
+  loadSession,
+  subscribe,
+  syncCartBadge,
+} from './state.mjs';
 
-const content = document.getElementById('content');
-const titleNode = document.getElementById('page-title');
-const subtitleNode = document.getElementById('page-subtitle');
-const badgeNode = document.getElementById('cart-badge');
-const actionNode = document.getElementById('header-action');
-const navItems = [...document.querySelectorAll('[data-nav]')];
+const view = document.getElementById('view');
+const searchInput = document.getElementById('search-input');
 
-const DEFAULT_HASH = '#/products';
-let pendingFlash = null;
+/** 搜索关键词只做本地筛选，不进 URL、不发请求。 */
+let keyword = '';
 
-const ui = {
-  setHeader({ title, subtitle, action }) {
-    if (title) {
-      titleNode.textContent = title;
-      document.title = `${title} · 电商小铺`;
-    }
-    if (subtitle) subtitleNode.textContent = subtitle;
-    if (action) {
-      actionNode.textContent = action.label;
-      actionNode.setAttribute('href', action.href);
-    }
-  },
-  setSubtitle(text) {
-    subtitleNode.textContent = text;
-  },
-  setActiveNav(key) {
-    for (const item of navItems) {
-      item.classList.toggle('is-active', item.getAttribute('data-nav') === key);
-    }
-  },
-  setCart(cart) {
-    badgeNode.textContent = `购物车 · ${cart.quantityTotal} 件`;
-  },
-  async refreshBadge() {
-    try {
-      ui.setCart(await api.getCart());
-    } catch {
-      // 徽标是辅助信息：取不到就保持原值，不打断当前页面。
-    }
-  },
-  flash(message) {
-    pendingFlash = message;
-  },
-  consumeFlash() {
-    const message = pendingFlash;
-    pendingFlash = null;
-    return message;
-  },
-  navigate(hash) {
-    if (window.location.hash === hash) {
-      void route();
-      return;
-    }
-    window.location.hash = hash;
-  },
-};
-
-const ctx = { root: content, ui };
-
-const ROUTES = [
-  {
-    pattern: /^#\/products\/(.+)$/,
-    page: productDetailPage,
-    params: (match) => ({ id: decodeURIComponent(match[1]) }),
-  },
-  { pattern: /^#\/products\/?$/, page: productListPage },
-  { pattern: /^#\/cart\/?$/, page: cartPage },
-  { pattern: /^#\/checkout\/?$/, page: checkoutPage },
-  { pattern: /^#\/orders\/?$/, page: orderListPage },
-];
-
-function resolveRoute() {
-  const hash = window.location.hash || DEFAULT_HASH;
-  for (const route of ROUTES) {
-    const match = route.pattern.exec(hash);
-    if (match) return { page: route.page, params: route.params ? route.params(match) : {} };
+function markTab(routeName) {
+  const active = tabOf(routeName);
+  for (const item of document.querySelectorAll('.tabbar__item')) {
+    item.classList.toggle('is-active', item.dataset.tab === active);
   }
-  return { page: null, params: {} };
 }
 
-async function route() {
-  const { page, params } = resolveRoute();
-  if (!page) {
-    window.location.hash = DEFAULT_HASH;
+function renderNotFound(root) {
+  root.replaceChildren(
+    pageHead('页面不存在', '地址可能写错了'),
+    el('section', { class: 'panel' }, [
+      emptyState('没有这个页面', '回商品列表继续逛。'),
+      el('div', { class: 'actions' }, [el('a', { class: 'btn btn--cta', href: '#/products' }, ['回商品列表'])]),
+    ]),
+  );
+}
+
+async function render() {
+  if (!view) return;
+  const route = parseRoute(window.location.hash);
+  markTab(route.name);
+
+  if (route.name === 'products') {
+    renderProductList(view, { keyword });
     return;
   }
-  try {
-    await page.render(ctx, params);
-  } catch (error) {
-    content.innerHTML = banner(error?.message ?? '页面渲染失败，请刷新重试', { retry: true });
-    content
-      .querySelector('[data-action="retry"]')
-      ?.addEventListener('click', () => void route());
+  if (route.name === 'product') {
+    renderProductDetail(view, { id: route.id });
+    return;
   }
+  if (route.name === 'cart') {
+    await loadCart();
+    renderCart(view);
+    return;
+  }
+  if (route.name === 'checkout') {
+    await loadCart();
+    await loadSession();
+    renderCheckout(view);
+    return;
+  }
+  if (route.name === 'orders') {
+    await loadSession();
+    await loadOrders();
+    renderOrders(view);
+    return;
+  }
+  if (route.name === 'me') {
+    await loadSession();
+    await loadOrders();
+    await loadCart();
+    renderMe(view);
+    return;
+  }
+  if (route.name === 'login') {
+    await loadSession();
+    renderAuth(view);
+    return;
+  }
+  renderNotFound(view);
 }
 
-window.addEventListener('hashchange', () => void route());
-void route();
-void ui.refreshBadge();
+function bindSearch() {
+  if (!searchInput) return;
+  searchInput.addEventListener('input', () => {
+    keyword = searchInput.value;
+    if (parseRoute(window.location.hash).name === 'products') renderProductList(view, { keyword });
+  });
+}
+
+async function boot() {
+  bindSearch();
+  subscribe(() => syncCartBadge());
+  window.addEventListener('hashchange', () => {
+    render();
+  });
+  await loadProducts();
+  await loadCart();
+  await loadSession();
+  await render();
+  syncCartBadge();
+}
+
+boot();

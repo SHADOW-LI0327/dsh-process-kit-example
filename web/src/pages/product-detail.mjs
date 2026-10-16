@@ -1,51 +1,76 @@
 /**
- * 商品详情页。
+ * 商品详情页：主图 + 名称 + 描述 + 加购控件。
  *
- * 加购成功后**停留本页**并提示「已加入购物车」，页头件数徽标按服务端返回的整车更新；
- * 加购失败时把服务端 `message` 原样显示，页面上的库存与徽标保持服务端值不回弹。
+ * 加购成功后停留在本页并提示「已加入购物车」，件数徽标按服务端返回的整车更新；
+ * 失败时把服务端 `message` 原样显示（例如「该商品暂时缺货，无法加入购物车」）。
  */
-import { api } from '../api.mjs';
-import { banner, detail, loading } from '../components.mjs';
+import { api, errorMessage } from '../api.mjs';
+import { banner, el, emptyState, pageHead, priceNode, stepper } from '../components.mjs';
+import { getState, productById, setState, syncCartBadge } from '../state.mjs';
 
-export async function render(ctx, params) {
-  ctx.ui.setActiveNav('products');
-  ctx.ui.setHeader({
-    title: '商品详情',
-    subtitle: '价格以元显示，单次加购上限 8 件',
-    action: { label: '去购物车', href: '#/cart' },
-  });
-  ctx.root.innerHTML = loading();
-
-  let product;
-  try {
-    product = await api.getProduct(params.id);
-  } catch (error) {
-    // 商品不存在属「重试无意义」，给的是回列表的出口而不是重试按钮。
-    ctx.root.innerHTML = banner(error.message, {
-      link: { label: '返回商品列表', href: '#/products' },
-    });
+export function renderProductDetail(root, { id, notice = null, error = null } = {}) {
+  const product = productById(id);
+  if (!product) {
+    const back = el('a', { class: 'btn', href: '#/products' }, ['去商品列表']);
+    root.replaceChildren(
+      pageHead('商品详情'),
+      emptyState('找不到该商品', '可能已下架，去列表看看别的器材。'),
+      el('div', { class: 'actions' }, [back]),
+    );
     return;
   }
 
-  ctx.root.innerHTML = detail(product);
-  const flashSlot = ctx.root.querySelector('#detail-flash');
-  const button = ctx.root.querySelector('#add-to-cart');
+  let quantity = 1;
+  const price = priceNode(product.priceCents, 'detail__price');
+  const stockLine = el('p', { class: 'line__meta' }, [
+    product.stock > 0 ? `现货 ${product.stock} 件` : '暂时缺货',
+  ]);
 
-  button?.addEventListener('click', async () => {
-    const label = button.textContent;
-    button.disabled = true;
-    button.textContent = '提交中…';
+  const controls = el('div', { class: 'actions' });
+  const addButton = el('button', { class: 'btn btn--cta', type: 'button' }, ['加入购物车']);
+  const makeStepper = () =>
+    stepper({
+      quantity,
+      onChange: (next) => {
+        quantity = next;
+        controls.replaceChild(makeStepper(), controls.firstChild);
+      },
+    });
+  const stepperNode = makeStepper();
+
+  addButton.addEventListener('click', async () => {
+    addButton.disabled = true;
     try {
-      const cart = await api.addCartItem(product.id, 1);
-      ctx.ui.setCart(cart);
-      flashSlot.innerHTML = banner('已加入购物车', { kind: 'success' });
-    } catch (error) {
-      flashSlot.innerHTML = banner(error.message);
-    } finally {
-      button.disabled = product.stock === 0;
-      button.textContent = label;
+      const cart = await api.addItem(product.id, quantity);
+      setState({ cart, error: null, notice: `已加入购物车：${product.name} × ${quantity}` });
+      syncCartBadge();
+      renderProductDetail(root, { id, notice: getState().notice });
+    } catch (caught) {
+      renderProductDetail(root, { id, error: errorMessage(caught) });
     }
   });
 
-  await ctx.ui.refreshBadge();
+  controls.append(stepperNode, addButton);
+
+  const head = pageHead(product.name, '商品详情');
+  const body = el('section', { class: 'panel' }, [
+    el('img', {
+      class: 'detail__img',
+      src: `/assets/products/${product.id}.jpg`,
+      alt: product.name,
+      width: 600,
+      height: 600,
+    }),
+    el('h2', { class: 'detail__name' }, [product.name]),
+    el('p', { class: 'detail__desc' }, [product.description]),
+    price,
+    stockLine,
+    controls,
+    el('div', { class: 'actions' }, [el('a', { class: 'btn btn--ghost', href: '#/products' }, ['继续逛'])]),
+  ]);
+
+  root.replaceChildren();
+  if (notice) root.append(banner(notice, 'ok'));
+  if (error) root.append(banner(error));
+  root.append(head, body);
 }

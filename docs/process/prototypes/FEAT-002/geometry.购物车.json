@@ -1,0 +1,692 @@
+{
+  "source": "photocraft-cli info → docs/process/prototypes/FEAT-002/购物车-FEAT-002.psd",
+  "adapter": "photocraft-cli",
+  "artifact": "docs/process/prototypes/FEAT-002/购物车-FEAT-002.psd",
+  "canvas": {
+    "width": 390,
+    "height": 1200
+  },
+  "elements": [
+    {
+      "name": "Tab-我的-文字",
+      "kind": "text",
+      "bounds": [
+        327,
+        1129,
+        27,
+        12
+      ],
+      "sizePt": 12
+    },
+    {
+      "name": "Tab-我的-图标",
+      "kind": "decoration",
+      "bounds": [
+        329,
+        1102,
+        23,
+        22
+      ]
+    },
+    {
+      "name": "Tab-订单-文字",
+      "kind": "text",
+      "bounds": [
+        230,
+        1129,
+        27,
+        12
+      ],
+      "sizePt": 12
+    },
+    {
+      "name": "Tab-订单-图标",
+      "kind": "decoration",
+      "bounds": [
+        232,
+        1102,
+        23,
+        22
+      ]
+    },
+    {
+      "name": "Tab-购物车-文字",
+      "kind": "text",
+      "bounds": [
+        126,
+        1128,
+        40,
+        13
+      ],
+      "sizePt": 12
+    },
+    {
+      "name": "Tab-购物车-图标",
+      "kind": "decoration",
+      "bounds": [
+        135,
+        1102,
+        23,
+        22
+      ]
+    },
+    {
+      "name": "Tab-首页-文字",
+      "kind": "text",
+      "bounds": [
+        36,
+        1128,
+        27,
+        13
+      ],
+      "sizePt": 12
+    },
+    {
+      "name": "Tab-首页-图标",
+      "kind": "decoration",
+      "bounds": [
+        38,
+        1102,
+        23,
+        22
+      ]
+    },
+    {
+      "name": "底部栏上边线",
+      "kind": "decoration",
+      "bounds": [
+        0,
+        1097,
+        390,
+        1
+      ]
+    },
+    {
+      "name": "底部栏",
+      "kind": "container",
+      "bounds": [
+        0,
+        1097,
+        390,
+        49
+      ]
+    },
+    {
+      "name": "主按钮-去结算文字",
+      "kind": "text",
+      "bounds": [
+        263,
+        1035,
+        84,
+        18
+      ],
+      "sizePt": 16
+    },
+    {
+      "name": "主按钮-去结算",
+      "kind": "container",
+      "bounds": [
+        234,
+        1022,
+        141,
+        44
+      ]
+    },
+    {
+      "name": "结算条金额",
+      "kind": "text",
+      "bounds": [
+        15,
+        1043,
+        131,
+        21
+      ],
+      "sizePt": 24
+    },
+    {
+      "name": "结算条合计标签",
+      "kind": "text",
+      "bounds": [
+        15,
+        1012,
+        29,
+        14
+      ],
+      "sizePt": 13
+    },
+    {
+      "name": "结算条上边线",
+      "kind": "decoration",
+      "bounds": [
+        0,
+        990,
+        390,
+        1
+      ]
+    },
+    {
+      "name": "购物车结算条",
+      "kind": "container",
+      "bounds": [
+        0,
+        990,
+        390,
+        107
+      ]
+    },
+    {
+      "name": "步进器-3加",
+      "kind": "text",
+      "bounds": [
+        114,
+        580,
+        13,
+        13
+      ],
+      "sizePt": 17
+    },
+    {
+      "name": "步进器-3值",
+      "kind": "text",
+      "bounds": [
+        82,
+        579,
+        7,
+        15
+      ],
+      "sizePt": 17
+    },
+    {
+      "name": "步进器-3减",
+      "kind": "text",
+      "bounds": [
+        44,
+        585,
+        13,
+        3
+      ],
+      "sizePt": 17
+    },
+    {
+      "name": "步进器-3",
+      "kind": "container",
+      "bounds": [
+        32,
+        568,
+        106,
+        36
+      ]
+    },
+    {
+      "name": "行单价-3",
+      "kind": "text",
+      "bounds": [
+        115,
+        543,
+        90,
+        13
+      ],
+      "sizePt": 13
+    },
+    {
+      "name": "行实付-3",
+      "kind": "text",
+      "bounds": [
+        115,
+        519,
+        90,
+        13
+      ],
+      "sizePt": 13
+    },
+    {
+      "name": "行删除-3",
+      "kind": "text",
+      "bounds": [
+        329,
+        493,
+        29,
+        13
+      ],
+      "sizePt": 13
+    },
+    {
+      "name": "行名-3",
+      "kind": "text",
+      "bounds": [
+        115,
+        491,
+        91,
+        16
+      ],
+      "sizePt": 15
+    },
+    {
+      "name": "行主图-3-纸二",
+      "kind": "decoration",
+      "bounds": [
+        54,
+        524,
+        29,
+        15
+      ]
+    },
+    {
+      "name": "行主图-3-折边",
+      "kind": "decoration",
+      "bounds": [
+        56,
+        505,
+        25,
+        15
+      ]
+    },
+    {
+      "name": "行主图-3-纸一",
+      "kind": "decoration",
+      "bounds": [
+        50,
+        509,
+        37,
+        22
+      ]
+    },
+    {
+      "name": "行主图-3",
+      "kind": "decoration",
+      "bounds": [
+        32,
+        484,
+        73,
+        72
+      ]
+    },
+    {
+      "name": "行分隔线-3",
+      "kind": "decoration",
+      "bounds": [
+        32,
+        464,
+        326,
+        1
+      ]
+    },
+    {
+      "name": "步进器-2加",
+      "kind": "text",
+      "bounds": [
+        114,
+        412,
+        13,
+        13
+      ],
+      "sizePt": 17
+    },
+    {
+      "name": "步进器-2值",
+      "kind": "text",
+      "bounds": [
+        79,
+        411,
+        13,
+        16
+      ],
+      "sizePt": 17
+    },
+    {
+      "name": "步进器-2减",
+      "kind": "text",
+      "bounds": [
+        44,
+        417,
+        13,
+        3
+      ],
+      "sizePt": 17
+    },
+    {
+      "name": "步进器-2",
+      "kind": "container",
+      "bounds": [
+        32,
+        400,
+        106,
+        36
+      ]
+    },
+    {
+      "name": "行单价-2",
+      "kind": "text",
+      "bounds": [
+        115,
+        375,
+        90,
+        13
+      ],
+      "sizePt": 13
+    },
+    {
+      "name": "行实付-2",
+      "kind": "text",
+      "bounds": [
+        115,
+        351,
+        99,
+        13
+      ],
+      "sizePt": 13
+    },
+    {
+      "name": "行删除-2",
+      "kind": "text",
+      "bounds": [
+        329,
+        325,
+        29,
+        13
+      ],
+      "sizePt": 13
+    },
+    {
+      "name": "行名-2",
+      "kind": "text",
+      "bounds": [
+        116,
+        323,
+        63,
+        16
+      ],
+      "sizePt": 15
+    },
+    {
+      "name": "行主图-2-底托",
+      "kind": "decoration",
+      "bounds": [
+        59,
+        364,
+        19,
+        6
+      ]
+    },
+    {
+      "name": "行主图-2-杯口",
+      "kind": "decoration",
+      "bounds": [
+        49,
+        334,
+        39,
+        7
+      ]
+    },
+    {
+      "name": "行主图-2-锥体",
+      "kind": "decoration",
+      "bounds": [
+        52,
+        337,
+        33,
+        23
+      ]
+    },
+    {
+      "name": "行主图-2",
+      "kind": "decoration",
+      "bounds": [
+        32,
+        316,
+        73,
+        72
+      ]
+    },
+    {
+      "name": "行分隔线-2",
+      "kind": "decoration",
+      "bounds": [
+        32,
+        296,
+        326,
+        1
+      ]
+    },
+    {
+      "name": "步进器-1加",
+      "kind": "text",
+      "bounds": [
+        114,
+        244,
+        13,
+        13
+      ],
+      "sizePt": 17
+    },
+    {
+      "name": "步进器-1值",
+      "kind": "text",
+      "bounds": [
+        79,
+        243,
+        13,
+        16
+      ],
+      "sizePt": 17
+    },
+    {
+      "name": "步进器-1减",
+      "kind": "text",
+      "bounds": [
+        44,
+        249,
+        13,
+        3
+      ],
+      "sizePt": 17
+    },
+    {
+      "name": "步进器-1",
+      "kind": "container",
+      "bounds": [
+        32,
+        232,
+        106,
+        36
+      ]
+    },
+    {
+      "name": "行单价-1",
+      "kind": "text",
+      "bounds": [
+        115,
+        207,
+        99,
+        13
+      ],
+      "sizePt": 13
+    },
+    {
+      "name": "行实付-1",
+      "kind": "text",
+      "bounds": [
+        115,
+        183,
+        99,
+        13
+      ],
+      "sizePt": 13
+    },
+    {
+      "name": "行删除-1",
+      "kind": "text",
+      "bounds": [
+        329,
+        157,
+        29,
+        13
+      ],
+      "sizePt": 13
+    },
+    {
+      "name": "行名-1",
+      "kind": "text",
+      "bounds": [
+        115,
+        155,
+        79,
+        15
+      ],
+      "sizePt": 15
+    },
+    {
+      "name": "行主图-1-把手",
+      "kind": "decoration",
+      "bounds": [
+        80,
+        182,
+        13,
+        17
+      ]
+    },
+    {
+      "name": "行主图-1-壶嘴",
+      "kind": "decoration",
+      "bounds": [
+        47,
+        162,
+        17,
+        7
+      ]
+    },
+    {
+      "name": "行主图-1-壶颈",
+      "kind": "decoration",
+      "bounds": [
+        59,
+        165,
+        11,
+        16
+      ]
+    },
+    {
+      "name": "行主图-1-壶身",
+      "kind": "decoration",
+      "bounds": [
+        54,
+        177,
+        32,
+        30
+      ]
+    },
+    {
+      "name": "行主图-1",
+      "kind": "decoration",
+      "bounds": [
+        32,
+        148,
+        73,
+        72
+      ]
+    },
+    {
+      "name": "购物车卡",
+      "kind": "container",
+      "bounds": [
+        16,
+        128,
+        359,
+        504
+      ]
+    },
+    {
+      "name": "购物车副标题",
+      "kind": "text",
+      "bounds": [
+        15,
+        101,
+        181,
+        14
+      ],
+      "sizePt": 13
+    },
+    {
+      "name": "购物车件数",
+      "kind": "text",
+      "bounds": [
+        308,
+        63,
+        66,
+        14
+      ],
+      "sizePt": 13
+    },
+    {
+      "name": "导航标题",
+      "kind": "text",
+      "bounds": [
+        15,
+        59,
+        53,
+        18
+      ],
+      "sizePt": 17
+    },
+    {
+      "name": "导航栏下边线",
+      "kind": "decoration",
+      "bounds": [
+        0,
+        88,
+        390,
+        1
+      ]
+    },
+    {
+      "name": "导航栏",
+      "kind": "container",
+      "bounds": [
+        0,
+        44,
+        390,
+        44
+      ]
+    },
+    {
+      "name": "状态栏",
+      "kind": "decoration",
+      "bounds": [
+        0,
+        0,
+        390,
+        44
+      ]
+    },
+    {
+      "name": "Home 指示条",
+      "kind": "decoration",
+      "bounds": [
+        128,
+        1184,
+        135,
+        5
+      ]
+    },
+    {
+      "name": "底色",
+      "kind": "container",
+      "bounds": [
+        0,
+        0,
+        390,
+        1200
+      ]
+    },
+    {
+      "name": "Background",
+      "kind": "decoration",
+      "bounds": [
+        0,
+        0,
+        390,
+        1200
+      ]
+    }
+  ]
+}

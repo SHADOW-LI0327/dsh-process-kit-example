@@ -1,0 +1,312 @@
+{
+  "screen": "登录与注册",
+  "id": "FEAT-002",
+  "canvas": "390×1200 @ 72 ppi",
+  "generatedBy": "docs/process/prototypes/FEAT-002/build-prototypes.mjs",
+  "tokens": "docs/process/prd/FEAT-002-ui-spec.md §8.2（本仓无 UI 项目令牌；数值骨架取 docs/process/ui/tokens.md）",
+  "note": "分层源（脚本侧图层清单）。PSD 本身即原生分层源；此处 bounds 为引擎 info 导出值，仅供人工比读，几何判据用 geometry.<屏幕名>.json。",
+  "layers": [
+    {
+      "name": "底色",
+      "kind": "shape",
+      "bounds": [
+        0,
+        0,
+        390,
+        1200
+      ]
+    },
+    {
+      "name": "Home 指示条",
+      "kind": "shape",
+      "bounds": [
+        128,
+        1184,
+        135,
+        5
+      ]
+    },
+    {
+      "name": "状态栏",
+      "kind": "shape",
+      "bounds": [
+        0,
+        0,
+        390,
+        44
+      ]
+    },
+    {
+      "name": "导航栏",
+      "kind": "shape",
+      "bounds": [
+        0,
+        44,
+        390,
+        44
+      ]
+    },
+    {
+      "name": "导航栏下边线",
+      "kind": "shape",
+      "bounds": [
+        0,
+        88,
+        390,
+        1
+      ]
+    },
+    {
+      "name": "返回",
+      "kind": "text",
+      "text": "‹",
+      "sizePt": 24,
+      "bounds": [
+        16,
+        61,
+        10,
+        13
+      ]
+    },
+    {
+      "name": "导航标题",
+      "kind": "text",
+      "text": "登录 / 注册",
+      "sizePt": 17,
+      "bounds": [
+        59,
+        59,
+        92,
+        19
+      ]
+    },
+    {
+      "name": "品牌标",
+      "kind": "shape",
+      "bounds": [
+        16,
+        112,
+        57,
+        56
+      ]
+    },
+    {
+      "name": "品牌标文字",
+      "kind": "text",
+      "text": "铺",
+      "sizePt": 24,
+      "bounds": [
+        31,
+        127,
+        26,
+        24
+      ]
+    },
+    {
+      "name": "登录标题",
+      "kind": "text",
+      "text": "登录后同步购物车与订单",
+      "sizePt": 20,
+      "bounds": [
+        87,
+        119,
+        226,
+        20
+      ]
+    },
+    {
+      "name": "登录副标题",
+      "kind": "text",
+      "text": "未登录也可以逛商品，下单前需登录",
+      "sizePt": 13,
+      "bounds": [
+        87,
+        148,
+        222,
+        15
+      ]
+    },
+    {
+      "name": "邮箱标签",
+      "kind": "text",
+      "text": "邮箱",
+      "sizePt": 13,
+      "bounds": [
+        16,
+        209,
+        27,
+        14
+      ]
+    },
+    {
+      "name": "邮箱输入框",
+      "kind": "shape",
+      "bounds": [
+        16,
+        232,
+        360,
+        48
+      ]
+    },
+    {
+      "name": "邮箱占位",
+      "kind": "text",
+      "text": "you@example.com",
+      "sizePt": 15,
+      "bounds": [
+        31,
+        250,
+        147,
+        17
+      ]
+    },
+    {
+      "name": "密码标签",
+      "kind": "text",
+      "text": "密码",
+      "sizePt": 13,
+      "bounds": [
+        15,
+        301,
+        29,
+        13
+      ]
+    },
+    {
+      "name": "密码输入框",
+      "kind": "shape",
+      "bounds": [
+        16,
+        324,
+        361,
+        48
+      ]
+    },
+    {
+      "name": "密码占位",
+      "kind": "text",
+      "text": "••••••••",
+      "sizePt": 15,
+      "bounds": [
+        37,
+        347,
+        114,
+        4
+      ]
+    },
+    {
+      "name": "密码错误提示",
+      "kind": "text",
+      "text": "邮箱或密码不正确",
+      "sizePt": 13,
+      "bounds": [
+        16,
+        387,
+        110,
+        14
+      ]
+    },
+    {
+      "name": "主按钮-登录",
+      "kind": "shape",
+      "bounds": [
+        16,
+        418,
+        359,
+        52
+      ]
+    },
+    {
+      "name": "主按钮-登录文字",
+      "kind": "text",
+      "text": "登录",
+      "sizePt": 17,
+      "bounds": [
+        178,
+        435,
+        36,
+        18
+      ]
+    },
+    {
+      "name": "次按钮-注册",
+      "kind": "shape",
+      "bounds": [
+        16,
+        482,
+        361,
+        52
+      ]
+    },
+    {
+      "name": "次按钮-注册文字",
+      "kind": "text",
+      "text": "注册新账号",
+      "sizePt": 15,
+      "bounds": [
+        157,
+        500,
+        79,
+        16
+      ]
+    },
+    {
+      "name": "注册说明",
+      "kind": "text",
+      "text": "注册需邮箱 + 密码（至少 8 位）",
+      "sizePt": 13,
+      "bounds": [
+        97,
+        555,
+        197,
+        14
+      ]
+    },
+    {
+      "name": "登录提示块",
+      "kind": "shape",
+      "bounds": [
+        16,
+        592,
+        359,
+        92
+      ]
+    },
+    {
+      "name": "登录提示标题",
+      "kind": "text",
+      "text": "关于账号",
+      "sizePt": 13,
+      "bounds": [
+        31,
+        611,
+        56,
+        14
+      ]
+    },
+    {
+      "name": "登录提示一",
+      "kind": "text",
+      "text": "登录时匿名购物车会并入账号购物车，",
+      "sizePt": 13,
+      "bounds": [
+        31,
+        634,
+        226,
+        15
+      ]
+    },
+    {
+      "name": "登录提示二",
+      "kind": "text",
+      "text": "件数上限仍为 8 件。",
+      "sizePt": 13,
+      "bounds": [
+        31,
+        656,
+        123,
+        14
+      ]
+    }
+  ]
+}

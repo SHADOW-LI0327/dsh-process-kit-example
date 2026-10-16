@@ -1,163 +1,126 @@
 /**
- * 视图构件：列表 / 详情 / 购物车 / 结算 / 订单五页共用的 HTML 片段。
+ * 视图构件：商品卡 / 行件数控件 / 提示条 / 空态，五页共用。
  *
- * 每个构件都只吃服务端返回的数据，不在前端做任何金额或件数的再计算 ——
- * 前端自己算一遍就会出现「前端算错也算过」的假绿，也会让页面与响应体对不上。
+ * 构件只吃服务端数据：件数控件的变化一律由调用方发请求、用响应重绘，
+ * 前端不自己加减，避免「前端算错也算过」的假绿。
  */
-import { esc, initial, money, tileVariant } from './format.mjs';
+import { MAX_QUANTITY } from './state.mjs';
+import { money, yuanParts } from './format.mjs';
 
-export const LOADING_HTML = '<p class="loading">加载中…</p>';
-
-export function loading() {
-  return LOADING_HTML;
+export function el(tag, props = {}, children = []) {
+  const node = document.createElement(tag);
+  for (const [key, value] of Object.entries(props)) {
+    if (value === undefined || value === null || value === false) continue;
+    if (key === 'class') node.className = value;
+    else if (key === 'text') node.textContent = String(value);
+    else if (key === 'dataset') Object.assign(node.dataset, value);
+    else node.setAttribute(key, String(value));
+  }
+  for (const child of [].concat(children)) {
+    if (child === null || child === undefined || child === false) continue;
+    node.append(child instanceof Node ? child : document.createTextNode(String(child)));
+  }
+  return node;
 }
 
-/**
- * 行内提示横幅：错误默认不可重试，页面级加载错误显式给「重试」按钮。
- * 文案原样取服务端 `message`，不在前端另拟句子。
- */
-export function banner(message, { kind = 'danger', retry = false, link = null } = {}) {
-  const retryButton = retry
-    ? '<button class="btn btn--ghost" type="button" data-action="retry">重试</button>'
-    : '';
-  const linkButton = link
-    ? `<a class="btn btn--ghost" href="${esc(link.href)}">${esc(link.label)}</a>`
-    : '';
-  return (
-    `<div class="banner${kind === 'success' ? ' banner--success' : ''}" data-banner="${esc(kind)}">` +
-    `<span>${esc(message)}</span><span class="banner__spacer"></span>${linkButton}${retryButton}</div>`
-  );
+/** 价格：符号与数字分开成两个节点（符号更小）。 */
+export function priceNode(cents, prefix = 'card__price') {
+  const { symbol, amount } = yuanParts(cents);
+  return el('p', { class: prefix }, [
+    el('span', { class: `${prefix}-symbol` }, [symbol]),
+    el('span', { class: `${prefix}-value` }, [amount]),
+  ]);
 }
 
-export function tile(name, variant = null, size = '') {
-  const kind = variant ?? tileVariant(name);
-  const sizeClass = size === '' ? '' : ` tile--${size}`;
-  return (
-    `<span class="tile tile--${kind}${sizeClass}" aria-hidden="true">${esc(initial(name))}</span>`
-  );
-}
-
+/** 商品卡：主图在上，标题与价格在下（图 → 标题 → 价格的 DOM 顺序）。 */
 export function productCard(product) {
-  return (
-    `<article class="card product-card" data-product-name="${esc(product.name)}">` +
-    '<div class="product-card__head">' +
-    tile(product.name) +
-    '<div class="product-card__meta">' +
-    `<a class="product-card__name" href="#/products/${encodeURIComponent(product.id)}">${esc(product.name)}</a>` +
-    `<span class="product-card__price">${money(product.priceCents)}</span>` +
-    `<span class="product-card__stock">库存 ${product.stock} 件</span>` +
-    '</div></div>' +
-    `<p class="product-card__description">${esc(product.description)}</p>` +
-    '</article>'
+  const image = el('img', {
+    class: 'card__img',
+    src: `/assets/products/${product.id}.jpg`,
+    alt: product.name,
+    width: 300,
+    height: 300,
+    loading: 'lazy',
+    decoding: 'async',
+  });
+  const link = el('a', { class: 'card__link', href: `#/products/${product.id}` }, [
+    image,
+    el('h3', { class: 'card__title' }, [product.name]),
+    priceNode(product.priceCents),
+  ]);
+  return el(
+    'li',
+    {
+      class: product.stock === 0 ? 'card card--out' : 'card',
+      dataset: { productId: product.id, productName: product.name },
+    },
+    [link],
   );
 }
 
-export function cartTable(cart, busyId = null) {
-  const rows = cart.items
-    .map((row) => {
-      const busy = busyId !== null && busyId === row.productId;
-      const decDisabled = busy || row.quantity <= 1 ? ' disabled' : '';
-      const incDisabled = busy || row.quantity >= 8 ? ' disabled' : '';
-      return (
-        `<tr data-row="${esc(row.productId)}">` +
-        `<td class="col-name">${tile(row.productName, null, 'sm')}<span>${esc(row.productName)}</span></td>` +
-        `<td>${money(row.unitPriceCents)}</td>` +
-        '<td><div class="stepper">' +
-        `<button class="stepper__btn" type="button" data-action="dec"${decDisabled}>－</button>` +
-        `<span class="stepper__value">${row.quantity}</span>` +
-        `<button class="stepper__btn" type="button" data-action="inc"${incDisabled}>＋</button>` +
-        '</div></td>' +
-        `<td>${money(row.lineTotalCents)}</td>` +
-        `<td class="op"><button class="link-btn" type="button" data-action="remove"${busy ? ' disabled' : ''}>删除</button></td>` +
-        '</tr>'
-      );
-    })
-    .join('');
-  return (
-    '<table class="cart-table"><thead><tr>' +
-    '<th>商品</th><th class="num">单价</th><th class="num">件数</th>' +
-    '<th class="num">小计</th><th class="op">操作</th>' +
-    `</tr></thead><tbody>${rows}</tbody></table>`
+export function productGrid(products) {
+  return el(
+    'ul',
+    { class: 'grid', id: 'product-grid' },
+    products.map((product) => productCard(product)),
   );
 }
 
-export function settleCard(cart) {
-  return (
-    '<section class="card settle-card">' +
-    '<div class="settle-card__left">' +
-    `<span class="settle-card__count">共 ${cart.quantityTotal} 件商品</span>` +
-    '<span class="settle-card__label">合计</span>' +
-    `<span class="settle-card__amount">${money(cart.totalCents)}</span>` +
-    '</div>' +
-    '<div class="settle-card__right">' +
-    '<a class="btn btn--primary" href="#/checkout">去结算</a>' +
-    '<span class="settle-card__hint">下单即支付成功（假支付）</span>' +
-    '</div></section>'
-  );
+/** 行件数控件：`+` 与上限绑定（达到 8 件即禁用），`−` 到 1 即禁用。 */
+export function stepper({ quantity, max = MAX_QUANTITY, onChange }) {
+  const minus = el('button', { class: 'stepper__btn', type: 'button', 'aria-label': '减少一件' }, ['−']);
+  const plus = el('button', { class: 'stepper__btn', type: 'button', 'aria-label': '增加一件' }, ['+']);
+  const value = el('span', { class: 'stepper__value', 'data-quantity': quantity }, [String(quantity)]);
+  plus.disabled = quantity >= MAX_QUANTITY;
+  minus.disabled = quantity <= 1;
+  minus.addEventListener('click', () => onChange(quantity - 1));
+  plus.addEventListener('click', () => onChange(quantity + 1));
+  return el('div', { class: 'stepper' }, [minus, value, plus]);
 }
 
-export function emptyState({ icon = '空', text, sub, actionLabel = null, actionHref = null }) {
-  const action = actionLabel
-    ? `<a class="btn btn--primary" href="${esc(actionHref)}">${esc(actionLabel)}</a>`
-    : '';
-  return (
-    '<div class="empty">' +
-    `<span class="tile tile--muted" aria-hidden="true">${esc(icon)}</span>` +
-    `<span class="empty__text">${esc(text)}</span>` +
-    (sub ? `<span class="empty__sub">${esc(sub)}</span>` : '') +
-    action +
-    '</div>'
-  );
+export function banner(message, kind = 'error') {
+  return el('p', { class: `banner banner--${kind}`, role: kind === 'error' ? 'alert' : 'status' }, [message]);
 }
 
-export function orderCard(order) {
-  const lines = order.items
-    .map(
-      (item) =>
-        `<li class="order-card__line">${esc(item.productName)} × ${item.quantity} 件</li>`,
-    )
-    .join('');
-  return (
-    '<article class="card order-card" data-order-no="' +
-    esc(order.orderNo) +
-    '">' +
-    '<div class="order-card__top"><div>' +
-    `<div class="order-card__no">订单号 ${esc(order.orderNo)}</div>` +
-    `<div class="order-card__time">下单时间 ${esc(order.createdAt)}</div>` +
-    '</div>' +
-    `<span class="capsule">${order.status === 'paid' ? '已支付' : esc(order.status)}</span>` +
-    '</div>' +
-    '<div class="rule"></div>' +
-    `<ul class="order-card__lines">${lines}</ul>` +
-    '<div class="rule"></div>' +
-    '<div class="order-card__foot">' +
-    '<span class="label">合计</span>' +
-    `<span class="order-card__total">${money(order.totalCents)}</span>` +
-    '</div></article>'
-  );
+export function emptyState(title, hint) {
+  return el('div', { class: 'empty' }, [
+    el('p', { class: 'empty__title' }, [title]),
+    hint ? el('p', { class: 'empty__hint' }, [hint]) : null,
+  ]);
 }
 
-export function detail(product) {
-  const outOfStock = product.stock === 0;
-  const stockBanner = outOfStock
-    ? banner('该商品暂时缺货，无法加入购物车')
-    : '';
-  return (
-    '<div class="band">' +
-    '<div id="detail-flash"></div>' +
-    stockBanner +
-    '<div class="detail">' +
-    tile(product.name, null, 'lg') +
-    '<section class="card detail__info">' +
-    `<h2 class="detail__name">${esc(product.name)}</h2>` +
-    `<p class="detail__price">${money(product.priceCents)}</p>` +
-    `<p class="detail__stock">库存 ${product.stock} 件</p>` +
-    '<div class="detail__divider"></div>' +
-    '<span class="label">商品描述</span>' +
-    `<p class="detail__description">${esc(product.description)}</p>` +
-    '<div class="btn-row">' +
-    `<button class="btn btn--primary" type="button" id="add-to-cart"${outOfStock ? ' disabled' : ''}>加入购物车</button>` +
-    '<a class="btn btn--secondary" href="#/products">返回商品列表</a>' +
-    '</div></section></div></div>'
-  );
+export function pageHead(title, subtitle) {
+  return el('div', { class: 'page__head' }, [
+    el('h1', { class: 'page__title' }, [title]),
+    subtitle ? el('p', { class: 'page__subtitle' }, [subtitle]) : null,
+  ]);
+}
+
+export function hero() {
+  return el('section', { class: 'hero' }, [
+    el('p', { class: 'hero__tags' }, [
+      el('span', { class: 'badge badge--success' }, ['包邮']),
+      el('span', { class: 'badge badge--accent' }, ['秒杀']),
+    ]),
+    el('h1', { class: 'hero__title' }, ['手冲器材 · 今日现货']),
+    el('p', { class: 'hero__note' }, ['演示站点：下单即视为已支付（假支付），不产生任何真实扣款。']),
+  ]);
+}
+
+export function summary(label, cents) {
+  return el('div', { class: 'summary' }, [
+    el('span', { class: 'summary__label' }, [label]),
+    el('span', { class: 'summary__value' }, [money(cents)]),
+  ]);
+}
+
+export function lineThumb(productId, name) {
+  return el('img', {
+    class: 'line__thumb',
+    src: `/assets/products/${productId}.jpg`,
+    alt: name,
+    width: 64,
+    height: 64,
+    loading: 'lazy',
+  });
 }

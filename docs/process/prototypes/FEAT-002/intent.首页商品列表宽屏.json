@@ -1,0 +1,18 @@
+{
+  "screen": "首页商品列表宽屏",
+  "note": "作者意图：band = 内容区横向带；align = 声明应当居中的元素。bounds 一律来自 PSD 导出，绝不出现在本文件",
+  "band": {
+    "left": 60,
+    "right": 1220
+  },
+  "align": {
+    "角标-1文字": "center",
+    "角标-2文字": "center",
+    "角标-3文字": "center",
+    "角标-4文字": "center",
+    "角标-5文字": "center",
+    "角标-6文字": "center",
+    "角标-7文字": "center",
+    "角标-8文字": "center"
+  }
+}

@@ -1,0 +1,326 @@
+{
+  "screen": "商品详情",
+  "id": "FEAT-002",
+  "canvas": "390×1200 @ 72 ppi",
+  "generatedBy": "docs/process/prototypes/FEAT-002/build-prototypes.mjs",
+  "tokens": "docs/process/prd/FEAT-002-ui-spec.md §8.2（本仓无 UI 项目令牌；数值骨架取 docs/process/ui/tokens.md）",
+  "note": "分层源（脚本侧图层清单）。PSD 本身即原生分层源；此处 bounds 为引擎 info 导出值，仅供人工比读，几何判据用 geometry.<屏幕名>.json。",
+  "layers": [
+    {
+      "name": "底色",
+      "kind": "shape",
+      "bounds": [
+        0,
+        0,
+        390,
+        1200
+      ]
+    },
+    {
+      "name": "Home 指示条",
+      "kind": "shape",
+      "bounds": [
+        128,
+        1184,
+        135,
+        5
+      ]
+    },
+    {
+      "name": "状态栏",
+      "kind": "shape",
+      "bounds": [
+        0,
+        0,
+        390,
+        44
+      ]
+    },
+    {
+      "name": "导航栏",
+      "kind": "shape",
+      "bounds": [
+        0,
+        44,
+        390,
+        44
+      ]
+    },
+    {
+      "name": "导航栏下边线",
+      "kind": "shape",
+      "bounds": [
+        0,
+        88,
+        390,
+        1
+      ]
+    },
+    {
+      "name": "返回",
+      "kind": "text",
+      "text": "‹",
+      "sizePt": 24,
+      "bounds": [
+        16,
+        61,
+        10,
+        13
+      ]
+    },
+    {
+      "name": "导航标题",
+      "kind": "text",
+      "text": "商品详情",
+      "sizePt": 17,
+      "bounds": [
+        60,
+        59,
+        70,
+        18
+      ]
+    },
+    {
+      "name": "购物车件数",
+      "kind": "text",
+      "text": "购物车 3",
+      "sizePt": 13,
+      "bounds": [
+        317,
+        63,
+        57,
+        14
+      ]
+    },
+    {
+      "name": "详情主图",
+      "kind": "shape",
+      "bounds": [
+        16,
+        104,
+        359,
+        260
+      ]
+    },
+    {
+      "name": "详情主图-壶身",
+      "kind": "shape",
+      "bounds": [
+        129,
+        212,
+        147,
+        101
+      ]
+    },
+    {
+      "name": "详情主图-壶颈",
+      "kind": "shape",
+      "bounds": [
+        158,
+        170,
+        39,
+        50
+      ]
+    },
+    {
+      "name": "详情主图-壶嘴",
+      "kind": "shape",
+      "bounds": [
+        94,
+        156,
+        74,
+        21
+      ]
+    },
+    {
+      "name": "详情主图-把手",
+      "kind": "shape",
+      "bounds": [
+        259,
+        228,
+        52,
+        58
+      ]
+    },
+    {
+      "name": "详情商品名",
+      "kind": "text",
+      "text": "手冲咖啡壶",
+      "sizePt": 20,
+      "bounds": [
+        16,
+        387,
+        102,
+        20
+      ]
+    },
+    {
+      "name": "详情价格",
+      "kind": "text",
+      "text": "¥ 129.00",
+      "sizePt": 30,
+      "bounds": [
+        15,
+        428,
+        138,
+        26
+      ]
+    },
+    {
+      "name": "详情服务标签",
+      "kind": "shape",
+      "bounds": [
+        16,
+        470,
+        73,
+        22
+      ]
+    },
+    {
+      "name": "详情服务标签字",
+      "kind": "text",
+      "text": "包邮",
+      "sizePt": 13,
+      "bounds": [
+        31,
+        474,
+        29,
+        14
+      ]
+    },
+    {
+      "name": "详情库存",
+      "kind": "text",
+      "text": "库存 8 件",
+      "sizePt": 13,
+      "bounds": [
+        103,
+        474,
+        62,
+        15
+      ]
+    },
+    {
+      "name": "详情卡",
+      "kind": "shape",
+      "bounds": [
+        16,
+        512,
+        359,
+        148
+      ]
+    },
+    {
+      "name": "详情描述标签",
+      "kind": "text",
+      "text": "商品描述",
+      "sizePt": 13,
+      "bounds": [
+        31,
+        533,
+        56,
+        13
+      ]
+    },
+    {
+      "name": "详情描述一",
+      "kind": "text",
+      "text": "玻璃壶身，300ml；手冲与冷萃两用，",
+      "sizePt": 15,
+      "bounds": [
+        31,
+        559,
+        259,
+        16
+      ]
+    },
+    {
+      "name": "详情描述二",
+      "kind": "text",
+      "text": "附滤纸 5 张。",
+      "sizePt": 15,
+      "bounds": [
+        32,
+        583,
+        91,
+        16
+      ]
+    },
+    {
+      "name": "详情配送说明",
+      "kind": "text",
+      "text": "现货 · 48 小时内发出 · 支持 7 天无理由",
+      "sizePt": 13,
+      "bounds": [
+        31,
+        625,
+        271,
+        13
+      ]
+    },
+    {
+      "name": "详情底栏",
+      "kind": "shape",
+      "bounds": [
+        0,
+        1043,
+        390,
+        100
+      ]
+    },
+    {
+      "name": "详情底栏上边线",
+      "kind": "shape",
+      "bounds": [
+        0,
+        1043,
+        390,
+        1
+      ]
+    },
+    {
+      "name": "次按钮-加入购物车",
+      "kind": "shape",
+      "bounds": [
+        16,
+        1067,
+        173,
+        48
+      ]
+    },
+    {
+      "name": "次按钮-加入购物车文字",
+      "kind": "text",
+      "text": "加入购物车",
+      "sizePt": 15,
+      "bounds": [
+        63,
+        1083,
+        79,
+        16
+      ]
+    },
+    {
+      "name": "主按钮-立即购买",
+      "kind": "shape",
+      "bounds": [
+        198,
+        1067,
+        177,
+        48
+      ]
+    },
+    {
+      "name": "主按钮-立即购买文字",
+      "kind": "text",
+      "text": "立即购买",
+      "sizePt": 16,
+      "bounds": [
+        253,
+        1083,
+        68,
+        17
+      ]
+    }
+  ]
+}

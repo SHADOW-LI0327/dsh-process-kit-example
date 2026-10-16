@@ -14,3 +14,17 @@ reports/
 
 # journal 写入器每次追加都会重写的上一版备份（回滚用），属瞬时文件，不入库
 docs/process/prd/*.journal.jsonl.bak
+
+# Phase 2：数据库与运行时数据（不入库；路径由配置指定，属运行时产物）
+data/
+*.db
+*.db-wal
+*.db-shm
+*.sqlite
+*.sqlite-wal
+*.sqlite-shm
+
+# Phase 2：本地配置与密钥（`.env.example` 入库，真实 `.env` 永不入库）
+.env
+.env.local
+.env.production

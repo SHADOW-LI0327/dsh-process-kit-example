@@ -1,0 +1,16 @@
+# 与仓根 .dockerignore 保持一致的副本（容器构建上下文是仓根，本文件不参与 Docker 判定）。
+.git/
+.github/
+node_modules/
+docs/
+reports/
+test/
+e2e/
+data/
+backups/
+*.db
+*.db-wal
+*.db-shm
+*.log
+.env
+.env.*

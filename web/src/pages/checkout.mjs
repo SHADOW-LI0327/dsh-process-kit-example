@@ -1,94 +1,63 @@
 /**
- * 结算下单页（下单面 = 独立页面，两步下单的第二跳）。
+ * 结算页：展示整车快照 + 「提交订单」。
  *
- * 「提交订单」在途期间按钮禁用且文案变「提交中…」，重复点击不产生第二次请求；
- * 空车也**不禁用**该按钮 —— 空车被拒（`购物车是空的，无法提交订单`）正是用户要看到的行为。
+ * 提交成功即假支付成功（订单状态 `paid`），随后跳订单列表；
+ * 被拒时把服务端 `message` 原样显示（「购物车是空的，无法提交订单」/「库存不足，请调整购买件数」）。
  */
-import { api } from '../api.mjs';
-import { banner, emptyState, loading } from '../components.mjs';
-import { esc, money } from '../format.mjs';
+import { api, errorMessage } from '../api.mjs';
+import { banner, el, emptyState, pageHead, summary } from '../components.mjs';
+import { money } from '../format.mjs';
+import { getState, setState, syncCartBadge } from '../state.mjs';
+import { PATHS } from '../routes.mjs';
 
-const EMPTY_LINES_HTML = emptyState({
-  icon: '空',
-  text: '购物车是空的',
-  sub: '去商品列表挑一件，加入购物车后可在这里提交订单',
-});
+export function renderCheckout(root, { error = null } = {}) {
+  const { cart, user } = getState();
+  const items = cart && Array.isArray(cart.items) ? cart.items : [];
 
-function linesHtml(cart) {
-  if (cart.items.length === 0) return EMPTY_LINES_HTML;
-  const rows = cart.items
-    .map(
-      (row) =>
-        '<li class="checkout-line">' +
-        `<span class="checkout-line__name">${esc(row.productName)}</span>` +
-        `<span class="checkout-line__qty">× ${row.quantity} 件</span>` +
-        `<span class="checkout-line__total">${money(row.lineTotalCents)}</span>` +
-        '</li>',
-    )
-    .join('');
-  return `<ul class="checkout-lines">${rows}</ul>`;
-}
-
-export async function render(ctx) {
-  ctx.ui.setActiveNav('cart');
-  ctx.ui.setHeader({
-    title: '结算',
-    subtitle: '确认订单内容后提交，下单即支付成功',
-    action: { label: '返回购物车', href: '#/cart' },
-  });
-  ctx.root.innerHTML = loading();
-
-  let cart;
-  try {
-    cart = await api.getCart();
-  } catch (error) {
-    ctx.root.innerHTML = banner(error.message, { retry: true });
-    ctx.root.querySelector('[data-action="retry"]')?.addEventListener('click', () => render(ctx));
-    return;
-  }
-  ctx.ui.setCart(cart);
-  ctx.ui.setSubtitle('确认订单内容后提交，下单即支付成功');
-
-  let submitting = false;
-
-  const paint = (message = null) => {
-    ctx.root.innerHTML =
-      `<div class="band">${message ? banner(message) : ''}` +
-      '<section class="card">' +
-      '<h2 class="section-title">订单内容</h2>' +
-      '<div class="rule"></div>' +
-      linesHtml(cart) +
-      '<div class="rule"></div>' +
-      '<div class="checkout-total">' +
-      '<span class="settle-card__label">应付合计</span>' +
-      `<span class="settle-card__amount">${money(cart.totalCents)}</span>` +
-      '</div></section>' +
-      '<div class="checkout-actions">' +
-      '<span class="settle-card__hint">下单即支付成功（假支付），无需填写收货信息</span>' +
-      '<span class="banner__spacer"></span>' +
-      '<a class="btn btn--secondary" href="#/cart">返回购物车</a>' +
-      `<button class="btn btn--primary" type="button" id="submit-order"${submitting ? ' disabled' : ''}>` +
-      `${submitting ? '提交中…' : '提交订单'}</button>` +
-      '</div></div>';
-    ctx.root
-      .querySelector('#submit-order')
-      ?.addEventListener('click', () => submit());
-  };
-
-  const submit = async () => {
-    if (submitting) return;
-    submitting = true;
-    paint();
+  const head = pageHead('确认订单', '演示环境：提交即视为已支付（假支付）');
+  const submit = el('button', { class: 'btn btn--cta', type: 'button' }, ['提交订单']);
+  submit.addEventListener('click', async () => {
+    submit.disabled = true;
+    submit.textContent = '提交中…';
     try {
-      await api.createOrder();
-      ctx.ui.flash('下单成功');
-      await ctx.ui.refreshBadge();
-      ctx.ui.navigate('#/orders');
-    } catch (error) {
-      submitting = false;
-      paint(error.message);
+      const order = await api.submitOrder();
+      const fresh = await api.cart();
+      setState({ cart: fresh, error: null, notice: `下单成功：${order.orderNo}` });
+      syncCartBadge();
+      location.hash = PATHS.orders;
+    } catch (caught) {
+      submit.disabled = false;
+      submit.textContent = '提交订单';
+      renderCheckout(root, { error: errorMessage(caught) });
     }
-  };
+  });
 
-  paint();
+  const rows = items.map((item) =>
+    el('div', { class: 'line' }, [
+      el('div', { class: 'line__body' }, [
+        el('p', { class: 'line__name' }, [item.productName]),
+        el('p', { class: 'line__meta' }, [`${money(item.unitPriceCents)} × ${item.quantity}`]),
+      ]),
+      el('p', { class: 'line__price' }, [money(item.lineTotalCents)]),
+    ]),
+  );
+
+  const panel = el('section', { class: 'panel' }, [
+    ...(items.length > 0 ? rows : [emptyState('购物车是空的，无法提交订单', '回购物车加几件再来。')]),
+    summary('实付', cart ? cart.totalCents : 0),
+    el('div', { class: 'actions' }, [
+      submit,
+      el('a', { class: 'btn btn--ghost', href: PATHS.cart }, ['回购物车']),
+    ]),
+    user === null
+      ? el('p', { class: 'line__meta' }, [
+          '未登录：下单需要先登录，',
+          el('a', { class: 'btn btn--link', href: PATHS.login }, ['去登录']),
+        ])
+      : el('p', { class: 'line__meta' }, [`下单账号：${user.email}`]),
+  ]);
+
+  root.replaceChildren();
+  if (error) root.append(banner(error));
+  root.append(head, el('div', { class: 'cart-layout' }, [panel]));
 }

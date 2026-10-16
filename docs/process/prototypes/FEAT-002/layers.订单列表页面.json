@@ -1,0 +1,454 @@
+{
+  "screen": "订单列表页面",
+  "id": "FEAT-002",
+  "canvas": "390×1200 @ 72 ppi",
+  "generatedBy": "docs/process/prototypes/FEAT-002/build-prototypes.mjs",
+  "tokens": "docs/process/prd/FEAT-002-ui-spec.md §8.2（本仓无 UI 项目令牌；数值骨架取 docs/process/ui/tokens.md）",
+  "note": "分层源（脚本侧图层清单）。PSD 本身即原生分层源；此处 bounds 为引擎 info 导出值，仅供人工比读，几何判据用 geometry.<屏幕名>.json。",
+  "layers": [
+    {
+      "name": "底色",
+      "kind": "shape",
+      "bounds": [
+        0,
+        0,
+        390,
+        1200
+      ]
+    },
+    {
+      "name": "Home 指示条",
+      "kind": "shape",
+      "bounds": [
+        128,
+        1184,
+        135,
+        5
+      ]
+    },
+    {
+      "name": "状态栏",
+      "kind": "shape",
+      "bounds": [
+        0,
+        0,
+        390,
+        44
+      ]
+    },
+    {
+      "name": "导航栏",
+      "kind": "shape",
+      "bounds": [
+        0,
+        44,
+        390,
+        44
+      ]
+    },
+    {
+      "name": "导航栏下边线",
+      "kind": "shape",
+      "bounds": [
+        0,
+        88,
+        390,
+        1
+      ]
+    },
+    {
+      "name": "导航标题",
+      "kind": "text",
+      "text": "订单",
+      "sizePt": 17,
+      "bounds": [
+        15,
+        59,
+        36,
+        18
+      ]
+    },
+    {
+      "name": "购物车件数",
+      "kind": "text",
+      "text": "购物车 0",
+      "sizePt": 13,
+      "bounds": [
+        317,
+        63,
+        57,
+        14
+      ]
+    },
+    {
+      "name": "订单副标题",
+      "kind": "text",
+      "text": "按下单时间倒序，最近一单在最上面",
+      "sizePt": 13,
+      "bounds": [
+        15,
+        101,
+        221,
+        14
+      ]
+    },
+    {
+      "name": "订单卡-1",
+      "kind": "shape",
+      "bounds": [
+        16,
+        128,
+        359,
+        200
+      ]
+    },
+    {
+      "name": "订单号-1",
+      "kind": "text",
+      "text": "订单号 SO-20261015-0002",
+      "sizePt": 15,
+      "bounds": [
+        31,
+        149,
+        214,
+        16
+      ]
+    },
+    {
+      "name": "订单状态-1",
+      "kind": "shape",
+      "bounds": [
+        300,
+        144,
+        59,
+        22
+      ]
+    },
+    {
+      "name": "订单状态-1文字",
+      "kind": "text",
+      "text": "已支付",
+      "sizePt": 12,
+      "bounds": [
+        310,
+        149,
+        39,
+        13
+      ]
+    },
+    {
+      "name": "下单时间-1",
+      "kind": "text",
+      "text": "下单时间 2026-10-15 10:24",
+      "sizePt": 13,
+      "bounds": [
+        31,
+        177,
+        193,
+        13
+      ]
+    },
+    {
+      "name": "订单分隔线-1",
+      "kind": "shape",
+      "bounds": [
+        32,
+        204,
+        326,
+        1
+      ]
+    },
+    {
+      "name": "订单行-1-1",
+      "kind": "text",
+      "text": "手冲咖啡壶 × 2 件",
+      "sizePt": 15,
+      "bounds": [
+        31,
+        221,
+        138,
+        16
+      ]
+    },
+    {
+      "name": "订单行-1-2",
+      "kind": "text",
+      "text": "陶瓷滤杯 × 1 件",
+      "sizePt": 15,
+      "bounds": [
+        32,
+        247,
+        121,
+        16
+      ]
+    },
+    {
+      "name": "订单合计标签-1",
+      "kind": "text",
+      "text": "合计",
+      "sizePt": 13,
+      "bounds": [
+        329,
+        224,
+        29,
+        14
+      ]
+    },
+    {
+      "name": "订单合计金额-1",
+      "kind": "text",
+      "text": "¥ 326.00",
+      "sizePt": 24,
+      "bounds": [
+        244,
+        251,
+        114,
+        21
+      ]
+    },
+    {
+      "name": "订单卡-2",
+      "kind": "shape",
+      "bounds": [
+        16,
+        344,
+        359,
+        200
+      ]
+    },
+    {
+      "name": "订单号-2",
+      "kind": "text",
+      "text": "订单号 SO-20261015-0001",
+      "sizePt": 15,
+      "bounds": [
+        31,
+        365,
+        211,
+        16
+      ]
+    },
+    {
+      "name": "订单状态-2",
+      "kind": "shape",
+      "bounds": [
+        300,
+        360,
+        59,
+        22
+      ]
+    },
+    {
+      "name": "订单状态-2文字",
+      "kind": "text",
+      "text": "已支付",
+      "sizePt": 12,
+      "bounds": [
+        310,
+        365,
+        39,
+        13
+      ]
+    },
+    {
+      "name": "下单时间-2",
+      "kind": "text",
+      "text": "下单时间 2026-10-15 10:02",
+      "sizePt": 13,
+      "bounds": [
+        31,
+        393,
+        193,
+        13
+      ]
+    },
+    {
+      "name": "订单分隔线-2",
+      "kind": "shape",
+      "bounds": [
+        32,
+        420,
+        326,
+        1
+      ]
+    },
+    {
+      "name": "订单行-2-1",
+      "kind": "text",
+      "text": "手摇磨豆机 × 1 件",
+      "sizePt": 15,
+      "bounds": [
+        31,
+        437,
+        138,
+        16
+      ]
+    },
+    {
+      "name": "订单合计标签-2",
+      "kind": "text",
+      "text": "合计",
+      "sizePt": 13,
+      "bounds": [
+        329,
+        440,
+        29,
+        14
+      ]
+    },
+    {
+      "name": "订单合计金额-2",
+      "kind": "text",
+      "text": "¥ 399.00",
+      "sizePt": 24,
+      "bounds": [
+        244,
+        467,
+        114,
+        21
+      ]
+    },
+    {
+      "name": "次按钮-去逛商品",
+      "kind": "shape",
+      "bounds": [
+        16,
+        620,
+        361,
+        48
+      ]
+    },
+    {
+      "name": "次按钮-去逛商品文字",
+      "kind": "text",
+      "text": "去逛商品列表",
+      "sizePt": 15,
+      "bounds": [
+        149,
+        636,
+        95,
+        16
+      ]
+    },
+    {
+      "name": "订单演示说明",
+      "kind": "text",
+      "text": "演示环境：订单为演示数据，清除浏览器数据后不再显示",
+      "sizePt": 13,
+      "bounds": [
+        15,
+        688,
+        345,
+        15
+      ]
+    },
+    {
+      "name": "底部栏",
+      "kind": "shape",
+      "bounds": [
+        0,
+        1097,
+        390,
+        49
+      ]
+    },
+    {
+      "name": "底部栏上边线",
+      "kind": "shape",
+      "bounds": [
+        0,
+        1097,
+        390,
+        1
+      ]
+    },
+    {
+      "name": "Tab-首页-图标",
+      "kind": "shape",
+      "bounds": [
+        38,
+        1102,
+        23,
+        22
+      ]
+    },
+    {
+      "name": "Tab-首页-文字",
+      "kind": "text",
+      "text": "首页",
+      "sizePt": 12,
+      "bounds": [
+        36,
+        1128,
+        27,
+        13
+      ]
+    },
+    {
+      "name": "Tab-购物车-图标",
+      "kind": "shape",
+      "bounds": [
+        135,
+        1102,
+        23,
+        22
+      ]
+    },
+    {
+      "name": "Tab-购物车-文字",
+      "kind": "text",
+      "text": "购物车",
+      "sizePt": 12,
+      "bounds": [
+        126,
+        1128,
+        40,
+        13
+      ]
+    },
+    {
+      "name": "Tab-订单-图标",
+      "kind": "shape",
+      "bounds": [
+        232,
+        1102,
+        23,
+        22
+      ]
+    },
+    {
+      "name": "Tab-订单-文字",
+      "kind": "text",
+      "text": "订单",
+      "sizePt": 12,
+      "bounds": [
+        230,
+        1129,
+        27,
+        12
+      ]
+    },
+    {
+      "name": "Tab-我的-图标",
+      "kind": "shape",
+      "bounds": [
+        329,
+        1102,
+        23,
+        22
+      ]
+    },
+    {
+      "name": "Tab-我的-文字",
+      "kind": "text",
+      "text": "我的",
+      "sizePt": 12,
+      "bounds": [
+        327,
+        1129,
+        27,
+        12
+      ]
+    }
+  ]
+}

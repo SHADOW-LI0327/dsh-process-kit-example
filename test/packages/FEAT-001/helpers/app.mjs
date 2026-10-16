@@ -10,10 +10,39 @@
  */
 import { request } from 'node:http';
 import assert from 'node:assert/strict';
+import { mkdtempSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+// 装置卫生：本进程（测试 worker）被 reparent（runner 被硬杀）即自杀 —— 否则 worker 自己持的
+// in-process 监听（startApp 的随机端口）会变成常驻孤儿。与 FEAT-002 helpers 同码同源。
+import './parent-watchdog.mjs';
 
 const APP_ENTRY = new URL('../../../../server/src/app.mjs', import.meta.url);
 
 let cached;
+
+/**
+ * 独立的临时库路径：测试**一律不落生产库路径**（`FEAT-002` 契约 §8.3）。
+ *
+ * 为什么必须有：数据落到磁盘后，无参 `createApp()` 的缺省是 `./data/shop.db` ⇒
+ * ① 与 `FEAT-002 AC-07`（断言生产库路径 `mtime` 前后不变）正面冲突；
+ * ② `node --test` 多文件并发，注入种子的用例会互相替换 `products` 表，本该绿的用例随机红。
+ * 解在测试侧（主控裁定不许在源码里加运行器感知降级），故装置按实例发一个独立库。
+ */
+export function tempDbPath() {
+  const dir = mkdtempSync(join(tmpdir(), 'feat001-db-'));
+  return {
+    dir,
+    dbPath: join(dir, 'shop.db'),
+    cleanup() {
+      try {
+        rmSync(dir, { recursive: true, force: true });
+      } catch {
+        // 清理失败不得反转判据：库文件残留只是环境噪声，不是被测行为。
+      }
+    },
+  };
+}
 
 /** 取应用工厂 createApp（进程内只解析一次）。 */
 export function loadCreateApp() {
@@ -42,10 +71,14 @@ function resolveServer(handle) {
   );
 }
 
-/** 起一个实例：listen(0) → 随机端口；close() 彻底关闭。 */
+/** 起一个实例：listen(0) → 随机端口；close() 彻底关闭（含临时库清理）。 */
 export async function startApp(options) {
   const createApp = await loadCreateApp();
-  const handle = await (options === undefined ? createApp() : createApp(options));
+  const opts = { ...(options ?? {}) };
+  // 未显式给库路径时，装置补一个独立临时库：既隔离并发用例，也不碰生产库路径。
+  const temp = opts.dbPath === undefined ? tempDbPath() : null;
+  if (temp) opts.dbPath = temp.dbPath;
+  const handle = await createApp(opts);
   const server = resolveServer(handle);
   await new Promise((resolve, reject) => {
     const onError = (err) => reject(err);
@@ -60,17 +93,22 @@ export async function startApp(options) {
   if (!port) throw new Error('实例已监听但取不到端口号，无法取样');
   if (port === 3000) {
     await new Promise((resolve) => server.close(resolve));
+    if (temp) temp.cleanup();
     throw new Error('实例监听在了常驻端口 3000 —— 测试禁止占用该端口');
   }
   return {
     port,
     base: `http://127.0.0.1:${port}`,
+    dbPath: opts.dbPath,
     close: () =>
       new Promise((resolve) => {
         // 客户端保持长连接时 server.close() 会一直等到空闲连接超时；
         // 取样已全部结束，直接掐掉空闲连接，避免用例在收尾处假挂起。
         if (typeof server.closeIdleConnections === 'function') server.closeIdleConnections();
-        server.close(() => resolve());
+        server.close(() => {
+          if (temp) temp.cleanup();
+          resolve();
+        });
       }),
   };
 }
@@ -99,14 +137,33 @@ function normalizeResponse(res, chunks, remotePort) {
 /**
  * 一个「自持 cookie」的客户端：显式 cookie jar（收 Set-Cookie → 回带 Cookie），
  * 不依赖浏览器存储，因此桌面与真机行为一致。
+ *
+ * jar 按名存取值：匿名车（`cartId`）与会话（`sid`）都要能回带 ——
+ * `FEAT-001 N-1` 由 `FEAT-002 S-11` 解除后，下单 / 查单前必须先注册开会话。
+ * `Max-Age=0` 视为删除（登出语义）。
  */
 export function newClient(app, { cookie: initialCookie = '' } = {}) {
-  let cookie = initialCookie;
+  const jar = new Map();
+  if (initialCookie) {
+    for (const part of String(initialCookie).split(';')) {
+      const idx = part.indexOf('=');
+      if (idx > 0) jar.set(part.slice(0, idx).trim(), part.slice(idx + 1).trim());
+    }
+  }
+  const serialize = () => [...jar].map(([name, value]) => `${name}=${value}`).join('; ');
+  const absorb = (line) => {
+    const [pair, ...attrs] = String(line).split(';');
+    const idx = pair.indexOf('=');
+    if (idx <= 0) return;
+    const name = pair.slice(0, idx).trim();
+    if (attrs.some((attr) => /^\s*max-age\s*=\s*0\s*$/i.test(attr))) jar.delete(name);
+    else jar.set(name, pair.slice(idx + 1).trim());
+  };
 
   async function send(method, path, opts = {}) {
     const { body, rawBody, contentType, headers = {}, useJar = true } = opts;
     const finalHeaders = { accept: 'application/json', ...headers };
-    if (useJar && cookie) finalHeaders.cookie = cookie;
+    if (useJar && jar.size > 0) finalHeaders.cookie = serialize();
     let payload;
     if (rawBody !== undefined) payload = rawBody;
     else if (body !== undefined) payload = JSON.stringify(body);
@@ -133,18 +190,17 @@ export function newClient(app, { cookie: initialCookie = '' } = {}) {
     });
     const setCookie = res.headers['set-cookie'];
     if (setCookie) {
-      for (const line of Array.isArray(setCookie) ? setCookie : [setCookie]) {
-        const m = /(?:^|;\s*)cartId=([^;]*)/.exec(line);
-        if (m) cookie = `cartId=${m[1]}`;
-      }
+      for (const line of Array.isArray(setCookie) ? setCookie : [setCookie]) absorb(line);
     }
     return res;
   }
 
   return {
     get cookie() {
-      return cookie;
+      return serialize();
     },
+    /** 显式取某个 cookie 的值（判据需要单独核对 `sid` / `cartId` 时用）。 */
+    cookieValue: (name) => jar.get(name) ?? null,
     get: (path, opts) => send('GET', path, opts),
     post: (path, body, opts) => send('POST', path, { ...opts, body }),
     patch: (path, body, opts) => send('PATCH', path, { ...opts, body }),

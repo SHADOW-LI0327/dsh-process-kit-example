@@ -1,0 +1,443 @@
+{
+  "source": "photocraft-cli info → docs/process/prototypes/FEAT-002/订单列表页面-FEAT-002.psd",
+  "adapter": "photocraft-cli",
+  "artifact": "docs/process/prototypes/FEAT-002/订单列表页面-FEAT-002.psd",
+  "canvas": {
+    "width": 390,
+    "height": 1200
+  },
+  "elements": [
+    {
+      "name": "Tab-我的-文字",
+      "kind": "text",
+      "bounds": [
+        327,
+        1129,
+        27,
+        12
+      ],
+      "sizePt": 12
+    },
+    {
+      "name": "Tab-我的-图标",
+      "kind": "decoration",
+      "bounds": [
+        329,
+        1102,
+        23,
+        22
+      ]
+    },
+    {
+      "name": "Tab-订单-文字",
+      "kind": "text",
+      "bounds": [
+        230,
+        1129,
+        27,
+        12
+      ],
+      "sizePt": 12
+    },
+    {
+      "name": "Tab-订单-图标",
+      "kind": "decoration",
+      "bounds": [
+        232,
+        1102,
+        23,
+        22
+      ]
+    },
+    {
+      "name": "Tab-购物车-文字",
+      "kind": "text",
+      "bounds": [
+        126,
+        1128,
+        40,
+        13
+      ],
+      "sizePt": 12
+    },
+    {
+      "name": "Tab-购物车-图标",
+      "kind": "decoration",
+      "bounds": [
+        135,
+        1102,
+        23,
+        22
+      ]
+    },
+    {
+      "name": "Tab-首页-文字",
+      "kind": "text",
+      "bounds": [
+        36,
+        1128,
+        27,
+        13
+      ],
+      "sizePt": 12
+    },
+    {
+      "name": "Tab-首页-图标",
+      "kind": "decoration",
+      "bounds": [
+        38,
+        1102,
+        23,
+        22
+      ]
+    },
+    {
+      "name": "底部栏上边线",
+      "kind": "decoration",
+      "bounds": [
+        0,
+        1097,
+        390,
+        1
+      ]
+    },
+    {
+      "name": "底部栏",
+      "kind": "container",
+      "bounds": [
+        0,
+        1097,
+        390,
+        49
+      ]
+    },
+    {
+      "name": "订单演示说明",
+      "kind": "text",
+      "bounds": [
+        15,
+        688,
+        345,
+        15
+      ],
+      "sizePt": 13
+    },
+    {
+      "name": "次按钮-去逛商品文字",
+      "kind": "text",
+      "bounds": [
+        149,
+        636,
+        95,
+        16
+      ],
+      "sizePt": 15
+    },
+    {
+      "name": "次按钮-去逛商品",
+      "kind": "container",
+      "bounds": [
+        16,
+        620,
+        361,
+        48
+      ]
+    },
+    {
+      "name": "订单合计金额-2",
+      "kind": "text",
+      "bounds": [
+        244,
+        467,
+        114,
+        21
+      ],
+      "sizePt": 24
+    },
+    {
+      "name": "订单合计标签-2",
+      "kind": "text",
+      "bounds": [
+        329,
+        440,
+        29,
+        14
+      ],
+      "sizePt": 13
+    },
+    {
+      "name": "订单行-2-1",
+      "kind": "text",
+      "bounds": [
+        31,
+        437,
+        138,
+        16
+      ],
+      "sizePt": 15
+    },
+    {
+      "name": "订单分隔线-2",
+      "kind": "decoration",
+      "bounds": [
+        32,
+        420,
+        326,
+        1
+      ]
+    },
+    {
+      "name": "下单时间-2",
+      "kind": "text",
+      "bounds": [
+        31,
+        393,
+        193,
+        13
+      ],
+      "sizePt": 13
+    },
+    {
+      "name": "订单状态-2文字",
+      "kind": "text",
+      "bounds": [
+        310,
+        365,
+        39,
+        13
+      ],
+      "sizePt": 12
+    },
+    {
+      "name": "订单状态-2",
+      "kind": "container",
+      "bounds": [
+        300,
+        360,
+        59,
+        22
+      ]
+    },
+    {
+      "name": "订单号-2",
+      "kind": "text",
+      "bounds": [
+        31,
+        365,
+        211,
+        16
+      ],
+      "sizePt": 15
+    },
+    {
+      "name": "订单卡-2",
+      "kind": "container",
+      "bounds": [
+        16,
+        344,
+        359,
+        200
+      ]
+    },
+    {
+      "name": "订单合计金额-1",
+      "kind": "text",
+      "bounds": [
+        244,
+        251,
+        114,
+        21
+      ],
+      "sizePt": 24
+    },
+    {
+      "name": "订单合计标签-1",
+      "kind": "text",
+      "bounds": [
+        329,
+        224,
+        29,
+        14
+      ],
+      "sizePt": 13
+    },
+    {
+      "name": "订单行-1-2",
+      "kind": "text",
+      "bounds": [
+        32,
+        247,
+        121,
+        16
+      ],
+      "sizePt": 15
+    },
+    {
+      "name": "订单行-1-1",
+      "kind": "text",
+      "bounds": [
+        31,
+        221,
+        138,
+        16
+      ],
+      "sizePt": 15
+    },
+    {
+      "name": "订单分隔线-1",
+      "kind": "decoration",
+      "bounds": [
+        32,
+        204,
+        326,
+        1
+      ]
+    },
+    {
+      "name": "下单时间-1",
+      "kind": "text",
+      "bounds": [
+        31,
+        177,
+        193,
+        13
+      ],
+      "sizePt": 13
+    },
+    {
+      "name": "订单状态-1文字",
+      "kind": "text",
+      "bounds": [
+        310,
+        149,
+        39,
+        13
+      ],
+      "sizePt": 12
+    },
+    {
+      "name": "订单状态-1",
+      "kind": "container",
+      "bounds": [
+        300,
+        144,
+        59,
+        22
+      ]
+    },
+    {
+      "name": "订单号-1",
+      "kind": "text",
+      "bounds": [
+        31,
+        149,
+        214,
+        16
+      ],
+      "sizePt": 15
+    },
+    {
+      "name": "订单卡-1",
+      "kind": "container",
+      "bounds": [
+        16,
+        128,
+        359,
+        200
+      ]
+    },
+    {
+      "name": "订单副标题",
+      "kind": "text",
+      "bounds": [
+        15,
+        101,
+        221,
+        14
+      ],
+      "sizePt": 13
+    },
+    {
+      "name": "购物车件数",
+      "kind": "text",
+      "bounds": [
+        317,
+        63,
+        57,
+        14
+      ],
+      "sizePt": 13
+    },
+    {
+      "name": "导航标题",
+      "kind": "text",
+      "bounds": [
+        15,
+        59,
+        36,
+        18
+      ],
+      "sizePt": 17
+    },
+    {
+      "name": "导航栏下边线",
+      "kind": "decoration",
+      "bounds": [
+        0,
+        88,
+        390,
+        1
+      ]
+    },
+    {
+      "name": "导航栏",
+      "kind": "container",
+      "bounds": [
+        0,
+        44,
+        390,
+        44
+      ]
+    },
+    {
+      "name": "状态栏",
+      "kind": "decoration",
+      "bounds": [
+        0,
+        0,
+        390,
+        44
+      ]
+    },
+    {
+      "name": "Home 指示条",
+      "kind": "decoration",
+      "bounds": [
+        128,
+        1184,
+        135,
+        5
+      ]
+    },
+    {
+      "name": "底色",
+      "kind": "container",
+      "bounds": [
+        0,
+        0,
+        390,
+        1200
+      ]
+    },
+    {
+      "name": "Background",
+      "kind": "decoration",
+      "bounds": [
+        0,
+        0,
+        390,
+        1200
+      ]
+    }
+  ]
+}

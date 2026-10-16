@@ -41,11 +41,31 @@ async function seedItems(app) {
 const addItem = (client, productId, quantity) =>
   client.post('/api/v1/cart/items', { productId, quantity });
 
+const PASSWORD = 'Pw-FEAT001-orders-9f2c';
+let accountSeq = 0;
+const uniqueEmail = (tag) => `feat001-${tag}-${process.pid}-${++accountSeq}@example.com`;
+
+/**
+ * 已开会话的客户端（改前置条件，不改判据）。
+ *
+ * 依据：`FEAT-001` 非目标 `N-1`（账号 / 登录 / 鉴权 = 明确不做）由 `FEAT-002` PRD §1.5 `S-11` 解除；
+ * `FEAT-002` 契约 §四 规定未登录访问 `POST /orders`、`GET /orders`、`GET /orders/{orderNo}` 一律 `401`。
+ * 故本文件的业务判据（状态码 / 金额 / 库存扣减 / 订单号唯一 / 原子性 / 并发）全部保留，
+ * 只是先把账号与会话建起来 —— 绝不把用例改成「只断言 401」。
+ */
+async function signedIn(app, tag) {
+  const client = newClient(app);
+  const res = await client.post('/api/v1/auth/register', { email: uniqueEmail(tag), password: PASSWORD });
+  assert.equal(res.status, 201, `前置：注册必须 201，实际 ${res.status}：${res.raw.slice(0, 160)}`);
+  assert.ok(client.cookieValue('sid'), '前置：注册必须下发会话 cookie（sid）');
+  return client;
+}
+
 const isMoneyKey = (key) => /price|total|amount/i.test(key);
 
 test('下单即支付成功（AC-18）', async () => {
   await withApp(undefined, async (app) => {
-    const client = newClient(app);
+    const client = await signedIn(app, 'ac18');
     const items = await seedItems(app);
     assert.equal((await addItem(client, items[0].id, 1)).status, 201);
     const res = await client.post('/api/v1/orders');
@@ -66,7 +86,7 @@ test('下单即支付成功（AC-18）', async () => {
 
 test('下单扣减库存（AC-19）', async () => {
   await withApp(undefined, async (app) => {
-    const client = newClient(app);
+    const client = await signedIn(app, 'ac19');
     const items = await seedItems(app);
     const target = items[0];
     const quantity = 3;
@@ -92,20 +112,20 @@ test('缺货下单拒绝（AC-20）', async () => {
     );
 
     // ① 先下单一部分，把库存压到 3（默认种子单行上限 8，一次买不完两头）
-    const first = newClient(app);
+    const first = await signedIn(app, 'ac20a');
     assert.equal((await addItem(first, target.id, initial - 3)).status, 201);
     assert.equal((await first.post('/api/v1/orders')).status, 201);
     assert.equal(await readStock(), 3);
 
     // ② 内一点 Q = S - 1 → 通过
-    const inner = newClient(app);
+    const inner = await signedIn(app, 'ac20b');
     assert.equal((await addItem(inner, target.id, 2)).status, 201);
     assert.equal((await inner.post('/api/v1/orders')).status, 201);
     const remaining = await readStock();
     assert.equal(remaining, 1);
 
     // ③ 外点 Q = S + 1 → 拒绝，且库存 / 订单 / 购物车三处都不得变化
-    const over = newClient(app);
+    const over = await signedIn(app, 'ac20c');
     const outPoint = remaining + 1;
     assert.equal((await addItem(over, target.id, outPoint)).status, 201, '加购阶段允许超过库存');
     const ordersBefore = (await getOrders(over)).orders.length;
@@ -123,7 +143,7 @@ test('缺货下单拒绝（AC-20）', async () => {
     assert.equal(cartAfterReject.items.length, 1, '被拒后购物车不得被清空');
 
     // ④ 端点 Q = S → 恰好买完，库存归零
-    const exact = newClient(app);
+    const exact = await signedIn(app, 'ac20d');
     assert.equal((await addItem(exact, target.id, remaining)).status, 201);
     assert.equal((await exact.post('/api/v1/orders')).status, 201);
     assert.equal(await readStock(), 0);
@@ -132,7 +152,7 @@ test('缺货下单拒绝（AC-20）', async () => {
 
 test('总额分为单位（AC-21）', async () => {
   await withApp(undefined, async (app) => {
-    const client = newClient(app);
+    const client = await signedIn(app, 'ac21');
     const items = await seedItems(app);
     const [first, second] = items;
     assert.equal((await addItem(client, first.id, 1)).status, 201);
@@ -159,8 +179,9 @@ test('总额分为单位（AC-21）', async () => {
 });
 
 test('空车下单拒绝（AC-22）', async () => {
+  // 契约 §4.4 明文「未登录不能下单」优先于「空车」⇒ 空车拦截这条能力必须**在已登录态**上验（匿名态先撞 401）。
   await withApp(undefined, async (app) => {
-    const client = newClient(app);
+    const client = await signedIn(app, 'ac22');
     assert.equal((await getCart(client)).cart.items.length, 0);
     const res = await client.post('/api/v1/orders');
     assert.equal(res.status, 409);
@@ -175,7 +196,7 @@ test('空车下单拒绝（AC-22）', async () => {
 
 test('下单后清空车（AC-23）', async () => {
   await withApp(undefined, async (app) => {
-    const client = newClient(app);
+    const client = await signedIn(app, 'ac23');
     const items = await seedItems(app);
     const target = items[0];
     const quantity = 2;
@@ -198,7 +219,7 @@ test('下单后清空车（AC-23）', async () => {
 
 test('订单列表可读（AC-24）', async () => {
   await withApp(undefined, async (app) => {
-    const client = newClient(app);
+    const client = await signedIn(app, 'ac24');
     const items = await seedItems(app);
     assert.equal((await addItem(client, items[0].id, 1)).status, 201);
     const first = data(await client.post('/api/v1/orders'));
@@ -226,7 +247,7 @@ test('订单列表可读（AC-24）', async () => {
 test('订单号唯一（AC-25）', async () => {
   // 连续 20 次下单需要 20 件以上库存；默认种子每件只有 8 件，故注入足量库存的独立种子。
   await withApp({ seed: makeSeed(1, { stock: 40 }) }, async (app) => {
-    const client = newClient(app);
+    const client = await signedIn(app, 'ac25');
     const target = (await seedItems(app))[0];
     const numbers = [];
     for (let i = 0; i < 20; i += 1) {
@@ -247,7 +268,7 @@ test('订单号唯一（AC-25）', async () => {
 
 test('订单列表同端口（AC-26）', async () => {
   await withApp(undefined, async (app) => {
-    const client = newClient(app);
+    const client = await signedIn(app, 'ac26');
     const products = await client.get('/api/v1/products');
     const orders = await client.get('/api/v1/orders');
     assert.equal(products.status, 200);
@@ -266,7 +287,7 @@ test('订单列表同端口（AC-26）', async () => {
 
 test('库存临界清零（E-07）', async () => {
   await withApp({ seed: makeSeed(1, { stock: 1 }) }, async (app) => {
-    const client = newClient(app);
+    const client = await signedIn(app, 'e07');
     const target = (await seedItems(app))[0];
     assert.equal((await addItem(client, target.id, 1)).status, 201);
     assert.equal((await client.post('/api/v1/orders')).status, 201);
@@ -280,8 +301,9 @@ test('库存临界清零（E-07）', async () => {
 test('并发抢最后一件（E-08）', async () => {
   await withApp({ seed: makeSeed(1, { stock: 1 }) }, async (app) => {
     const target = (await seedItems(app))[0];
-    const a = newClient(app);
-    const b = newClient(app);
+    // 并发抢最后一件：两个**不同账号**各持一件，抢的是同一件商品的库存（不是同一辆车的归属）。
+    const a = await signedIn(app, 'e08a');
+    const b = await signedIn(app, 'e08b');
     assert.equal((await addItem(a, target.id, 1)).status, 201);
     assert.equal((await addItem(b, target.id, 1)).status, 201);
     const [ra, rb] = await Promise.all([a.post('/api/v1/orders'), b.post('/api/v1/orders')]);
@@ -296,7 +318,7 @@ test('并发抢最后一件（E-08）', async () => {
 
 test('重复提交下单（E-10）', async () => {
   await withApp(undefined, async (app) => {
-    const client = newClient(app);
+    const client = await signedIn(app, 'e10');
     const target = (await seedItems(app))[0];
     assert.equal((await addItem(client, target.id, 1)).status, 201);
     assert.equal((await client.post('/api/v1/orders')).status, 201);
@@ -310,7 +332,7 @@ test('重复提交下单（E-10）', async () => {
 
 test('无界面直连可用（E-12）', async () => {
   await withApp(undefined, async (app) => {
-    const client = newClient(app);
+    const client = await signedIn(app, 'e12');
     // 全程只用 HTTP：五个功能面一个不落，不存在「只有点界面才能触发」的动作。
     const { items: products } = await listProducts(client);
     const target = findByName(products, products[0].name);

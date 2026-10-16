@@ -1,0 +1,11 @@
+{
+  "screen": "购物车",
+  "note": "作者意图：band = 内容区横向带；align = 声明应当居中的元素。bounds 一律来自 PSD 导出，绝不出现在本文件",
+  "band": {
+    "left": 16,
+    "right": 374
+  },
+  "align": {
+    "主按钮-去结算文字": "center"
+  }
+}

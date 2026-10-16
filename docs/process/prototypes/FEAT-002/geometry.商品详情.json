@@ -1,0 +1,324 @@
+{
+  "source": "photocraft-cli info → docs/process/prototypes/FEAT-002/商品详情-FEAT-002.psd",
+  "adapter": "photocraft-cli",
+  "artifact": "docs/process/prototypes/FEAT-002/商品详情-FEAT-002.psd",
+  "canvas": {
+    "width": 390,
+    "height": 1200
+  },
+  "elements": [
+    {
+      "name": "主按钮-立即购买文字",
+      "kind": "text",
+      "bounds": [
+        253,
+        1083,
+        68,
+        17
+      ],
+      "sizePt": 16
+    },
+    {
+      "name": "主按钮-立即购买",
+      "kind": "container",
+      "bounds": [
+        198,
+        1067,
+        177,
+        48
+      ]
+    },
+    {
+      "name": "次按钮-加入购物车文字",
+      "kind": "text",
+      "bounds": [
+        63,
+        1083,
+        79,
+        16
+      ],
+      "sizePt": 15
+    },
+    {
+      "name": "次按钮-加入购物车",
+      "kind": "container",
+      "bounds": [
+        16,
+        1067,
+        173,
+        48
+      ]
+    },
+    {
+      "name": "详情底栏上边线",
+      "kind": "decoration",
+      "bounds": [
+        0,
+        1043,
+        390,
+        1
+      ]
+    },
+    {
+      "name": "详情底栏",
+      "kind": "container",
+      "bounds": [
+        0,
+        1043,
+        390,
+        100
+      ]
+    },
+    {
+      "name": "详情配送说明",
+      "kind": "text",
+      "bounds": [
+        31,
+        625,
+        271,
+        13
+      ],
+      "sizePt": 13
+    },
+    {
+      "name": "详情描述二",
+      "kind": "text",
+      "bounds": [
+        32,
+        583,
+        91,
+        16
+      ],
+      "sizePt": 15
+    },
+    {
+      "name": "详情描述一",
+      "kind": "text",
+      "bounds": [
+        31,
+        559,
+        259,
+        16
+      ],
+      "sizePt": 15
+    },
+    {
+      "name": "详情描述标签",
+      "kind": "text",
+      "bounds": [
+        31,
+        533,
+        56,
+        13
+      ],
+      "sizePt": 13
+    },
+    {
+      "name": "详情卡",
+      "kind": "container",
+      "bounds": [
+        16,
+        512,
+        359,
+        148
+      ]
+    },
+    {
+      "name": "详情库存",
+      "kind": "text",
+      "bounds": [
+        103,
+        474,
+        62,
+        15
+      ],
+      "sizePt": 13
+    },
+    {
+      "name": "详情服务标签字",
+      "kind": "text",
+      "bounds": [
+        31,
+        474,
+        29,
+        14
+      ],
+      "sizePt": 13
+    },
+    {
+      "name": "详情服务标签",
+      "kind": "container",
+      "bounds": [
+        16,
+        470,
+        73,
+        22
+      ]
+    },
+    {
+      "name": "详情价格",
+      "kind": "text",
+      "bounds": [
+        15,
+        428,
+        138,
+        26
+      ],
+      "sizePt": 30
+    },
+    {
+      "name": "详情商品名",
+      "kind": "text",
+      "bounds": [
+        16,
+        387,
+        102,
+        20
+      ],
+      "sizePt": 20
+    },
+    {
+      "name": "详情主图-把手",
+      "kind": "decoration",
+      "bounds": [
+        259,
+        228,
+        52,
+        58
+      ]
+    },
+    {
+      "name": "详情主图-壶嘴",
+      "kind": "decoration",
+      "bounds": [
+        94,
+        156,
+        74,
+        21
+      ]
+    },
+    {
+      "name": "详情主图-壶颈",
+      "kind": "decoration",
+      "bounds": [
+        158,
+        170,
+        39,
+        50
+      ]
+    },
+    {
+      "name": "详情主图-壶身",
+      "kind": "decoration",
+      "bounds": [
+        129,
+        212,
+        147,
+        101
+      ]
+    },
+    {
+      "name": "详情主图",
+      "kind": "decoration",
+      "bounds": [
+        16,
+        104,
+        359,
+        260
+      ]
+    },
+    {
+      "name": "购物车件数",
+      "kind": "text",
+      "bounds": [
+        317,
+        63,
+        57,
+        14
+      ],
+      "sizePt": 13
+    },
+    {
+      "name": "导航标题",
+      "kind": "text",
+      "bounds": [
+        60,
+        59,
+        70,
+        18
+      ],
+      "sizePt": 17
+    },
+    {
+      "name": "返回",
+      "kind": "text",
+      "bounds": [
+        16,
+        61,
+        10,
+        13
+      ],
+      "sizePt": 24
+    },
+    {
+      "name": "导航栏下边线",
+      "kind": "decoration",
+      "bounds": [
+        0,
+        88,
+        390,
+        1
+      ]
+    },
+    {
+      "name": "导航栏",
+      "kind": "container",
+      "bounds": [
+        0,
+        44,
+        390,
+        44
+      ]
+    },
+    {
+      "name": "状态栏",
+      "kind": "decoration",
+      "bounds": [
+        0,
+        0,
+        390,
+        44
+      ]
+    },
+    {
+      "name": "Home 指示条",
+      "kind": "decoration",
+      "bounds": [
+        128,
+        1184,
+        135,
+        5
+      ]
+    },
+    {
+      "name": "底色",
+      "kind": "container",
+      "bounds": [
+        0,
+        0,
+        390,
+        1200
+      ]
+    },
+    {
+      "name": "Background",
+      "kind": "decoration",
+      "bounds": [
+        0,
+        0,
+        390,
+        1200
+      ]
+    }
+  ]
+}

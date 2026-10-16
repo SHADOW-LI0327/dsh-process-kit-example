@@ -1,0 +1,396 @@
+{
+  "source": "photocraft-cli info → docs/process/prototypes/FEAT-002/结算下单页面-FEAT-002.psd",
+  "adapter": "photocraft-cli",
+  "artifact": "docs/process/prototypes/FEAT-002/结算下单页面-FEAT-002.psd",
+  "canvas": {
+    "width": 390,
+    "height": 1200
+  },
+  "elements": [
+    {
+      "name": "提交说明",
+      "kind": "text",
+      "bounds": [
+        71,
+        1072,
+        249,
+        15
+      ],
+      "sizePt": 13
+    },
+    {
+      "name": "主按钮-提交订单文字",
+      "kind": "text",
+      "bounds": [
+        116,
+        1033,
+        159,
+        18
+      ],
+      "sizePt": 17
+    },
+    {
+      "name": "主按钮-提交订单",
+      "kind": "container",
+      "bounds": [
+        16,
+        1016,
+        359,
+        52
+      ]
+    },
+    {
+      "name": "结算底栏上边线",
+      "kind": "decoration",
+      "bounds": [
+        0,
+        992,
+        390,
+        1
+      ]
+    },
+    {
+      "name": "结算底栏",
+      "kind": "container",
+      "bounds": [
+        0,
+        992,
+        390,
+        105
+      ]
+    },
+    {
+      "name": "应付合计金额",
+      "kind": "text",
+      "bounds": [
+        220,
+        412,
+        138,
+        26
+      ],
+      "sizePt": 30
+    },
+    {
+      "name": "应付合计标签",
+      "kind": "text",
+      "bounds": [
+        31,
+        403,
+        64,
+        15
+      ],
+      "sizePt": 15
+    },
+    {
+      "name": "应付卡",
+      "kind": "container",
+      "bounds": [
+        16,
+        376,
+        359,
+        100
+      ]
+    },
+    {
+      "name": "支付演示文字",
+      "kind": "text",
+      "bounds": [
+        31,
+        333,
+        291,
+        14
+      ],
+      "sizePt": 13
+    },
+    {
+      "name": "支付演示提示",
+      "kind": "container",
+      "bounds": [
+        16,
+        320,
+        359,
+        40
+      ]
+    },
+    {
+      "name": "配送方式",
+      "kind": "text",
+      "bounds": [
+        31,
+        284,
+        238,
+        15
+      ],
+      "sizePt": 13
+    },
+    {
+      "name": "订单内容分隔线",
+      "kind": "decoration",
+      "bounds": [
+        32,
+        276,
+        326,
+        1
+      ]
+    },
+    {
+      "name": "结算行小计-2",
+      "kind": "text",
+      "bounds": [
+        294,
+        216,
+        64,
+        14
+      ],
+      "sizePt": 15
+    },
+    {
+      "name": "结算行件数-2",
+      "kind": "text",
+      "bounds": [
+        93,
+        227,
+        46,
+        13
+      ],
+      "sizePt": 13
+    },
+    {
+      "name": "结算行名-2",
+      "kind": "text",
+      "bounds": [
+        92,
+        205,
+        63,
+        16
+      ],
+      "sizePt": 15
+    },
+    {
+      "name": "结算主图-2-底托",
+      "kind": "decoration",
+      "bounds": [
+        50,
+        228,
+        12,
+        4
+      ]
+    },
+    {
+      "name": "结算主图-2-杯口",
+      "kind": "decoration",
+      "bounds": [
+        43,
+        208,
+        27,
+        5
+      ]
+    },
+    {
+      "name": "结算主图-2-锥体",
+      "kind": "decoration",
+      "bounds": [
+        44,
+        209,
+        25,
+        17
+      ]
+    },
+    {
+      "name": "结算主图-2",
+      "kind": "decoration",
+      "bounds": [
+        32,
+        196,
+        49,
+        48
+      ]
+    },
+    {
+      "name": "结算行小计-1",
+      "kind": "text",
+      "bounds": [
+        284,
+        160,
+        74,
+        14
+      ],
+      "sizePt": 15
+    },
+    {
+      "name": "结算行件数-1",
+      "kind": "text",
+      "bounds": [
+        93,
+        171,
+        46,
+        13
+      ],
+      "sizePt": 13
+    },
+    {
+      "name": "结算行名-1",
+      "kind": "text",
+      "bounds": [
+        91,
+        149,
+        79,
+        15
+      ],
+      "sizePt": 15
+    },
+    {
+      "name": "结算主图-1-把手",
+      "kind": "decoration",
+      "bounds": [
+        64,
+        163,
+        9,
+        11
+      ]
+    },
+    {
+      "name": "结算主图-1-壶嘴",
+      "kind": "decoration",
+      "bounds": [
+        42,
+        149,
+        12,
+        5
+      ]
+    },
+    {
+      "name": "结算主图-1-壶颈",
+      "kind": "decoration",
+      "bounds": [
+        50,
+        151,
+        8,
+        12
+      ]
+    },
+    {
+      "name": "结算主图-1-壶身",
+      "kind": "decoration",
+      "bounds": [
+        46,
+        159,
+        23,
+        21
+      ]
+    },
+    {
+      "name": "结算主图-1",
+      "kind": "decoration",
+      "bounds": [
+        32,
+        140,
+        49,
+        48
+      ]
+    },
+    {
+      "name": "订单内容标题",
+      "kind": "text",
+      "bounds": [
+        31,
+        118,
+        68,
+        17
+      ],
+      "sizePt": 16
+    },
+    {
+      "name": "订单内容卡",
+      "kind": "container",
+      "bounds": [
+        16,
+        104,
+        359,
+        192
+      ]
+    },
+    {
+      "name": "导航标题",
+      "kind": "text",
+      "bounds": [
+        59,
+        59,
+        71,
+        18
+      ],
+      "sizePt": 17
+    },
+    {
+      "name": "返回",
+      "kind": "text",
+      "bounds": [
+        16,
+        61,
+        10,
+        13
+      ],
+      "sizePt": 24
+    },
+    {
+      "name": "导航栏下边线",
+      "kind": "decoration",
+      "bounds": [
+        0,
+        88,
+        390,
+        1
+      ]
+    },
+    {
+      "name": "导航栏",
+      "kind": "container",
+      "bounds": [
+        0,
+        44,
+        390,
+        44
+      ]
+    },
+    {
+      "name": "状态栏",
+      "kind": "decoration",
+      "bounds": [
+        0,
+        0,
+        390,
+        44
+      ]
+    },
+    {
+      "name": "Home 指示条",
+      "kind": "decoration",
+      "bounds": [
+        128,
+        1184,
+        135,
+        5
+      ]
+    },
+    {
+      "name": "底色",
+      "kind": "container",
+      "bounds": [
+        0,
+        0,
+        390,
+        1200
+      ]
+    },
+    {
+      "name": "Background",
+      "kind": "decoration",
+      "bounds": [
+        0,
+        0,
+        390,
+        1200
+      ]
+    }
+  ]
+}

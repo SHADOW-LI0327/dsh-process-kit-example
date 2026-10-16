@@ -1,5 +1,5 @@
 /**
- * Web 前端：同端口可达、HTML 结构、商品锚点、原生 ESM 脚本、无图片素材。
+ * Web 前端：同端口可达、HTML 结构、商品锚点、原生 ESM 脚本。
  *
  * 本包主动不做脚本执行断言（零依赖 / 快 / 可重复），因此这里只压静态结构与资源可达性；
  * 交互观感与脚本执行后的界面由真机黑盒承担，不由本文件背书。
@@ -73,24 +73,6 @@ test('前端同端口可达（AC-27）· 原生 ESM 脚本可从 /src 取到', a
   });
 });
 
-test('前端同端口可达（AC-27）· DOM 中不出现图片素材', async () => {
-  await withApp(undefined, async (app) => {
-    const { res, dom } = await loadRoot(app);
-    // 「不存在某元素」是阴性断言：空页面天然满足 ⇒ 必须配一个阳性前置，
-    // 证明这确实是个渲染出内容的前端页，而不是「什么都没有所以没有图片」。
-    const document = dom.window.document;
-    const anchors = document.querySelectorAll('[data-product-name]').length;
-    const text = document.body ? document.body.textContent : '';
-    const { items } = await listProducts(newClient(app));
-    const nameHits = items.filter((item) => text.includes(item.name)).length;
-    assert.ok(
-      anchors >= 1 || nameHits >= 1,
-      `前置：页面必须先是真实商品页（锚点=${anchors}，商品名命中=${nameHits}），阴性断言才有意义`,
-    );
-    assert.equal(
-      document.querySelectorAll('img').length,
-      0,
-      `页面 DOM 不得出现 <img>（商品图用纯色块占位），实际 HTML：${res.raw.slice(0, 200)}`,
-    );
-  });
-});
+// 原「AC-27 · DOM 中不出现图片素材」判据已删除：其来源 FEAT-001 非目标 `N-6`（商品图片素材＝明确不做）
+// 由 FEAT-002 PRD §1.5 `S-9` 解除，主图改由**本仓自托管商品照片**（`web/assets/products/P-00N.jpg`）提供 ⇒ 该面的正向判据归 FEAT-002
+// `AC-40` / `AC-46` / `AC-48`。本文件不做反向断言，避免两包判据互相顶撞。

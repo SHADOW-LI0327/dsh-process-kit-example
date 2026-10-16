@@ -1,0 +1,13 @@
+# TLS 由反代终结：应用本身只跑 HTTP（不读证书、不开 TLS 监听）。
+# 站点地址用 localhost ⇒ Caddy 走内部 CA 自签，适合本机/内网演示。
+localhost {
+	encode gzip
+	tls internal
+
+	# 反代到 compose 服务名，并把原始请求信息透传给应用（TRUST_PROXY=1 时才采信）。
+	reverse_proxy app:3000 {
+		header_up X-Forwarded-For {http.request.remote.host}
+		header_up X-Forwarded-Proto {http.request.scheme}
+		header_up X-Forwarded-Host {http.request.host}
+	}
+}

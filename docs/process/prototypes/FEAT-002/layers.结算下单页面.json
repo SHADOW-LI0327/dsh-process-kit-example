@@ -1,0 +1,400 @@
+{
+  "screen": "结算下单页面",
+  "id": "FEAT-002",
+  "canvas": "390×1200 @ 72 ppi",
+  "generatedBy": "docs/process/prototypes/FEAT-002/build-prototypes.mjs",
+  "tokens": "docs/process/prd/FEAT-002-ui-spec.md §8.2（本仓无 UI 项目令牌；数值骨架取 docs/process/ui/tokens.md）",
+  "note": "分层源（脚本侧图层清单）。PSD 本身即原生分层源；此处 bounds 为引擎 info 导出值，仅供人工比读，几何判据用 geometry.<屏幕名>.json。",
+  "layers": [
+    {
+      "name": "底色",
+      "kind": "shape",
+      "bounds": [
+        0,
+        0,
+        390,
+        1200
+      ]
+    },
+    {
+      "name": "Home 指示条",
+      "kind": "shape",
+      "bounds": [
+        128,
+        1184,
+        135,
+        5
+      ]
+    },
+    {
+      "name": "状态栏",
+      "kind": "shape",
+      "bounds": [
+        0,
+        0,
+        390,
+        44
+      ]
+    },
+    {
+      "name": "导航栏",
+      "kind": "shape",
+      "bounds": [
+        0,
+        44,
+        390,
+        44
+      ]
+    },
+    {
+      "name": "导航栏下边线",
+      "kind": "shape",
+      "bounds": [
+        0,
+        88,
+        390,
+        1
+      ]
+    },
+    {
+      "name": "返回",
+      "kind": "text",
+      "text": "‹",
+      "sizePt": 24,
+      "bounds": [
+        16,
+        61,
+        10,
+        13
+      ]
+    },
+    {
+      "name": "导航标题",
+      "kind": "text",
+      "text": "确认订单",
+      "sizePt": 17,
+      "bounds": [
+        59,
+        59,
+        71,
+        18
+      ]
+    },
+    {
+      "name": "订单内容卡",
+      "kind": "shape",
+      "bounds": [
+        16,
+        104,
+        359,
+        192
+      ]
+    },
+    {
+      "name": "订单内容标题",
+      "kind": "text",
+      "text": "订单内容",
+      "sizePt": 16,
+      "bounds": [
+        31,
+        118,
+        68,
+        17
+      ]
+    },
+    {
+      "name": "结算主图-1",
+      "kind": "shape",
+      "bounds": [
+        32,
+        140,
+        49,
+        48
+      ]
+    },
+    {
+      "name": "结算主图-1-壶身",
+      "kind": "shape",
+      "bounds": [
+        46,
+        159,
+        23,
+        21
+      ]
+    },
+    {
+      "name": "结算主图-1-壶颈",
+      "kind": "shape",
+      "bounds": [
+        50,
+        151,
+        8,
+        12
+      ]
+    },
+    {
+      "name": "结算主图-1-壶嘴",
+      "kind": "shape",
+      "bounds": [
+        42,
+        149,
+        12,
+        5
+      ]
+    },
+    {
+      "name": "结算主图-1-把手",
+      "kind": "shape",
+      "bounds": [
+        64,
+        163,
+        9,
+        11
+      ]
+    },
+    {
+      "name": "结算行名-1",
+      "kind": "text",
+      "text": "手冲咖啡壶",
+      "sizePt": 15,
+      "bounds": [
+        91,
+        149,
+        79,
+        15
+      ]
+    },
+    {
+      "name": "结算行件数-1",
+      "kind": "text",
+      "text": "× 2 件",
+      "sizePt": 13,
+      "bounds": [
+        93,
+        171,
+        46,
+        13
+      ]
+    },
+    {
+      "name": "结算行小计-1",
+      "kind": "text",
+      "text": "¥ 258.00",
+      "sizePt": 15,
+      "bounds": [
+        284,
+        160,
+        74,
+        14
+      ]
+    },
+    {
+      "name": "结算主图-2",
+      "kind": "shape",
+      "bounds": [
+        32,
+        196,
+        49,
+        48
+      ]
+    },
+    {
+      "name": "结算主图-2-锥体",
+      "kind": "shape",
+      "bounds": [
+        44,
+        209,
+        25,
+        17
+      ]
+    },
+    {
+      "name": "结算主图-2-杯口",
+      "kind": "shape",
+      "bounds": [
+        43,
+        208,
+        27,
+        5
+      ]
+    },
+    {
+      "name": "结算主图-2-底托",
+      "kind": "shape",
+      "bounds": [
+        50,
+        228,
+        12,
+        4
+      ]
+    },
+    {
+      "name": "结算行名-2",
+      "kind": "text",
+      "text": "陶瓷滤杯",
+      "sizePt": 15,
+      "bounds": [
+        92,
+        205,
+        63,
+        16
+      ]
+    },
+    {
+      "name": "结算行件数-2",
+      "kind": "text",
+      "text": "× 1 件",
+      "sizePt": 13,
+      "bounds": [
+        93,
+        227,
+        46,
+        13
+      ]
+    },
+    {
+      "name": "结算行小计-2",
+      "kind": "text",
+      "text": "¥ 68.00",
+      "sizePt": 15,
+      "bounds": [
+        294,
+        216,
+        64,
+        14
+      ]
+    },
+    {
+      "name": "订单内容分隔线",
+      "kind": "shape",
+      "bounds": [
+        32,
+        276,
+        326,
+        1
+      ]
+    },
+    {
+      "name": "配送方式",
+      "kind": "text",
+      "text": "配送方式：快递包邮 · 预计 3 天送达",
+      "sizePt": 13,
+      "bounds": [
+        31,
+        284,
+        238,
+        15
+      ]
+    },
+    {
+      "name": "支付演示提示",
+      "kind": "shape",
+      "bounds": [
+        16,
+        320,
+        359,
+        40
+      ]
+    },
+    {
+      "name": "支付演示文字",
+      "kind": "text",
+      "text": "演示环境：下单即视为已支付，不产生真实扣款",
+      "sizePt": 13,
+      "bounds": [
+        31,
+        333,
+        291,
+        14
+      ]
+    },
+    {
+      "name": "应付卡",
+      "kind": "shape",
+      "bounds": [
+        16,
+        376,
+        359,
+        100
+      ]
+    },
+    {
+      "name": "应付合计标签",
+      "kind": "text",
+      "text": "应付合计",
+      "sizePt": 15,
+      "bounds": [
+        31,
+        403,
+        64,
+        15
+      ]
+    },
+    {
+      "name": "应付合计金额",
+      "kind": "text",
+      "text": "¥ 326.00",
+      "sizePt": 30,
+      "bounds": [
+        220,
+        412,
+        138,
+        26
+      ]
+    },
+    {
+      "name": "结算底栏",
+      "kind": "shape",
+      "bounds": [
+        0,
+        992,
+        390,
+        105
+      ]
+    },
+    {
+      "name": "结算底栏上边线",
+      "kind": "shape",
+      "bounds": [
+        0,
+        992,
+        390,
+        1
+      ]
+    },
+    {
+      "name": "主按钮-提交订单",
+      "kind": "shape",
+      "bounds": [
+        16,
+        1016,
+        359,
+        52
+      ]
+    },
+    {
+      "name": "主按钮-提交订单文字",
+      "kind": "text",
+      "text": "提交订单 ¥ 326.00",
+      "sizePt": 17,
+      "bounds": [
+        116,
+        1033,
+        159,
+        18
+      ]
+    },
+    {
+      "name": "提交说明",
+      "kind": "text",
+      "text": "提交后购物车将清空，可在「订单」查看",
+      "sizePt": 13,
+      "bounds": [
+        71,
+        1072,
+        249,
+        15
+      ]
+    }
+  ]
+}

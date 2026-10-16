@@ -1,0 +1,307 @@
+{
+  "source": "photocraft-cli info → docs/process/prototypes/FEAT-002/登录与注册-FEAT-002.psd",
+  "adapter": "photocraft-cli",
+  "artifact": "docs/process/prototypes/FEAT-002/登录与注册-FEAT-002.psd",
+  "canvas": {
+    "width": 390,
+    "height": 1200
+  },
+  "elements": [
+    {
+      "name": "登录提示二",
+      "kind": "text",
+      "bounds": [
+        31,
+        656,
+        123,
+        14
+      ],
+      "sizePt": 13
+    },
+    {
+      "name": "登录提示一",
+      "kind": "text",
+      "bounds": [
+        31,
+        634,
+        226,
+        15
+      ],
+      "sizePt": 13
+    },
+    {
+      "name": "登录提示标题",
+      "kind": "text",
+      "bounds": [
+        31,
+        611,
+        56,
+        14
+      ],
+      "sizePt": 13
+    },
+    {
+      "name": "登录提示块",
+      "kind": "container",
+      "bounds": [
+        16,
+        592,
+        359,
+        92
+      ]
+    },
+    {
+      "name": "注册说明",
+      "kind": "text",
+      "bounds": [
+        97,
+        555,
+        197,
+        14
+      ],
+      "sizePt": 13
+    },
+    {
+      "name": "次按钮-注册文字",
+      "kind": "text",
+      "bounds": [
+        157,
+        500,
+        79,
+        16
+      ],
+      "sizePt": 15
+    },
+    {
+      "name": "次按钮-注册",
+      "kind": "container",
+      "bounds": [
+        16,
+        482,
+        361,
+        52
+      ]
+    },
+    {
+      "name": "主按钮-登录文字",
+      "kind": "text",
+      "bounds": [
+        178,
+        435,
+        36,
+        18
+      ],
+      "sizePt": 17
+    },
+    {
+      "name": "主按钮-登录",
+      "kind": "container",
+      "bounds": [
+        16,
+        418,
+        359,
+        52
+      ]
+    },
+    {
+      "name": "密码错误提示",
+      "kind": "text",
+      "bounds": [
+        16,
+        387,
+        110,
+        14
+      ],
+      "sizePt": 13
+    },
+    {
+      "name": "密码占位",
+      "kind": "text",
+      "bounds": [
+        37,
+        347,
+        114,
+        4
+      ],
+      "sizePt": 15
+    },
+    {
+      "name": "密码输入框",
+      "kind": "container",
+      "bounds": [
+        16,
+        324,
+        361,
+        48
+      ]
+    },
+    {
+      "name": "密码标签",
+      "kind": "text",
+      "bounds": [
+        15,
+        301,
+        29,
+        13
+      ],
+      "sizePt": 13
+    },
+    {
+      "name": "邮箱占位",
+      "kind": "text",
+      "bounds": [
+        31,
+        250,
+        147,
+        17
+      ],
+      "sizePt": 15
+    },
+    {
+      "name": "邮箱输入框",
+      "kind": "container",
+      "bounds": [
+        16,
+        232,
+        360,
+        48
+      ]
+    },
+    {
+      "name": "邮箱标签",
+      "kind": "text",
+      "bounds": [
+        16,
+        209,
+        27,
+        14
+      ],
+      "sizePt": 13
+    },
+    {
+      "name": "登录副标题",
+      "kind": "text",
+      "bounds": [
+        87,
+        148,
+        222,
+        15
+      ],
+      "sizePt": 13
+    },
+    {
+      "name": "登录标题",
+      "kind": "text",
+      "bounds": [
+        87,
+        119,
+        226,
+        20
+      ],
+      "sizePt": 20
+    },
+    {
+      "name": "品牌标文字",
+      "kind": "text",
+      "bounds": [
+        31,
+        127,
+        26,
+        24
+      ],
+      "sizePt": 24
+    },
+    {
+      "name": "品牌标",
+      "kind": "container",
+      "bounds": [
+        16,
+        112,
+        57,
+        56
+      ]
+    },
+    {
+      "name": "导航标题",
+      "kind": "text",
+      "bounds": [
+        59,
+        59,
+        92,
+        19
+      ],
+      "sizePt": 17
+    },
+    {
+      "name": "返回",
+      "kind": "text",
+      "bounds": [
+        16,
+        61,
+        10,
+        13
+      ],
+      "sizePt": 24
+    },
+    {
+      "name": "导航栏下边线",
+      "kind": "decoration",
+      "bounds": [
+        0,
+        88,
+        390,
+        1
+      ]
+    },
+    {
+      "name": "导航栏",
+      "kind": "container",
+      "bounds": [
+        0,
+        44,
+        390,
+        44
+      ]
+    },
+    {
+      "name": "状态栏",
+      "kind": "decoration",
+      "bounds": [
+        0,
+        0,
+        390,
+        44
+      ]
+    },
+    {
+      "name": "Home 指示条",
+      "kind": "decoration",
+      "bounds": [
+        128,
+        1184,
+        135,
+        5
+      ]
+    },
+    {
+      "name": "底色",
+      "kind": "container",
+      "bounds": [
+        0,
+        0,
+        390,
+        1200
+      ]
+    },
+    {
+      "name": "Background",
+      "kind": "decoration",
+      "bounds": [
+        0,
+        0,
+        390,
+        1200
+      ]
+    }
+  ]
+}

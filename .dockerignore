@@ -1,0 +1,18 @@
+# 构建上下文 = 仓库根：只放运行所需（server/ web/ scripts/ package.json）。
+# Docker 只认**上下文根**这一份忽略文件；deploy/.dockerignore 对 Docker 语义无效，
+# 但契约列了它，故两份内容保持一致。
+.git/
+.github/
+node_modules/
+docs/
+reports/
+test/
+e2e/
+data/
+backups/
+*.db
+*.db-wal
+*.db-shm
+*.log
+.env
+.env.*

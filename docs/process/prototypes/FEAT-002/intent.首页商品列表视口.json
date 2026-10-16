@@ -1,0 +1,14 @@
+{
+  "screen": "首页商品列表视口",
+  "note": "作者意图：band = 内容区横向带；align = 声明应当居中的元素。bounds 一律来自 PSD 导出，绝不出现在本文件",
+  "band": {
+    "left": 16,
+    "right": 374
+  },
+  "align": {
+    "角标-3文字": "center",
+    "角标-4文字": "center",
+    "角标-5文字": "center",
+    "角标-6文字": "center"
+  }
+}

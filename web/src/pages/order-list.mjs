@@ -1,47 +1,55 @@
 /**
- * 订单列表页：按下单时间倒序（服务端保证顺序，前端不再排序）。
+ * 订单列表页：按下单时间倒序（顺序由服务端保证，前端不再排序）。
  *
- * 空态给的是「去逛商品列表」这个出口，而不是一张空卡；
- * 页脚固定说明订单只存在内存里，重启即消失。
+ * 未登录时给「去登录」出口而不是一张空表；空态给「去逛商品列表」出口。
  */
-import { api } from '../api.mjs';
-import { banner, emptyState, loading, orderCard } from '../components.mjs';
+import { banner, el, emptyState, pageHead } from '../components.mjs';
+import { money, shortTime } from '../format.mjs';
+import { getState } from '../state.mjs';
+import { PATHS } from '../routes.mjs';
 
-const FOOTNOTE = '订单只保存在本次会话中，清除浏览器数据或重启服务后不再显示';
+export function renderOrders(root, { error = null } = {}) {
+  const { orders, user, notice } = getState();
+  const head = pageHead('我的订单', `共 ${orders.length} 单`);
 
-export async function render(ctx) {
-  ctx.ui.setActiveNav('orders');
-  ctx.ui.setHeader({
-    title: '订单列表',
-    subtitle: '按下单时间倒序，最近一单在最上面',
-    action: { label: '继续购物', href: '#/products' },
-  });
-  const flash = ctx.ui.consumeFlash();
-  ctx.root.innerHTML = loading();
-
-  let orders;
-  try {
-    orders = await api.listOrders();
-  } catch (error) {
-    ctx.root.innerHTML = banner(error.message, { retry: true });
-    ctx.root.querySelector('[data-action="retry"]')?.addEventListener('click', () => render(ctx));
+  if (user === null) {
+    root.replaceChildren(
+      head,
+      el('section', { class: 'panel' }, [
+        emptyState('登录后查看订单', '订单与购物车都会跟着账号走。'),
+        el('div', { class: 'actions' }, [el('a', { class: 'btn btn--cta', href: PATHS.login }, ['去登录'])]),
+      ]),
+    );
     return;
   }
 
-  const flashHtml = flash ? banner(flash, { kind: 'success' }) : '';
-  // 空态直接落在列表区，不套订单卡外壳：空卡会让人以为「有一张没内容的订单」。
-  const bodyHtml =
-    orders.length === 0
-      ? emptyState({
-          icon: '单',
-          text: '还没有订单',
-          sub: FOOTNOTE,
-          actionLabel: '去逛商品列表',
-          actionHref: '#/products',
-        })
-      : `<div class="order-list">${orders.map(orderCard).join('')}</div>` +
-        `<p class="page-footer-note">${FOOTNOTE}</p>`;
+  if (orders.length === 0) {
+    root.replaceChildren(
+      head,
+      el('section', { class: 'panel' }, [
+        emptyState('还没有订单', '挑几件器材，下单后就会出现在这里。'),
+        el('div', { class: 'actions' }, [el('a', { class: 'btn btn--cta', href: PATHS.products }, ['去挑商品'])]),
+      ]),
+    );
+    return;
+  }
 
-  ctx.root.innerHTML = `<div class="band">${flashHtml}${bodyHtml}</div>`;
-  await ctx.ui.refreshBadge();
+  const cards = orders.map((order) =>
+    el('article', { class: 'order', dataset: { orderNo: order.orderNo } }, [
+      el('div', { class: 'order__head' }, [
+        el('span', { class: 'badge badge--success' }, ['已支付']),
+        el('span', { class: 'order__no' }, [order.orderNo]),
+      ]),
+      el('p', { class: 'order__items' }, [
+        order.items.map((item) => `${item.productName} × ${item.quantity}`).join('，'),
+      ]),
+      el('p', { class: 'order__total' }, [`共 ${order.itemCount} 件 · ${money(order.totalCents)}`]),
+      el('p', { class: 'line__meta' }, [`下单时间 ${shortTime(order.createdAt)}`]),
+    ]),
+  );
+
+  root.replaceChildren();
+  if (notice) root.append(banner(notice, 'ok'));
+  if (error) root.append(banner(error));
+  root.append(head, ...cards);
 }

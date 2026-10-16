@@ -1,0 +1,804 @@
+# FEAT-002 台账（机器可读镜像；与 PRD frontmatter / 测试文件头 prdVersion 三方一致）
+# 合计 82 条：自动化 node 82 条（红波次实测 red 73 条 / green 9 条 = 装置自检 5 条 + 存量已成立 4 条）。
+# ⚠ v2 重开（2026-10-16T01:42Z，交付后·人裁定「主图由本仓自制 SVG 换成自托管真实照片」）：判据确变（非勘误）⇒
+#   TC-002-48 语义重写（8 张 P-00N.jpg 且逐张真 JPEG + 按 SOF 解析出**正方形、边长 ≥400**（删原 2 KiB 暂定阈值）+ 逐卡 `src` 与本卡商品 id 一致、
+#   路径全命中 `/assets/products/P-00[1-8].jpg`、查询串只许 `?v=<hash>` + `CREDITS.md` **逐行 6 项齐全**（本地文件名 + **商品名** + **作者** + **来源页 URL**（照片页，不得用许可 URL 顶替）+ **许可名** + **许可 URL**；主控 2026-10-16 两轮收紧，对齐 `UI-67` / `AC-48` ⑤））；
+#   TC-002-49 的 `content-type` 改 `image/jpeg`，并加「`content-length` == 盘上字节数」「socket 级线上字节逐字节相等」两条硬判据。
+#   CREDITS 判据并入 TC-002-48 ⇒ **条数仍 82**（未新增条目、未删条目）；`AC-52` 零第三方请求 / `N-2` 不引第三方素材的语义**一条未放宽**
+#   （自托管 ⇒ 全同源，正是本次不选外链的关键收益；favicon 走自制 SVG 与 UI-64 判据亦未动）。
+#   ✅ 整包 verify（**独立复跑**，2026-10-16T02:15Z）：`test/packages/FEAT-002/*.test.mjs` **82 / 82 / rc=0**（含 `deploy.test.mjs` 7 条，35.1s）；`npm test` **134 / 134 / rc=0**；`ui` 13/13、`static` 9/9；三门禁 rc=0；台账 `actual` **2 条已翻 green（现 82 绿 / 0 红）**。反例隔离：静态读盘退 utf8 ⇒ `AC-49` ③ 红（content-length 28258 vs 50674）；等长改写 ⇒ `AC-49` ④ 红（线上头 `3f d8 ff`）；`versionOf` 退 `.svg` ⇒ `AC-48` ③ 红（`?v=0`）。跑完容器 / 卷无残留、3000/80/443 已释放。
+#   ✅ 真源对等性**已闭合**（主控 2026-10-16T02:25Z 授权收紧）：`AC-48` ⑤ / `UI-67` 的**逐行 6 项**已全部落到断言（补上「商品名」与「许可 URL」两项），`R-4` 的 `&amp;` 半已机器化、「URL 被截断」半维持文档要求（无可靠机器判据 ⇒ 不造假护栏）。反例实测：删商品名列 ⇒ 商品名条红；删许可 URL 列 ⇒ 许可 URL 条红；许可 URL 写成 `&amp;` ⇒ R-4 条红；删来源页列 ⇒ 来源页条红（各只红 AC-48 一条）；真件 + 全角标注 + 破折号 + 作者成链接 ⇒ 全绿。
+#   ⚠ 本轮自查抓到自己实现里的两个洞（已修，判据**收紧**不放松）：作者正则含裸 `by` ⇒ 许可名 `CC BY 2.0` 会把「无作者」判绿；逐行 URL 只看有无 `https://` ⇒ 许可 URL 能顶掉来源页。反例实测（校验和比对通过的副本）：删作者列 / 删商品列 / 本行删来源页 ⇒ 均红；作者写成 markdown 链接 ⇒ 绿。
+#   v2 红波次实读（真跑，非估）：`ui.test.mjs` tests 13 / pass 12 / fail 1 / exit 1（唯一红 TC-002-48，首命中「必须恰是 8 张 .jpg…实际 []」）；
+#   `static.test.mjs` tests 9 / pass 8 / fail 1 / exit 1（唯一红 TC-002-49，首命中「P-001.jpg 必须可取到 200，实际 404」）；
+#   本轮复跑 **75 / 82** 条：**73 绿 / 2 红**（红＝ AC-48 / AC-49 这两条 v2 变更判据本身；其余文件 rc=0）。
+#   逐文件：ui 13(12绿1红) + static 9(8绿1红) + auth 13 + pagination 3 + persistence 13 + regression 2 + security 9 + ops 8 + infra 5；未跑 7 条 = `deploy.test.mjs`（要起容器）。台账 `actual` 列据此为 red 2 / green 80。
+#   ⚠ 如实登记一处纪律偏差：本轮本想用 `--test-name-pattern` 负向 lookahead 排除 AC-25，但 node 未按预期排除 ⇒ **AC-25 实际跑了**（短暂占用 3000 约 0.4 s，判绿；当时 3000 空闲），跑完已复核 3000 空闲、无残留 node 监听。
+#   判据自证（副本复刻，不碰 `web/**`；真 JPEG 由 Pillow 生成，非合成字节）：正确 v2 实现（.jpg 白名单 + 二进制读盘 + `versionOf` 同步 + CREDITS.md）下 ui 13/13 + static 9/9 全绿；
+#   反例逐条**隔离**命中对应断言：删 CREDITS / 改名文本冒充 .jpg / 残留 .svg / JS 模块引用退回 .svg / utf8 重编码送体 / 8 张换 800×600 或 100×100 / 首卡 id 与卡内主图不符 /
+#   指纹退化成 `?v=0`、查询串改 `?x=<hash>` / CREDITS 去掉来源 URL；另证 3、4 不可互替（二进制正确但等长改写体 ⇒ 长度判据绿而字节判据红，实际 `3f 3f 3f`）。
+#   ⚠ 必须转给 dev 的实现坑：① `server/src/static.mjs` 以 `readFileSync(path,'utf8')` 读盘、`negotiate()` 吐字符串，`server/src/app.mjs` 再 `Buffer.from(body,'utf8')`
+#   ⇒ **二进制图片会被写坏**（实测 2054 字节文件上线 2066 字节、SOI 被换成 U+FFFD）：白名单加 `.jpg` 不足以交付真照片，静态读盘必须 Buffer 化；
+#   ② `versionOf(join('assets','products',`${product.id}.svg`))` 是拼出来的路径、换扩展名最容易漏改 ⇒ 指纹退化成 `?v=0`（长缓存永不失效，`AC-31` 验不出）。
+#   以下「实读（当前…）」各行为 **v2 重开前**的读数，保留作历史（不得据此判断 v2 状态）。
+# 实读（当前，2026-10-15T07:45Z 起）：npm test → tests 134 / pass 134 / fail 0 / exit 0；FEAT-002 包 → tests 82 / pass 82 / fail 0 / exit 0
+#   （FEAT-001 包 tests 52 / pass 52 / fail 0 / exit 0；AC-25 的**环境前置已解除**（3000 空闲）⇒ 该条红转绿，**非实现变更**。）
+# 实读：node --test 'test/**/*.test.mjs' → tests 135 / pass 61 / fail 74 / skipped 0 / exit 1
+# 实读（裁定复跑，2026-10-15T06:43Z）：node --test test/packages/FEAT-002/*.test.mjs → tests 82 / pass 81 / fail 1 / exit 1
+#   （同轮 npm test 全量 134 / pass 133 / fail 1 / duration 34.9s；四道裁定修复后 E-01 / AC-16 / AC-55 / AC-26 全部转绿）
+#   唯一红 = TC-FEAT-002-25「监听端口可配」= **环境前置**（本机 3000 被外部活服务占用，见该条 note），非实现缺口【该红已于 15:xx 随 3000 腾空解除，见上方「实读（当前）」】
+# 实读（存量回填轮，2026-10-15T06:31Z）：node --test test/packages/FEAT-002/*.test.mjs → tests 82 / pass 78 / fail 4 / exit 1
+#   （node --test --test-reporter=tap，逐用例名 ↔ ac 标号一一映射后回填本列；同轮 npm test 全量 134 / pass 130 / fail 4）
+#   仍红 4 条：TC-FEAT-002-E01 会话畸形过期 · TC-FEAT-002-16 退出回到匿名车 · TC-FEAT-002-55 存量五面回归 · TC-FEAT-002-26 配置校验拒启
+#   注：dev 仍在并行落实现 ⇒ actual 列是**该时刻快照**，与最新实跑不一致时以实跑为准（另见 reports/test/evidence/FEAT-002-red-20261015T055810Z.log 第三轮）。
+#   （本包 82 条 9 绿 73 红；FEAT-001 53 条中 52 绿 + 1 红 = TC-FEAT-001-30 按 S-1/S-2 反转为「重启后数据仍在」的故意红）。
+# expect = 红波次登记的预期；actual = 同一轮实读值，两者一致，不一致时以实跑为准。
+# 前 76 条 = PRD 的 56 条 AC + 20 条 E，一条不少；末 6 条 = 装置自检锁定项 5 条 + UI-64 补充判据 1 条（AC-51 未覆盖 <link> 元素本身）。
+# 判据修正（UAT 轮，2026-10-15T07:10Z）：「TC-FEAT-002-34」原判据要求反代服务被**注释掉**，把实现失误固化成了规范
+#   —— UAT `P-19` 黑盒复现：docs/DEPLOY.md 承诺 `--profile proxy` 起 HTTPS，实际 compose 里反代整段注释 ⇒
+#   `docker compose config --profiles` 为空、`up -d` 静默 exit 0 且无 443。授权＝UAT `P-19` + 主控裁定；dev 修复 `d23d6ff1`。
+#   修正后口径＝① 反代服务已定义且 opt-in（生效 profiles 含 proxy）；② ⭐ 跨件一致（DEPLOY.md 里每个 `--profile <名>` 都必须在 compose 生效 profile 集合里存在）；
+#   ③ 反代挂 deploy/Caddyfile 且 caddy-data / caddy-config 有命名卷；原有 depends_on / 只读根 / tmpfs / healthcheck / 具名卷断言一条未放宽。
+#   反例实测三则均命中 + 原件 sha256 逐位还原（详见 reports/test/FEAT-002-AC34-judgment-fix-20261015T071019Z.log）；
+#   deploy.test.mjs 复跑 tests 7 / pass 7 / fail 0 / exit 0；本包 tests 82 / pass 81 / fail 1 / exit 1（唯一红仍是 TC-FEAT-002-25 环境前置，该红现已随 3000 腾空解除）。
+#   ⚠ 结构性教训：独立 verify 只能证明「实现与判据一致」，证明不了「判据本身对」—— 判据错时 verify 照样全绿，本条是 UAT 的黑盒用户视角抓出来的。
+#   ⚠ 契约 §五 表格仍留旧文案（「可选注释掉的反代服务定义」），属契约回填，属主 PM / 主控，非 test-agent 可改。
+#   ⚠ v2 重开：本行随主图判据变更对齐到 2（与 10 个 FEAT-002 测试文件头一致）；PRD / 设计的 frontmatter 由 PM 同步，未落地前 check-rules ⑥ 会如实报不一致。
+prdVersion: 2
+invariants: []
+cases:
+  - id: TC-FEAT-002-I01
+    title: 元负控：断言器能红能绿
+    ac: 装置自检
+    ac_name: 元负控：断言器能红能绿
+    automation: node
+    expect: green
+    actual: green
+    blocker: none
+    note: 装置自检锁定项（负控 / jsdom / node:sqlite / 子进程退出码 / 随机端口），不依赖被测源码
+  - id: TC-FEAT-002-I02
+    title: jsdom 阴阳双向
+    ac: 装置自检
+    ac_name: jsdom 阴阳双向
+    automation: node
+    expect: green
+    actual: green
+    blocker: none
+    note: 装置自检锁定项（负控 / jsdom / node:sqlite / 子进程退出码 / 随机端口），不依赖被测源码
+  - id: TC-FEAT-002-I03
+    title: node:sqlite 探针口径
+    ac: 装置自检
+    ac_name: node:sqlite 探针口径
+    automation: node
+    expect: green
+    actual: green
+    blocker: none
+    note: 装置自检锁定项（负控 / jsdom / node:sqlite / 子进程退出码 / 随机端口），不依赖被测源码
+  - id: TC-FEAT-002-I04
+    title: 子进程真退出码
+    ac: 装置自检
+    ac_name: 子进程真退出码
+    automation: node
+    expect: green
+    actual: green
+    blocker: none
+    note: 装置自检锁定项（负控 / jsdom / node:sqlite / 子进程退出码 / 随机端口），不依赖被测源码
+  - id: TC-FEAT-002-I05
+    title: 随机端口不占 3000
+    ac: 装置自检
+    ac_name: 随机端口不占 3000
+    automation: node
+    expect: green
+    actual: green
+    blocker: none
+    note: 装置自检锁定项（负控 / jsdom / node:sqlite / 子进程退出码 / 随机端口），不依赖被测源码
+  - id: TC-FEAT-002-01
+    title: 重启数据仍在｜进程重启后购物车、订单与库存仍保持重启前状态
+    ac: AC-01
+    ac_name: 重启数据仍在｜进程重启后购物车、订单与库存仍保持重启前状态
+    automation: node
+    expect: red
+    actual: green
+    blocker: none
+  - id: TC-FEAT-002-02
+    title: 隔离语义保留｜换新会话看不到他人购物车与订单，重启后仍按归属隔离
+    ac: AC-02
+    ac_name: 隔离语义保留｜换新会话看不到他人购物车与订单，重启后仍按归属隔离
+    automation: node
+    expect: red
+    actual: green
+    blocker: none
+  - id: TC-FEAT-002-03
+    title: 下单事务原子｜下单的建单、扣库存、清车三步要么全成要么全不成
+    ac: AC-03
+    ac_name: 下单事务原子｜下单的建单、扣库存、清车三步要么全成要么全不成
+    automation: node
+    expect: red
+    actual: green
+    blocker: none
+  - id: TC-FEAT-002-04
+    title: 并发下单不超卖｜并发抢购同一库存时成功单数不超过库存且库存不为负
+    ac: AC-04
+    ac_name: 并发下单不超卖｜并发抢购同一库存时成功单数不超过库存且库存不为负
+    automation: node
+    expect: red
+    actual: green
+    blocker: none
+  - id: TC-FEAT-002-05
+    title: 落盘库可搬走｜数据落在磁盘库文件，复制文件到新实例可读到同一份数据
+    ac: AC-05
+    ac_name: 落盘库可搬走｜数据落在磁盘库文件，复制文件到新实例可读到同一份数据
+    automation: node
+    expect: red
+    actual: green
+    blocker: none
+  - id: TC-FEAT-002-06
+    title: 迁移播种幂等｜启动期迁移可重复执行、种子播种幂等且不重复插入
+    ac: AC-06
+    ac_name: 迁移播种幂等｜启动期迁移可重复执行、种子播种幂等且不重复插入
+    automation: node
+    expect: red
+    actual: green
+    blocker: none
+  - id: TC-FEAT-002-07
+    title: 注入缝与内存模式｜`createApp` 可注入独立内存或临时库且绝不触碰生产库文件
+    ac: AC-07
+    ac_name: 注入缝与内存模式｜`createApp` 可注入独立内存或临时库且绝不触碰生产库文件
+    automation: node
+    expect: red
+    actual: green
+    blocker: none
+    note: 契约未给独立 store 签名 ⇒ options.store 独立库子档不可构造（未覆盖，属主：架构/产品裁定后补）
+  - id: TC-FEAT-002-08
+    title: 商品分页可选｜商品列表支持可选分页，默认页内返回，越量程被拒
+    ac: AC-08
+    ac_name: 商品分页可选｜商品列表支持可选分页，默认页内返回，越量程被拒
+    automation: node
+    expect: red
+    actual: green
+    blocker: none
+  - id: TC-FEAT-002-09
+    title: 订单分页倒序｜订单列表按创建时间倒序分页，默认页内返回，越量程被拒
+    ac: AC-09
+    ac_name: 订单分页倒序｜订单列表按创建时间倒序分页，默认页内返回，越量程被拒
+    automation: node
+    expect: red
+    actual: green
+    blocker: none
+    note: 25 单构造向同一会话发 50 次写请求，逼近 60 次/60 秒限流；已用独立实例 + 独立会话规避
+  - id: TC-FEAT-002-10
+    title: 注册即开会话｜邮箱口令注册成功即下发会话 cookie 并可直接下单
+    ac: AC-10
+    ac_name: 注册即开会话｜邮箱口令注册成功即下发会话 cookie 并可直接下单
+    automation: node
+    expect: red
+    actual: green
+    blocker: none
+  - id: TC-FEAT-002-11
+    title: 重复注册拒绝｜同一邮箱重复注册返回 409 EMAIL_TAKEN
+    ac: AC-11
+    ac_name: 重复注册拒绝｜同一邮箱重复注册返回 409 EMAIL_TAKEN
+    automation: node
+    expect: red
+    actual: green
+    blocker: none
+  - id: TC-FEAT-002-12
+    title: 登录即开会话｜正确凭据登录成功且会话 cookie 四项属性齐备
+    ac: AC-12
+    ac_name: 登录即开会话｜正确凭据登录成功且会话 cookie 四项属性齐备
+    automation: node
+    expect: red
+    actual: green
+    blocker: none
+  - id: TC-FEAT-002-13
+    title: 登录失败不辨｜错误口令与不存在邮箱返回同一 401 INVALID_CREDENTIALS
+    ac: AC-13
+    ac_name: 登录失败不辨｜错误口令与不存在邮箱返回同一 401 INVALID_CREDENTIALS
+    automation: node
+    expect: red
+    actual: green
+    blocker: none
+  - id: TC-FEAT-002-14
+    title: 未登录拒下单｜未登录访问下单、订单列表、订单详情均 401 UNAUTHENTICATED
+    ac: AC-14
+    ac_name: 未登录拒下单｜未登录访问下单、订单列表、订单详情均 401 UNAUTHENTICATED
+    automation: node
+    expect: red
+    actual: green
+    blocker: none
+  - id: TC-FEAT-002-15
+    title: 匿名车并入账号车｜登录时匿名车按商品件数相加并入账号车并作废匿名车
+    ac: AC-15
+    ac_name: 匿名车并入账号车｜登录时匿名车按商品件数相加并入账号车并作废匿名车
+    automation: node
+    expect: red
+    actual: green
+    blocker: none
+  - id: TC-FEAT-002-16
+    title: 退出回到匿名车｜退出登录后回到新的空匿名车，账号车与订单不受影响
+    ac: AC-16
+    ac_name: 退出回到匿名车｜退出登录后回到新的空匿名车，账号车与订单不受影响
+    automation: node
+    expect: red
+    actual: green
+    blocker: none
+  - id: TC-FEAT-002-17
+    title: 我的订单归属｜订单列表与详情只含当前登录用户的订单
+    ac: AC-17
+    ac_name: 我的订单归属｜订单列表与详情只含当前登录用户的订单
+    automation: node
+    expect: red
+    actual: green
+    blocker: none
+  - id: TC-FEAT-002-18
+    title: 口令不落日志｜口令明文与口令哈希不出现在日志与响应体
+    ac: AC-18
+    ac_name: 口令不落日志｜口令明文与口令哈希不出现在日志与响应体
+    automation: node
+    expect: red
+    actual: green
+    blocker: none
+  - id: TC-FEAT-002-19
+    title: 越权返404｜用他人订单号请求详情返回 404 且不暴露资源是否存在
+    ac: AC-19
+    ac_name: 越权返404｜用他人订单号请求详情返回 404 且不暴露资源是否存在
+    automation: node
+    expect: red
+    actual: green
+    blocker: none
+  - id: TC-FEAT-002-20
+    title: 错误词表完备｜新码就位且所有错误响应体形态统一无堆栈
+    ac: AC-20
+    ac_name: 错误词表完备｜新码就位且所有错误响应体形态统一无堆栈
+    automation: node
+    expect: red
+    actual: green
+    blocker: none
+  - id: TC-FEAT-002-21
+    title: 内部错误不伪装｜未预期异常一律映射 500 INTERNAL_ERROR，禁止再伪装 404
+    ac: AC-21
+    ac_name: 内部错误不伪装｜未预期异常一律映射 500 INTERNAL_ERROR，禁止再伪装 404
+    automation: node
+    expect: red
+    actual: green
+    blocker: none
+    note: 库故障用注入库删表构造（契约建议的 wrapped store 因 store 接口未公开未采用）
+  - id: TC-FEAT-002-22
+    title: 请求体大小上限｜请求体超过上限返回 413 PAYLOAD_TOO_LARGE
+    ac: AC-22
+    ac_name: 请求体大小上限｜请求体超过上限返回 413 PAYLOAD_TOO_LARGE
+    automation: node
+    expect: red
+    actual: green
+    blocker: none
+  - id: TC-FEAT-002-23
+    title: 写接口频次限流｜写接口与登录注册超阈值返回 429 RATE_LIMITED
+    ac: AC-23
+    ac_name: 写接口频次限流｜写接口与登录注册超阈值返回 429 RATE_LIMITED
+    automation: node
+    expect: red
+    actual: green
+    blocker: none
+  - id: TC-FEAT-002-24
+    title: 安全响应头齐备｜所有响应带约定的四项安全响应头且可被断言
+    ac: AC-24
+    ac_name: 安全响应头齐备｜所有响应带约定的四项安全响应头且可被断言
+    automation: node
+    expect: red
+    actual: green
+    blocker: none
+  - id: TC-FEAT-002-25
+    title: 监听端口可配｜`HOST` 与 `PORT` 均可配置，默认仅绑本机
+    ac: AC-25
+    ac_name: 监听端口可配｜`HOST` 与 `PORT` 均可配置，默认仅绑本机
+    automation: node
+    expect: red
+    actual: green
+    blocker: none
+    note: ② 非回环探测依赖本机有可用网卡（无网卡时按「监听地址字面值」兜底）；③ 用随机空闲端口替代字面 41234；**该条硬断言必须保留 —— 3000 被占时必须判红，否则会连上他人服务拿假绿**。（历史：2026-10-15T06:43Z 复跑时本机常驻 3000 被主控环境的活服务占用 ⇒ ① 档前置快速失败，当日 actual 曾记 red；15:xx 3000 腾空后复跑 tests 82 / pass 82 / fail 0 / exit 0 ⇒ actual 按实读改 green，属**环境前置解除**，非实现变更。）
+  - id: TC-FEAT-002-26
+    title: 配置校验拒启｜非法配置在启动期非零退出且不进入服务态
+    ac: AC-26
+    ac_name: 配置校验拒启｜非法配置在启动期非零退出且不进入服务态
+    automation: node
+    expect: red
+    actual: green
+    blocker: none
+  - id: TC-FEAT-002-27
+    title: 优雅停机与退出｜`SIGTERM`/`SIGINT` 停接新请求、等在途完成、关库后退出 0
+    ac: AC-27
+    ac_name: 优雅停机与退出｜`SIGTERM`/`SIGINT` 停接新请求、等在途完成、关库后退出 0
+    automation: node
+    expect: red
+    actual: green
+    blocker: none
+    note: ② 在途请求用「chunked 体未发完」确定性构造；容器内停机路径归 UAT
+  - id: TC-FEAT-002-28
+    title: 健康检查端点｜`GET /health` 返回 200 与库可读探针，异常时 503
+    ac: AC-28
+    ac_name: 健康检查端点｜`GET /health` 返回 200 与库可读探针，异常时 503
+    automation: node
+    expect: red
+    actual: green
+    blocker: none
+  - id: TC-FEAT-002-29
+    title: 结构化请求日志｜每请求一行 JSON 日志，含 request-id、状态与耗时
+    ac: AC-29
+    ac_name: 结构化请求日志｜每请求一行 JSON 日志，含 request-id、状态与耗时
+    automation: node
+    expect: red
+    actual: green
+    blocker: none
+    note: 慢请求档用「请求体持住 800ms」构造；若实现只计 handler 耗时则该档会红（口径待裁）
+  - id: TC-FEAT-002-30
+    title: 进程兜底退出｜未捕获异常与未处理拒绝被记录并非零退出
+    ac: AC-30
+    ac_name: 进程兜底退出｜未捕获异常与未处理拒绝被记录并非零退出
+    automation: node
+    expect: red
+    actual: green
+    blocker: none
+  - id: TC-FEAT-002-31
+    title: 静态缓存策略｜带指纹静态资源强缓存、HTML 协商缓存
+    ac: AC-31
+    ac_name: 静态缓存策略｜带指纹静态资源强缓存、HTML 协商缓存
+    automation: node
+    expect: red
+    actual: green
+    blocker: none
+    note: ③ 带指纹档前置 = HTML 注入内容指纹；未注入时明确报「前置未成立」而非静默改判
+  - id: TC-FEAT-002-32
+    title: 备份保留十四天｜每日备份库文件、保留 14 天、恢复步骤可执行
+    ac: AC-32
+    ac_name: 备份保留十四天｜每日备份库文件、保留 14 天、恢复步骤可执行
+    automation: node
+    expect: red
+    actual: green
+    blocker: none
+    note: 保留基准同时给文件名日期与 mtime（两种实现声明口径均覆盖）；容器卷**回滚效果**已从 UAT 收回本用例（UAT `E7`/`E8`/`E9`，2026-10-15）：
+      ① 静默空操作（`E7`）：从 `docs/DEPLOY.md`「回滚」节**逐字抽取** bash 块执行（只抽取、不改写文档）；哨兵进快照后，应用侧读到的库**指纹必须变**且内容必须是哨兵。
+      ② 崩溃路径（`E9`，**最强**）：先 `docker kill`（SIGKILL）制造残留 `-wal` —— **必须 kill、不能用 `down`**：干净停机会 checkpoint，`-wal` 根本不存在，只走干净路径的断言**永远抓不到**这一条（触发条件＝OOM / `docker kill` / 宿主重启等非干净停机）。
+         并**硬断言前置**「卷内确实存在 `shop.db-wal`」（不存在即显式判红并说明本用例无对象，绝不放行）；随后执行文档第 2 步，回滚后读到的必须是**快照时刻的 A**（读到 B ⇒ WAL 被回放、回滚被自己撤销，而命令 rc=0、主文件指纹与快照逐位相同、`/health` 200 —— 全绿却失败）；
+         且卷内不得残留 `-wal`/`-shm`（残留清单以**读库之前**的 `ls` 为准 —— 读库本身会 checkpoint，放在读之后会被自己的取证动作救成假绿）。
+      ③ 同日覆盖（`E8`）：同日两次备份 ⇒ 快照目录仍只有 1 个文件且指纹已变；文档「回滚」节内必须写明「UTC 日 / 同日覆盖 / 手工另存」（**限定在该节内**取窗口，避免「数据在哪」节里的同类表述把它救成假绿）。
+      全程在独立项目名 `COMPOSE_PROJECT_NAME=feat002t` 下跑（实测卷名 `feat002t_shop-data`）；起常驻 app 用 `compose run -d`（不带 `--service-ports`）⇒ 不发布宿主端口，绝不与 UAT 的 `shop` 栈抢卷或抢 3000/80/443。
+      前置＝docker daemon + `shop:local` 镜像（缺失时按文档升级第 1 步构建；构建失败按**基建假红**分列，不混入真缺口红）。反例实测（均逐位还原，`docs/DEPLOY.md` sha256 前后同值 `987a6494…`）：删清理行 ⇒ 红在 **C1 效果断言**（读到 B，**不是**前置/残留断言）；清理行只删 `-shm` ⇒ 红在 **C2 残留断言**（`["backups","shop.db","shop.db-shm"]`）；删「回滚」节同日覆盖段 ⇒ 红；`E7` 三则（旧手写卷名 / 「单服务」/「2 个服务」）⇒ 红（原件 `b2574358…`）。
+      ⚠ 陷阱登记（2026-10-15 Gate4，与 dev 双向对齐）：**别把多操作数 `ls` 放在 `&&` 链尾** —— `ls -l a b c` 只要有一个操作数不存在就**退出 1**，`2>/dev/null` 只吞报错文字、**不改退出码**；快照覆盖后 `-wal`/`-shm` 本就不存在 ⇒ 链主体（`rm` + `cp`）其实做成了、退出码却非 0（**假失败**，与 `P-19`/`E7`/`E9` 的静默假成功相反，同属「退出码与语义不一致」面）。本用例历史红报文「文档「回滚」命令必须退出 0，实际 1」的真凶即此，**不是 `chown`**（实测：容器内以 node 身份 `chown node:node` 自己拥有的文件 rc=0）；复现读数：单操作数链 rc=0 / 多操作数链 rc=1 且 stdout 仍打印 `-rw-r--r-- … /data/shop.db`。现版链尾已收成单文件 ⇒ rc=0；此处**不加新判据**（条数仍 82），只留登记。
+      终态确认性复跑（2026-10-15T08:44Z，Gate4 用）：`docs/DEPLOY.md` 终态 `e2c94818…`（185 行）vs 上轮所验 `987a6494…`（177 行），差异**仅在「回滚」节第 4 步的 cookie 罐说明**；**第 1 个 bash 块（本用例抽取目标）逐字未动**（块 sha256 前后同值 `a05db531…`）⇒ 抽取口径与全部判据在终态下继续成立。
+  - id: TC-FEAT-002-33
+    title: 容器化非root｜镜像以非 root 运行、含健康检查、只读根文件系统
+    ac: AC-33
+    ac_name: 容器化非root｜镜像以非 root 运行、含健康检查、只读根文件系统
+    automation: node
+    expect: red
+    actual: green
+    blocker: none
+    note: 静态判据（Dockerfile / .dockerignore）；真容器 uid / 只读根 / healthy 归 UAT 与主控复跑
+  - id: TC-FEAT-002-34
+    title: 单机编排一键起｜compose 单机一条命令起服务并含卷与健康检查
+    ac: AC-34
+    ac_name: 单机编排一键起｜compose 单机一条命令起服务并含卷与健康检查
+    automation: node
+    expect: red
+    actual: green
+    blocker: none
+    note: 只跑 docker compose config 真退出码 + 静态结构；up -d / down+up 数据留存 / 宿主 200 归 UAT。
+      判据已修正（授权＝UAT `P-19` 黑盒复现 + 主控裁定、dev 修复 `d23d6ff1`；依据＝契约 §五 `AC-37`「真转发 https 到 /health」的意图＋compose `profiles` 语义「默认不启动、`--profile X` 才起」）。原判据要求反代服务被**注释掉**，把实现失误固化成了规范 —— 整段注释会让该 profile 根本不存在，文档里的 `--profile proxy` 命令永远无效且静默 `exit 0`。
+      修正后口径＝① 反代服务必须已定义且 opt-in（生效的 `profiles` 含 `proxy`）；② ⭐ 跨件一致性（`docs/DEPLOY.md` 里每个 `--profile <名>` 都必须在 compose 的生效 profile 集合里存在）；③ 反代服务挂 `deploy/Caddyfile` 且 `caddy-data` / `caddy-config` 有命名卷（证书落盘不重签）；原有 depends_on / 只读根 / tmpfs / healthcheck / 具名卷断言一条未放宽。
+      ✅ 契约侧已回填（PM 勘误 1／2，2026-10-15）：`docs/process/contracts/FEAT-002.md:635` 已改为「**三个服务**……反代服务**必须已定义且 opt-in**（**不得整段注释掉**）」+ 卷名口径澄清（不复制 `shop-data` 字面值，实际卷名 `shop_shop-data`），变更记录见 `:738`~`:739` —— 本条原 ⚠ 待回填项已闭环。
+  - id: TC-FEAT-002-35
+    title: 部署文档齐备｜部署文档含变量表、起法、升级、回滚与数据位置
+    ac: AC-35
+    ac_name: 部署文档齐备｜部署文档含变量表、起法、升级、回滚与数据位置
+    automation: node
+    expect: red
+    actual: green
+    blocker: none
+    note: 变量表双向包含按「反引号 UPPER_SNAKE 令牌」口径（含少量非变量词白名单）；服务口径一致性（UAT `E7` 同批，2026-10-15）：
+      compose **已定义**的服务（按全部已声明档案启用取 —— 默认 `config --services` 不含档案门控的 `proxy`，只给 `backup` / `app`）必须逐个在文档中被说明；
+      文档自称的「一共 N 个服务」必须等于实际已定义数；已定义多于一个时文档不得再称「单服务」（契约 §7.3 勘误 2 口径）。反例实测：「单服务」⇒ 红、「2 个服务」⇒ 红。
+  - id: TC-FEAT-002-36
+    title: CI 三项必跑｜每次推送运行测试与两条流程门禁
+    ac: AC-36
+    ac_name: CI 三项必跑｜每次推送运行测试与两条流程门禁
+    automation: node
+    expect: red
+    actual: green
+    blocker: none
+    note: 本机复跑两条流程门禁读真退出码；npm test 全量复跑会自我递归 ⇒ 该腿归主控 / CI
+  - id: TC-FEAT-002-37
+    title: 反代终结TLS｜应用只跑 HTTP，反代示例与说明随部署件交付
+    ac: AC-37
+    ac_name: 反代终结TLS｜应用只跑 HTTP，反代示例与说明随部署件交付
+    automation: node
+    expect: red
+    actual: green
+    blocker: none
+    note: 静态判据 + caddy validate 真退出码（拉镜像失败属基建假红）；真转发 https://localhost/health 归 UAT
+  - id: TC-FEAT-002-38
+    title: 浅底白卡配色｜页面底为浅灰、内容卡为纯白，旧深色令牌不得残留
+    ac: AC-38
+    ac_name: 浅底白卡配色｜页面底为浅灰、内容卡为纯白，旧深色令牌不得残留
+    automation: node
+    expect: red
+    actual: green
+    blocker: none
+  - id: TC-FEAT-002-39
+    title: 主色橙红取值｜主色为橙红，价格橙红加粗大字且 `¥` 小于数字
+    ac: AC-39
+    ac_name: 主色橙红取值｜主色为橙红，价格橙红加粗大字且 `¥` 小于数字
+    automation: node
+    expect: red
+    actual: green
+    blocker: none
+  - id: TC-FEAT-002-40
+    title: 双列商品卡片流｜手机宽度下商品流为两列，卡内顺序为图—标题两行—价格
+    ac: AC-40
+    ac_name: 双列商品卡片流｜手机宽度下商品流为两列，卡内顺序为图—标题两行—价格
+    automation: node
+    expect: red
+    actual: green
+    blocker: none
+    note: 卡内顺序用首帧目录 DOM 判据；JS 卡片实际渲染列数归 UAT
+  - id: TC-FEAT-002-41
+    title: 底部Tab导航｜底部固定 Tab 三项、当前项橙色高亮，左侧栏不得残留
+    ac: AC-41
+    ac_name: 底部Tab导航｜底部固定 Tab 三项、当前项橙色高亮，左侧栏不得残留
+    automation: node
+    expect: red
+    actual: green
+    blocker: none
+    note: PRD 写「三项」、UI 规格定稿四项（首页/购物车/订单/我的）⇒ 取超集判据（≥3 且含购物车/我的），口径分歧待裁
+  - id: TC-FEAT-002-42
+    title: 圆角卡轻阴影｜卡片有圆角且有阴影
+    ac: AC-42
+    ac_name: 圆角卡轻阴影｜卡片有圆角且有阴影
+    automation: node
+    expect: red
+    actual: green
+    blocker: none
+  - id: TC-FEAT-002-43
+    title: 橙色胶囊CTA｜主按钮为橙色渐变胶囊
+    ac: AC-43
+    ac_name: 橙色胶囊CTA｜主按钮为橙色渐变胶囊
+    automation: node
+    expect: red
+    actual: green
+    blocker: none
+  - id: TC-FEAT-002-44
+    title: 顶部搜索框存在｜顶部存在可聚焦搜索框，且本期不产生搜索请求
+    ac: AC-44
+    ac_name: 顶部搜索框存在｜顶部存在可聚焦搜索框，且本期不产生搜索请求
+    automation: node
+    expect: red
+    actual: green
+    blocker: none
+    note: 回车不发请求由「无搜索查询串 / 无搜索端点」静态替代；真机请求序列归 UAT
+  - id: TC-FEAT-002-45
+    title: 商品卡角标标签｜商品卡含角标 / 标签，文案为本仓自撰
+    ac: AC-45
+    ac_name: 商品卡角标标签｜商品卡含角标 / 标签，文案为本仓自撰
+    automation: node
+    expect: red
+    actual: green
+    blocker: none
+  - id: TC-FEAT-002-46
+    title: 图片为主角卡片｜商品卡以图片为主视觉，图片指向本仓主图
+    ac: AC-46
+    ac_name: 图片为主角卡片｜商品卡以图片为主视觉，图片指向本仓主图
+    automation: node
+    expect: red
+    actual: green
+    blocker: none
+    note: 图片位置用首帧 DOM 顺序判据；图片面积占比归 UAT
+  - id: TC-FEAT-002-47
+    title: 移动优先布局｜窄屏为主战场、宽屏居中，不得横向滚动
+    ac: AC-47
+    ac_name: 移动优先布局｜窄屏为主战场、宽屏居中，不得横向滚动
+    automation: node
+    expect: red
+    actual: green
+    blocker: none
+    note: ③ 无横向滚动 jsdom 无法判定（断言会假绿）⇒ 归 UAT；机器层只断 min-width 断点方向 + max-width 居中 + 无固定大宽度
+  - id: TC-FEAT-002-48
+    title: 本仓自托管商品主图｜8 张 P-00N.jpg 均为真 JPEG（SOF 解析出正方形、边长 ≥400）＋逐卡主图 src 与本卡商品 id 一致且全同源（查询串只许 `?v=<hash>`）＋`CREDITS.md` **逐行 6 项齐全**（文件名 + 商品名 + 作者 + 来源页 URL + 许可名 + 许可 URL；主控 2026-10-16 收紧，与 `AC-48` ⑤ / `UI-67` 同口径）
+    ac: AC-48
+    ac_name: 本仓自托管商品主图｜8 张 P-00N.jpg 均为真 JPEG（SOF 解析出正方形、边长 ≥400）＋逐卡主图 src 与本卡商品 id 一致且全同源（查询串只许 `?v=<hash>`）＋`CREDITS.md` **逐行 6 项齐全**（文件名 + 商品名 + 作者 + 来源页 URL + 许可名 + 许可 URL；主控 2026-10-16 收紧，与 `AC-48` ⑤ / `UI-67` 同口径）
+    automation: node
+    expect: red
+    actual: green
+    blocker: none
+    note: |
+      v2 重开（原判据＝自制 SVG、文本可 diff）：主图语义由「自制 SVG」变为「自托管真实照片」，判据随之确变。
+      五段判据（全部按路径作用域限定，不写笼统「全文不得有 .svg」）：
+        ① 盘上恰 8 张 `web/assets/products/P-001.jpg…P-008.jpg`，逐张读头 3 字节 == FF D8 FF（改名文本 / 占位图即红），且原 8 张 `P-00N.svg` 不得残留；
+           **尺寸按 JPEG 结构判**：解析 SOF 段（`FFC0`~`FFCF` 去掉 `C4`/`C8`/`CC`，基线 `C0` 与渐进 `C2` 都覆盖）取宽高 ⇒ 断言「宽 == 高（ui-spec `UI-12` 的 `aspect-ratio: 1/1`）且边长 ≥ 400（ui-spec §九 照片规格 400×400 作**下限**，dev 实际可用 800×800）」。
+           主控裁定：**删掉原「≥ 2 KiB」暂定阈值**（无依据的字面阈值 = 护栏变噪音），不再引入任何无依据数值；
+        ② 8 个文件名与种子商品 id 双向一一对应（照片无 `<title>`，不再按标题文本回填）；
+        ③ 首帧 `li.card[data-product-id]` **逐卡**断「卡内主图 `src` == `/assets/products/<本卡商品 id>.jpg`」（照片是二进制、读不出商品名 ⇒ 对应关系只能按卡断；**题材是否对货属语义判断，机器不断**，归人工看图留痕）；
+           并断 8 个 `src` 剥掉查询串后逐条命中 `^/assets/products/P-00[1-8]\.jpg$`、不得是 `http(s)://` / `//` 外链（自托管的收益就是零外链，此语义**不放宽**）、
+           **查询串只许内容指纹 `?v=<hash>`（≥6 位 `[A-Za-z0-9_-]`）** —— 采纳 pm 口径：正则一字不改、先剥查询串再匹配路径，但必须同时钉住查询串形态，否则「剥查询串」会变成万能放行口（`?x=1` / 指纹退化成 `?v=0` 都红）；
+        ④ 运行期引用（JS 模块模板串 / CSS）在 `/assets/products/` 这一点下不得残留 `.svg|.png|.webp|.gif|.jpeg`（首帧判据看不见 JS 渲染路径，故单列）；模板 `${…}` 插值与字符串拼接两种写法都接受；
+        ⑤ `web/assets/products/CREDITS.md` 必须存在；8 个本地文件名**各自那一行**必须同时给出**6 项**：① 本地文件名 ② **商品名** ③ **作者** ④ **来源页 URL**（逐行各自登记，**不得只在文件某处给一条、也不得用许可 URL 顶替**）⑤ **许可名**（`CC BY|CC0|public domain|公有领域|Unsplash|Pexels|Pixabay|License|许可|授权|版权`）⑥ **许可 URL**（`creativecommons.org/licenses/…` 等许可类 URL）；且不得登记盘上不存在的文件；行内 URL 不得写成 HTML 实体（`R-4` 的 `&amp;` 半，见下）。
+           主控 2026-10-16 **两轮**裁定收紧要旨：CREDITS 是**合规署名件**（`by` / `by-sa` 要求署名），只给全文一条 URL 时「哪个来源页属于哪张图」无法复核 ⇒ 必须**逐行**；第二轮（`02:25Z`）再收到与真源（PRD `AC-48` ⑤ / `UI-67`）**严格同口径**：补齐「商品名」「许可 URL」两项 + `R-4` 的 `&amp;` 半。
+           **商品名**判定 = 「带 `商品名：` 标注」**或**「该行含 ≥2 个非 URL / 非许可 / 非文件名的文本字段（= 商品名 + 作者）」；**作者**判定 = 「带 `作者 / 摄影 / 拍摄 / Photo by / credit / ©` 等标注」**或**同上 ≥2 字段。
+           为什么不按种子商品名硬匹配：照片 / 文案改名不该判红（主控口径）⇒ 只按**结构**判「该行有没有第二个文本字段」。副作用已披露：删掉商品名列时该行只剩 1 个文本字段 ⇒ **商品名条与作者条都红**（无法从单字段反推它到底是哪一个）——判红正确，只是归因合并。
+           解析口径**格式无关**：表格行（`|`）/ 破折号 `—`·间隔号 `·`·全角竖线 `｜`·斜杠分隔 / 项目符号行都能读；带「商品名：/ 作者：/ 来源页：」标注的行按标注取值；markdown 链接 `[作者](url)` 与尖括号 `<url>` 按链接文本剥壳后再分类（作者写成链接 ⇒ 仍判作者 ✓）。已对 dev 真件（6 列表格）+ 全角标注 6 项 + 破折号单行 6 字段 + 作者成链接逐一实测（全绿）。
+           **本轮自查抓到自己实现的两个洞（都已修；属判据实现缺陷、非口径变化）**：(a) 作者标注正则原本含裸 `by`，会被许可名 `CC BY 2.0` 里的「BY」命中 ⇒ **无作者的行也判绿**（已去掉裸 `by`，只留 `Photo by`）；
+           (b) 逐行 URL 原本只看「行内有没有 `https://`」⇒ **许可 URL 能顶掉来源页**（删掉来源页列、只留 `creativecommons.org/licenses/…` 仍判绿）；已改为「来源页 URL = 非许可类 URL」（按 `creativecommons|licen[cs]e|publicdomain|/cc0|by-sa|by-nc|by-nd` 识别许可类），并保留「`来源页：<URL>` 显式标注」写法。
+           反例实测（校验和比对通过的副本，逐条隔离，各只红本条的对应断言）：**删商品名列 ⇒ 商品名条红**；**删许可 URL 列 ⇒ 许可 URL 条红**；**许可 URL 写成 `&amp;` ⇒ `R-4` 条红**；删来源页列（只留许可 URL）⇒ 来源页条红；删作者列 ⇒ 红。应绿：dev 真件 / 全角标注 / 破折号 / 作者成 markdown 链接 ⇒ ui 13/13 rc=0。
+           ⚠ `CREDITS.md` 里的来源站 URL **不属于** `AC-52` 的禁用清单（那断淘宝系域名与运行期引用），两处判据不打架；PRD `AC-48` ⑤ 已显式写明这一点。
+      ⚠ 原「SVG 文本可 diff / ≤2KB / 无内嵌位图」三条随语义消失（照片是二进制，文本可 diff 不可得）——这是本次**有意**放弃的性质，已报主控。
+      ⚠ 新发现的实现坑（非本判据放宽，见报告）：
+        (a) 静态面 `server/src/static.mjs` 用 `readFileSync(path,'utf8')` 读盘、`negotiate()` 吐字符串，`server/src/app.mjs:641` 又 `Buffer.from(body,'utf8')` 重编码
+            ⇒ **二进制图片会被写坏**（实测 2054 字节文件上线 2066 字节、SOI 变 U+FFFD）；白名单加 `.jpg` 不足以交付真照片，静态读盘必须 Buffer 化。本条 ① 与 TC-002-49 的线上字节判据就是钉这个的。
+        (b) **指纹会静默失效**：`versionOf(join('assets','products',`${product.id}.svg`))` 是**拼出来的**路径（不是字面 `/assets/products/`），换扩展名时最容易漏改
+            ⇒ 主图 URL 退化成 `?v=0`（常量指纹 = 长缓存永不失效；`AC-31` 只验缓存头、验不出它）⇒ 本条 ③ 的「查询串只许 `?v=<hash>`」正是拦这个的（副本实测：漏改时 `?v=0` 判红）。
+      红波次实读（仓库现状，2026-10-16T01:45Z 复跑，含本轮新增的 SOF / 查询串 / 逐卡配对 / 来源 URL 判据）：`node --test test/packages/FEAT-002/ui.test.mjs` tests 13 / pass 12 / fail 1 / exit 1，唯一红＝本条，首命中「必须恰是这 8 张自托管主图…实际 []」（磁盘 0 张 .jpg，仍是 8 张 .svg）。
+      判据自证（副本复刻，不碰 `web/**`；用 Pillow 生成的真 JPEG，非合成字节）：造出「.jpg + 二进制读盘 + `versionOf` 同步 + `CREDITS.md`」的正确实现后本条 13/13 全绿（800×800 基线 JPEG）；
+        SOF 解析器先做单元自证：800×800（`C0`）/ 400×400 / 800×800 渐进（`C2`）全绿，800×600 与 100×100 按正方形 / 下限判红，改名 SVG 文本 / 零字节 / 仅 SOI 解析失败；
+        反例逐一**隔离**命中对应断言：删 `CREDITS.md` ⇒ ⑤ 存在性红；`P-003.jpg` 换成改名 SVG 文本 ⇒ ① magic 红（实际 `3c 73 76 67`）；残留 `P-003.svg` ⇒ ① 残留红；
+        `P-004.jpg` 换 800×600 ⇒ ① 正方红；换 100×100 ⇒ ① 下限红；首卡 `data-product-id` 与卡内主图不符（图集仍齐全）⇒ ③ 逐卡配对红；
+        首帧指纹串改 `?x=<hash>` ⇒ ③ 查询串红；`CREDITS.md` 去掉来源 URL（许可仍在）⇒ ⑤ `UI-67` 红；某 JS 模块引用退回 `.svg`（首帧仍正确）⇒ ④ 运行期引用红；
+        漏改 `versionOf`（指纹 `?v=0`）⇒ ③ 查询串红。**以上每次只破坏一处、其余保持绿**。
+       ✅ 转绿实读（**整包 verify · 独立复跑**，2026-10-16T02:15Z）：`node --test test/packages/FEAT-002/*.test.mjs` **tests 82 / pass 82 / fail 0 / exit 0**（35.1s，**含 `deploy.test.mjs` 7 条**）；
+         `npm test` **134 / pass 134 / exit 0**；`ui.test.mjs` 13/13 与 `static.test.mjs` 9/9 单独复跑亦 rc=0；三条门禁 rc=0（`check-rules` 176 ✓ / 0 ❌、`sync-prd-version FEAT-002 --check` rc=0、`check-artifact-paths` rc=0）。台账 `actual` 已翻 green（`expect` 留 red 作红波次历史）。跑完容器 / 卷无残留、3000/80/443 已释放。
+         反例隔离（校验和比对通过的副本，逐条只破坏该处）：① 静态读盘退回 utf8（**白名单与 content-type 仍对**）⇒ `AC-49` 红，首命中「content-length 应等于盘上 28258 字节，实际 50674」；
+         ② **等长**改写盘上字节（长度判据仍绿）⇒ `AC-49` 红，首命中「线上响应体头 3 字节必须是 JPEG SOI，实际 `3f d8 ff`」⇒ ③④ 不可互替再次实证；
+         ③ `versionOf` 路径退回 `.svg`（指纹 `?v=0`）⇒ `AC-48` 红，首命中「查询串只允许内容指纹 `?v=<hash>`（≥6 位 hash 形态），实际 `?v=0`」。每次仅目标判据红，其余全绿。
+         真照片 SOF 实测（`P-001`~`P-008`）：400 / 450 / 400 / 400 / 518 / 448 / 800 / 500 ⇒ 全部正方形且 ≥400（`P-001` 由源图 394×394 最小放大到 400×400，主控已接受）。
+         ✅ 真源对等性**已闭合**（主控 2026-10-16T02:25Z 授权，本轮已落）：⑤ 的逐行要求由 4 项收到真源的 **6 项**（补「商品名」「许可 URL」）；`R-4` 的 `&amp;` 半已机器化，「URL 被截断」半按主控裁定**不造假护栏**、维持文档要求。
+            收紧后复跑（随机端口，未碰 `:3000` / 容器）：`ui.test.mjs` 13/13 rc=0、`static.test.mjs` 9/9 rc=0（dev 真件直接通过 6 项口径）；`check-rules` rc=0。
+         PRD 口径核对：`docs/process/prd/FEAT-002.md:639` 已由 pm 改为「`SOF` 解析出的边长（整数比较 ≥ 400）+ 宽 == 高」并写明「不保留任何暂定值阈值（原 `≥ 2 KiB` 已删）」⇒ 与本条一致（无口径打架；§11 变更记录里保留的 `2 KiB` 是历史记载 + 同版收口说明，非遗留口径）。
+  - id: TC-FEAT-002-49
+    title: 商品主图可访问｜逐商品 `GET /assets/products/P-00N.jpg` 必须 200 且 `content-type: image/jpeg`，线上字节逐字节等于盘上文件
+    ac: AC-49
+    ac_name: 商品主图可访问｜逐商品 `GET /assets/products/P-00N.jpg` 必须 200 且 `content-type: image/jpeg`，线上字节逐字节等于盘上文件
+    automation: node
+    expect: red
+    actual: green
+    blocker: none
+    note: |
+      v2 重开：`content-type` 由 `image/svg+xml` 改为 `image/jpeg`；路径不再按商品名解析（名称带不出扩展名变更，且照片无 `<title>` 可回填），
+      改为**逐商品**取 `/assets/products/<id>.jpg`（8 件逐个跑，不以一个代表八个），断言四段：
+        ① 200；② `content-type` 命中 `^image/jpeg`；③ `content-length` == 盘上字节数；④ socket 级原始字节：线上体前 3 字节 == FF D8 FF 且体长 == 盘上字节数。
+        另有「首帧引用的主图路径必须全部落在可取到的这 8 个之内」——残留 `.svg` 引用会落在集合外。
+      ⚠ 为什么 ③④ 都要：`raw` 是 utf8 解码结果，坏字节会被静默换成 U+FFFD（文本长度看着还对）⇒ 二进制必须按线上原始字节判。
+        两者覆盖不同链节：③ 抓「头声明 ≠ 盘上文件」（浏览器可见的 ERR_CONTENT_LENGTH_MISMATCH），④ 抓「头自洽但体被改写」（等长改写实测：③ 绿而 ④ 红，实际 `3f 3f 3f`）。
+      红波次实读（仓库现状，2026-10-16T01:35Z 复跑）：`node --test test/packages/FEAT-002/static.test.mjs` tests 9 / pass 8 / fail 1 / exit 1，唯一红＝本条，首命中「…/assets/products/P-001.jpg 必须可取到 200，实际 404」（`.jpg` 尚未入白名单）。
+      判据自证副产物：副本里把这套判据跑到绿 = 交给 dev 的参考实现（`.jpg` 入 `CONTENT_TYPES` + `loadFile` 读 Buffer + 体走 Buffer + 商品路径改 .jpg + 前端模块引用改 .jpg）。
+       ✅ 转绿实读（**整包 verify · 独立复跑**，2026-10-16T02:15Z）：`static.test.mjs` **tests 9 / pass 9 / fail 0 / exit 0**；整包 `test/packages/FEAT-002/*.test.mjs` **82 / 82 / exit 0**（含 `deploy.test.mjs` 7 条）；`npm test` **134 / 134 / exit 0**；台账 `actual` 已翻 green。
+         反例隔离（校验和比对通过的副本，逐条只破坏该处）：① 静态读盘退回 utf8（白名单与 content-type 仍对）⇒ 本条 ③ 红，首命中「content-length 应等于盘上 28258 字节，实际 50674」；
+         ② **等长**改写盘上字节 ⇒ 本条 ④ 红，首命中「线上响应体头 3 字节必须是 JPEG SOI，实际 `3f d8 ff`」（此刻 ③ 是绿的）⇒ ③④ 覆盖不同链节、不可互替，本轮再次实证。
+         真照片 8 张逐个 200 + `content-type: image/jpeg` + `content-length` == 盘上字节数 + 线上逐字节相等，全部通过（真机交付态）。
+  - id: TC-FEAT-002-50
+    title: 静态路径不越界｜穿越与白名单外路径一律 404 且不返回 `web/` 之外的内容
+    ac: AC-50
+    ac_name: 静态路径不越界｜穿越与白名单外路径一律 404 且不返回 `web/` 之外的内容
+    automation: node
+    expect: green
+    actual: green
+    blocker: none
+  - id: TC-FEAT-002-51
+    title: 静态404与图标｜静态 404 不带商品文案，`/favicon.ico` 有自制 SVG 图标与缓存口径
+    ac: AC-51
+    ac_name: 静态404与图标｜静态 404 不带商品文案，`/favicon.ico` 有自制 SVG 图标与缓存口径
+    automation: node
+    expect: red
+    actual: green
+    blocker: none
+  - id: TC-FEAT-002-52
+    title: 不引第三方素材｜交付物不含淘宝域名 / 商标 / 独创文案，运行期零第三方请求
+    ac: AC-52
+    ac_name: 不引第三方素材｜交付物不含淘宝域名 / 商标 / 独创文案，运行期零第三方请求
+    automation: node
+    expect: green
+    actual: green
+    blocker: none
+    note: 扫描范围 = web/server/deploy/scripts + docs/*.md，排除 docs/process/**（送审核对件内引用竞品域名作证据）；真机抓包与断网渲染归 UAT
+  - id: TC-FEAT-002-53
+    title: 演示标注显式｜假支付在界面与文档中被显式标注为演示
+    ac: AC-53
+    ac_name: 演示标注显式｜假支付在界面与文档中被显式标注为演示
+    automation: node
+    expect: red
+    actual: green
+    blocker: none
+    note: ③「实付」是 UI 规格定稿的购物车行标签（W-25），与 AC-53 负向清单字面冲突 ⇒ 只断更强表述（已收款 / 真实扣款完成等），分歧待裁
+  - id: TC-FEAT-002-54
+    title: UI行为继承｜改版后 FEAT-001 的界面行为判据仍然成立
+    ac: AC-54
+    ac_name: UI行为继承｜改版后 FEAT-001 的界面行为判据仍然成立
+    automation: node
+    expect: red
+    actual: green
+    blocker: none
+    note: ② 点击不发请求由源码 disabled 绑定替代；真机交互由 UAT 用 CDP 驱动
+  - id: TC-FEAT-002-55
+    title: 存量五面回归｜FEAT-001 五功能面在新版仍可用，除被取代项外存量判据全绿
+    ac: AC-55
+    ac_name: 存量五面回归｜FEAT-001 五功能面在新版仍可用，除被取代项外存量判据全绿
+    automation: node
+    expect: red
+    actual: green
+    blocker: none
+    note: ① 全量退出码 0 归主控 / CI；本 TC 断五面端到端 + 两类归属 + 无跳过写法。FEAT-001 侧 S-2/S-3 不在本包写入范围 ⇒ 未改，待裁归属
+  - id: TC-FEAT-002-56
+    title: 订单号重启不重号｜下单 → 重启 → 再下单，两个订单号必须不同且历史订单仍在
+    ac: AC-56
+    ac_name: 订单号重启不重号｜下单 → 重启 → 再下单，两个订单号必须不同且历史订单仍在
+    automation: node
+    expect: red
+    actual: green
+    blocker: none
+  - id: TC-FEAT-002-E01
+    title: 会话畸形过期
+    ac: E-01
+    ac_name: 会话畸形过期
+    automation: node
+    expect: red
+    actual: green
+    blocker: none
+  - id: TC-FEAT-002-E02
+    title: 账号字段非法
+    ac: E-02
+    ac_name: 账号字段非法
+    automation: node
+    expect: red
+    actual: green
+    blocker: none
+  - id: TC-FEAT-002-E03
+    title: 订单号不存在
+    ac: E-03
+    ac_name: 订单号不存在
+    automation: node
+    expect: red
+    actual: green
+    blocker: none
+  - id: TC-FEAT-002-E04
+    title: 库不可写
+    ac: E-04
+    ac_name: 库不可写
+    automation: node
+    expect: red
+    actual: green
+    blocker: none
+  - id: TC-FEAT-002-E05
+    title: 停机在有途
+    ac: E-05
+    ac_name: 停机在有途
+    automation: node
+    expect: red
+    actual: green
+    blocker: none
+    note: 容器内停机档归 UAT；本 TC 断「重启后在途单必须可查 + 退出码 0」
+  - id: TC-FEAT-002-E06
+    title: 备份失败可观测
+    ac: E-06
+    ac_name: 备份失败可观测
+    automation: node
+    expect: red
+    actual: green
+    blocker: none
+  - id: TC-FEAT-002-E07
+    title: 体积上限边界
+    ac: E-07
+    ac_name: 体积上限边界
+    automation: node
+    expect: red
+    actual: green
+    blocker: none
+  - id: TC-FEAT-002-E08
+    title: 限流窗口边界
+    ac: E-08
+    ac_name: 限流窗口边界
+    automation: node
+    expect: red
+    actual: green
+    blocker: none
+  - id: TC-FEAT-002-E09
+    title: 分页越量程
+    ac: E-09
+    ac_name: 分页越量程
+    automation: node
+    expect: red
+    actual: green
+    blocker: none
+  - id: TC-FEAT-002-E10
+    title: 重复提交下单
+    ac: E-10
+    ac_name: 重复提交下单
+    automation: node
+    expect: red
+    actual: green
+    blocker: none
+  - id: TC-FEAT-002-E11
+    title: 已登录空车下单
+    ac: E-11
+    ac_name: 已登录空车下单
+    automation: node
+    expect: red
+    actual: green
+    blocker: none
+  - id: TC-FEAT-002-E12
+    title: 零第三方请求
+    ac: E-12
+    ac_name: 零第三方请求
+    automation: node
+    expect: green
+    actual: green
+    blocker: none
+    note: 机器层断「静态面零外部 URL + 零外域 fetch」；真机网络抓包 host 集合归 UAT
+  - id: TC-FEAT-002-E13
+    title: 无界面直连可用
+    ac: E-13
+    ac_name: 无界面直连可用
+    automation: node
+    expect: red
+    actual: green
+    blocker: none
+  - id: TC-FEAT-002-E14
+    title: 同会话并发下单
+    ac: E-14
+    ac_name: 同会话并发下单
+    automation: node
+    expect: red
+    actual: green
+    blocker: none
+  - id: TC-FEAT-002-E15
+    title: 迁移中断可重入
+    ac: E-15
+    ac_name: 迁移中断可重入
+    automation: node
+    expect: red
+    actual: green
+    blocker: none
+  - id: TC-FEAT-002-E16
+    title: 静态白名单外
+    ac: E-16
+    ac_name: 静态白名单外
+    automation: node
+    expect: green
+    actual: green
+    blocker: none
+  - id: TC-FEAT-002-E17
+    title: 主图缺失
+    ac: E-17
+    ac_name: 主图缺失
+    automation: node
+    expect: red
+    actual: green
+    blocker: none
+  - id: TC-FEAT-002-E18
+    title: 版本超前拒启
+    ac: E-18
+    ac_name: 版本超前拒启
+    automation: node
+    expect: red
+    actual: green
+    blocker: none
+  - id: TC-FEAT-002-E19
+    title: 合并且越限
+    ac: E-19
+    ac_name: 合并且越限
+    automation: node
+    expect: red
+    actual: green
+    blocker: none
+  - id: TC-FEAT-002-E20
+    title: 客户端中断
+    ac: E-20
+    ac_name: 客户端中断
+    automation: node
+    expect: red
+    actual: green
+    blocker: none
+  - id: TC-FEAT-002-UI64
+    title: favicon 链接元素
+    ac: UI-64
+    ac_name: favicon 链接元素
+    automation: node
+    expect: red
+    actual: green
+    blocker: none
+    note: '补充判据（非 AC/E 项）：UI-64 定稿的 <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg"> 必须直写于 web/index.html 的 <head>。AC-51 只覆盖 /favicon.ico 的路由面（状态码 / Content-Type / 缓存头），未覆盖该 <link> 元素本身 ⇒ dev 不写 <link> 也能全绿，故独立登记'

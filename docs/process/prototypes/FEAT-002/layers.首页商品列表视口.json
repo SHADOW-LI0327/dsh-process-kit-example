@@ -1,0 +1,1032 @@
+{
+  "screen": "首页商品列表视口",
+  "id": "FEAT-002",
+  "canvas": "390×844 @ 72 ppi",
+  "generatedBy": "docs/process/prototypes/FEAT-002/build-prototypes.mjs",
+  "tokens": "docs/process/prd/FEAT-002-ui-spec.md §8.2（本仓无 UI 项目令牌；数值骨架取 docs/process/ui/tokens.md）",
+  "note": "分层源（脚本侧图层清单）。PSD 本身即原生分层源；此处 bounds 为引擎 info 导出值，仅供人工比读，几何判据用 geometry.<屏幕名>.json。",
+  "layers": [
+    {
+      "name": "底色",
+      "kind": "shape",
+      "bounds": [
+        0,
+        0,
+        390,
+        499
+      ]
+    },
+    {
+      "name": "Home 指示条",
+      "kind": "shape",
+      "bounds": [
+        128,
+        483,
+        135,
+        5
+      ]
+    },
+    {
+      "name": "状态栏",
+      "kind": "shape",
+      "bounds": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "导航栏",
+      "kind": "shape",
+      "bounds": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "导航栏下边线",
+      "kind": "shape",
+      "bounds": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "导航标题",
+      "kind": "text",
+      "text": "电商小铺",
+      "sizePt": 17,
+      "bounds": [
+        17,
+        -286,
+        69,
+        18
+      ]
+    },
+    {
+      "name": "购物车件数",
+      "kind": "text",
+      "text": "购物车 3",
+      "sizePt": 13,
+      "bounds": [
+        317,
+        -282,
+        57,
+        14
+      ]
+    },
+    {
+      "name": "搜索框",
+      "kind": "shape",
+      "bounds": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "搜索-镜圈",
+      "kind": "shape",
+      "bounds": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "搜索-镜柄",
+      "kind": "shape",
+      "bounds": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "搜索-占位文字",
+      "kind": "text",
+      "text": "搜索商品",
+      "sizePt": 15,
+      "bounds": [
+        55,
+        -238,
+        63,
+        16
+      ]
+    },
+    {
+      "name": "促销条",
+      "kind": "shape",
+      "bounds": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "促销条文字",
+      "kind": "text",
+      "text": "新客首单立减 5 元 · 满 99 元包邮",
+      "sizePt": 13,
+      "bounds": [
+        27,
+        -190,
+        225,
+        15
+      ]
+    },
+    {
+      "name": "区块标题",
+      "kind": "text",
+      "text": "商品列表",
+      "sizePt": 20,
+      "bounds": [
+        16,
+        -160,
+        82,
+        20
+      ]
+    },
+    {
+      "name": "区块副标题",
+      "kind": "text",
+      "text": "共 8 件商品，价格以元显示",
+      "sizePt": 13,
+      "bounds": [
+        15,
+        -134,
+        172,
+        14
+      ]
+    },
+    {
+      "name": "卡阴影-3",
+      "kind": "shape",
+      "bounds": [
+        16,
+        95,
+        180,
+        196
+      ]
+    },
+    {
+      "name": "商品卡-3",
+      "kind": "shape",
+      "bounds": [
+        16,
+        93,
+        180,
+        196
+      ]
+    },
+    {
+      "name": "主图-3",
+      "kind": "shape",
+      "bounds": [
+        16,
+        93,
+        180,
+        96
+      ]
+    },
+    {
+      "name": "主图-3-袋身",
+      "kind": "shape",
+      "bounds": [
+        68,
+        121,
+        76,
+        47
+      ]
+    },
+    {
+      "name": "主图-3-封口",
+      "kind": "shape",
+      "bounds": [
+        69,
+        114,
+        74,
+        8
+      ]
+    },
+    {
+      "name": "主图-3-豆一",
+      "kind": "shape",
+      "bounds": [
+        84,
+        143,
+        18,
+        13
+      ]
+    },
+    {
+      "name": "主图-3-豆二",
+      "kind": "shape",
+      "bounds": [
+        112,
+        149,
+        18,
+        13
+      ]
+    },
+    {
+      "name": "角标-3",
+      "kind": "shape",
+      "bounds": [
+        146,
+        159,
+        42,
+        18
+      ]
+    },
+    {
+      "name": "角标-3文字",
+      "kind": "text",
+      "text": "包邮",
+      "sizePt": 12,
+      "bounds": [
+        154,
+        -183,
+        27,
+        13
+      ]
+    },
+    {
+      "name": "卡名一-3",
+      "kind": "text",
+      "text": "单品豆",
+      "sizePt": 14,
+      "bounds": [
+        27,
+        191,
+        45,
+        15
+      ]
+    },
+    {
+      "name": "卡名二-3",
+      "kind": "text",
+      "text": "250g",
+      "sizePt": 14,
+      "bounds": [
+        27,
+        216,
+        40,
+        15
+      ]
+    },
+    {
+      "name": "卡价-3",
+      "kind": "text",
+      "text": "¥ 88.00",
+      "sizePt": 20,
+      "bounds": [
+        27,
+        247,
+        82,
+        18
+      ]
+    },
+    {
+      "name": "卡库存-3",
+      "kind": "text",
+      "text": "库存 8 件",
+      "sizePt": 13,
+      "bounds": [
+        123,
+        251,
+        62,
+        15
+      ]
+    },
+    {
+      "name": "卡阴影-4",
+      "kind": "shape",
+      "bounds": [
+        211,
+        95,
+        179,
+        196
+      ]
+    },
+    {
+      "name": "商品卡-4",
+      "kind": "shape",
+      "bounds": [
+        211,
+        93,
+        179,
+        196
+      ]
+    },
+    {
+      "name": "主图-4",
+      "kind": "shape",
+      "bounds": [
+        211,
+        93,
+        179,
+        96
+      ]
+    },
+    {
+      "name": "主图-4-机身",
+      "kind": "shape",
+      "bounds": [
+        274,
+        125,
+        54,
+        41
+      ]
+    },
+    {
+      "name": "主图-4-摇柄",
+      "kind": "shape",
+      "bounds": [
+        321,
+        122,
+        35,
+        6
+      ]
+    },
+    {
+      "name": "主图-4-摇臂",
+      "kind": "shape",
+      "bounds": [
+        347,
+        116,
+        19,
+        12
+      ]
+    },
+    {
+      "name": "主图-4-粉仓",
+      "kind": "shape",
+      "bounds": [
+        282,
+        162,
+        38,
+        8
+      ]
+    },
+    {
+      "name": "角标-4",
+      "kind": "shape",
+      "bounds": [
+        341,
+        159,
+        42,
+        18
+      ]
+    },
+    {
+      "name": "角标-4文字",
+      "kind": "text",
+      "text": "秒杀",
+      "sizePt": 12,
+      "bounds": [
+        349,
+        -183,
+        27,
+        13
+      ]
+    },
+    {
+      "name": "卡名一-4",
+      "kind": "text",
+      "text": "手摇磨豆机",
+      "sizePt": 14,
+      "bounds": [
+        222,
+        191,
+        75,
+        15
+      ]
+    },
+    {
+      "name": "卡价-4",
+      "kind": "text",
+      "text": "¥ 399.00",
+      "sizePt": 20,
+      "bounds": [
+        222,
+        247,
+        96,
+        18
+      ]
+    },
+    {
+      "name": "卡库存-4",
+      "kind": "text",
+      "text": "库存 8 件",
+      "sizePt": 13,
+      "bounds": [
+        318,
+        251,
+        62,
+        15
+      ]
+    },
+    {
+      "name": "卡阴影-5",
+      "kind": "shape",
+      "bounds": [
+        16,
+        299,
+        180,
+        196
+      ]
+    },
+    {
+      "name": "商品卡-5",
+      "kind": "shape",
+      "bounds": [
+        16,
+        297,
+        180,
+        196
+      ]
+    },
+    {
+      "name": "主图-5",
+      "kind": "shape",
+      "bounds": [
+        16,
+        297,
+        180,
+        96
+      ]
+    },
+    {
+      "name": "主图-5-秤盘",
+      "kind": "shape",
+      "bounds": [
+        57,
+        340,
+        98,
+        14
+      ]
+    },
+    {
+      "name": "主图-5-底座",
+      "kind": "shape",
+      "bounds": [
+        69,
+        353,
+        74,
+        14
+      ]
+    },
+    {
+      "name": "主图-5-屏",
+      "kind": "shape",
+      "bounds": [
+        87,
+        356,
+        38,
+        8
+      ]
+    },
+    {
+      "name": "角标-5",
+      "kind": "shape",
+      "bounds": [
+        146,
+        363,
+        42,
+        18
+      ]
+    },
+    {
+      "name": "角标-5文字",
+      "kind": "text",
+      "text": "包邮",
+      "sizePt": 12,
+      "bounds": [
+        154,
+        21,
+        27,
+        13
+      ]
+    },
+    {
+      "name": "卡名一-5",
+      "kind": "text",
+      "text": "电子秤",
+      "sizePt": 14,
+      "bounds": [
+        28,
+        395,
+        44,
+        15
+      ]
+    },
+    {
+      "name": "卡价-5",
+      "kind": "text",
+      "text": "¥ 159.00",
+      "sizePt": 20,
+      "bounds": [
+        27,
+        451,
+        96,
+        18
+      ]
+    },
+    {
+      "name": "卡库存-5",
+      "kind": "text",
+      "text": "库存 8 件",
+      "sizePt": 13,
+      "bounds": [
+        123,
+        455,
+        62,
+        15
+      ]
+    },
+    {
+      "name": "卡阴影-6",
+      "kind": "shape",
+      "bounds": [
+        211,
+        299,
+        179,
+        196
+      ]
+    },
+    {
+      "name": "商品卡-6",
+      "kind": "shape",
+      "bounds": [
+        211,
+        297,
+        179,
+        196
+      ]
+    },
+    {
+      "name": "主图-6",
+      "kind": "shape",
+      "bounds": [
+        211,
+        297,
+        179,
+        96
+      ]
+    },
+    {
+      "name": "主图-6-纸一",
+      "kind": "shape",
+      "bounds": [
+        259,
+        331,
+        84,
+        28
+      ]
+    },
+    {
+      "name": "主图-6-折边",
+      "kind": "shape",
+      "bounds": [
+        272,
+        326,
+        58,
+        19
+      ]
+    },
+    {
+      "name": "主图-6-纸二",
+      "kind": "shape",
+      "bounds": [
+        268,
+        351,
+        66,
+        19
+      ]
+    },
+    {
+      "name": "角标-6",
+      "kind": "shape",
+      "bounds": [
+        341,
+        363,
+        42,
+        18
+      ]
+    },
+    {
+      "name": "角标-6文字",
+      "kind": "text",
+      "text": "包邮",
+      "sizePt": 12,
+      "bounds": [
+        349,
+        21,
+        27,
+        13
+      ]
+    },
+    {
+      "name": "卡名一-6",
+      "kind": "text",
+      "text": "滤纸",
+      "sizePt": 14,
+      "bounds": [
+        222,
+        395,
+        31,
+        14
+      ]
+    },
+    {
+      "name": "卡名二-6",
+      "kind": "text",
+      "text": "100",
+      "sizePt": 14,
+      "bounds": [
+        224,
+        420,
+        29,
+        13
+      ]
+    },
+    {
+      "name": "卡价-6",
+      "kind": "text",
+      "text": "¥ 29.00",
+      "sizePt": 20,
+      "bounds": [
+        222,
+        451,
+        82,
+        18
+      ]
+    },
+    {
+      "name": "卡库存-6",
+      "kind": "text",
+      "text": "库存 8 件",
+      "sizePt": 13,
+      "bounds": [
+        318,
+        455,
+        62,
+        15
+      ]
+    },
+    {
+      "name": "卡阴影-7",
+      "kind": "shape",
+      "bounds": [
+        16,
+        503,
+        180,
+        196
+      ]
+    },
+    {
+      "name": "商品卡-7",
+      "kind": "shape",
+      "bounds": [
+        16,
+        501,
+        180,
+        196
+      ]
+    },
+    {
+      "name": "主图-7",
+      "kind": "shape",
+      "bounds": [
+        16,
+        501,
+        180,
+        96
+      ]
+    },
+    {
+      "name": "主图-7-杯身",
+      "kind": "shape",
+      "bounds": [
+        79,
+        533,
+        54,
+        45
+      ]
+    },
+    {
+      "name": "主图-7-杯盖",
+      "kind": "shape",
+      "bounds": [
+        76,
+        526,
+        60,
+        10
+      ]
+    },
+    {
+      "name": "主图-7-提环",
+      "kind": "shape",
+      "bounds": [
+        126,
+        528,
+        24,
+        14
+      ]
+    },
+    {
+      "name": "角标-7",
+      "kind": "shape",
+      "bounds": [
+        146,
+        567,
+        42,
+        18
+      ]
+    },
+    {
+      "name": "角标-7文字",
+      "kind": "text",
+      "text": "包邮",
+      "sizePt": 12,
+      "bounds": [
+        154,
+        225,
+        27,
+        13
+      ]
+    },
+    {
+      "name": "卡名一-7",
+      "kind": "text",
+      "text": "保温杯",
+      "sizePt": 14,
+      "bounds": [
+        27,
+        599,
+        45,
+        15
+      ]
+    },
+    {
+      "name": "卡价-7",
+      "kind": "text",
+      "text": "¥ 199.00",
+      "sizePt": 20,
+      "bounds": [
+        27,
+        655,
+        96,
+        18
+      ]
+    },
+    {
+      "name": "卡库存-7",
+      "kind": "text",
+      "text": "库存 8 件",
+      "sizePt": 13,
+      "bounds": [
+        123,
+        659,
+        62,
+        15
+      ]
+    },
+    {
+      "name": "卡阴影-8",
+      "kind": "shape",
+      "bounds": [
+        211,
+        503,
+        179,
+        196
+      ]
+    },
+    {
+      "name": "商品卡-8",
+      "kind": "shape",
+      "bounds": [
+        211,
+        501,
+        179,
+        196
+      ]
+    },
+    {
+      "name": "主图-8",
+      "kind": "shape",
+      "bounds": [
+        211,
+        501,
+        179,
+        96
+      ]
+    },
+    {
+      "name": "主图-8-刷柄",
+      "kind": "shape",
+      "bounds": [
+        252,
+        542,
+        98,
+        12
+      ]
+    },
+    {
+      "name": "主图-8-刷毛",
+      "kind": "shape",
+      "bounds": [
+        264,
+        536,
+        56,
+        8
+      ]
+    },
+    {
+      "name": "主图-8-挂孔",
+      "kind": "shape",
+      "bounds": [
+        336,
+        544,
+        16,
+        8
+      ]
+    },
+    {
+      "name": "角标-8",
+      "kind": "shape",
+      "bounds": [
+        341,
+        567,
+        42,
+        18
+      ]
+    },
+    {
+      "name": "角标-8文字",
+      "kind": "text",
+      "text": "秒杀",
+      "sizePt": 12,
+      "bounds": [
+        349,
+        225,
+        27,
+        13
+      ]
+    },
+    {
+      "name": "卡名一-8",
+      "kind": "text",
+      "text": "壶嘴清洁刷",
+      "sizePt": 14,
+      "bounds": [
+        222,
+        599,
+        74,
+        15
+      ]
+    },
+    {
+      "name": "卡价-8",
+      "kind": "text",
+      "text": "¥ 19.00",
+      "sizePt": 20,
+      "bounds": [
+        222,
+        655,
+        82,
+        18
+      ]
+    },
+    {
+      "name": "卡库存-8",
+      "kind": "text",
+      "text": "库存 8 件",
+      "sizePt": 13,
+      "bounds": [
+        318,
+        659,
+        62,
+        15
+      ]
+    },
+    {
+      "name": "底部栏",
+      "kind": "shape",
+      "bounds": [
+        0,
+        795,
+        390,
+        49
+      ]
+    },
+    {
+      "name": "底部栏上边线",
+      "kind": "shape",
+      "bounds": [
+        0,
+        795,
+        390,
+        1
+      ]
+    },
+    {
+      "name": "Tab-首页-图标",
+      "kind": "shape",
+      "bounds": [
+        38,
+        800,
+        23,
+        22
+      ]
+    },
+    {
+      "name": "Tab-首页-文字",
+      "kind": "text",
+      "text": "首页",
+      "sizePt": 12,
+      "bounds": [
+        36,
+        826,
+        27,
+        13
+      ]
+    },
+    {
+      "name": "Tab-购物车-图标",
+      "kind": "shape",
+      "bounds": [
+        135,
+        800,
+        23,
+        22
+      ]
+    },
+    {
+      "name": "Tab-购物车-文字",
+      "kind": "text",
+      "text": "购物车",
+      "sizePt": 12,
+      "bounds": [
+        126,
+        826,
+        40,
+        13
+      ]
+    },
+    {
+      "name": "Tab-订单-图标",
+      "kind": "shape",
+      "bounds": [
+        232,
+        800,
+        23,
+        22
+      ]
+    },
+    {
+      "name": "Tab-订单-文字",
+      "kind": "text",
+      "text": "订单",
+      "sizePt": 12,
+      "bounds": [
+        230,
+        827,
+        27,
+        12
+      ]
+    },
+    {
+      "name": "Tab-我的-图标",
+      "kind": "shape",
+      "bounds": [
+        329,
+        800,
+        23,
+        22
+      ]
+    },
+    {
+      "name": "Tab-我的-文字",
+      "kind": "text",
+      "text": "我的",
+      "sizePt": 12,
+      "bounds": [
+        327,
+        827,
+        27,
+        12
+      ]
+    }
+  ]
+}

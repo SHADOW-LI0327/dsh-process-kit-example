@@ -1,0 +1,22 @@
+name: ci
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: 安装开发依赖
+        run: npm ci
+      - name: 流程门禁 · 产物落点
+        run: node scripts/process/check-artifact-paths.mjs
+      - name: 流程门禁 · 台账自洽
+        run: node scripts/process/check-rules.mjs
+      - name: 全量测试
+        run: npm test

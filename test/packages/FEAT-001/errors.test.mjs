@@ -39,7 +39,9 @@ test('统一错误响应（AC-29）', async () => {
         status: 400,
         code: 'INVALID_QUANTITY',
       },
-      { res: await client.post('/api/v1/orders'), status: 409, code: 'CART_EMPTY' },
+      // 契约 §4.4：未登录访问受保护面在**鉴权步**就返 401，先于「空车」判定。
+      // 「已登录 + 空车 ⇒ 409 CART_EMPTY」这条能力由 TC-FEAT-001-22 保留（不在本词表用例里重复）。
+      { res: await client.post('/api/v1/orders'), status: 401, code: 'UNAUTHENTICATED' },
     ];
     for (const { res, status, code } of attempts) {
       assert.equal(res.status, status, `${code} 的状态码必须是 ${status}，实际 ${res.status}`);
